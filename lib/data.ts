@@ -17,7 +17,12 @@ export const profile = {
 
 export const socials = [
   { label: 'GitHub', href: 'https://github.com/miraac-23', handle: 'miraac-23', icon: 'github' },
-  { label: 'LinkedIn', href: 'https://www.linkedin.com/in/', handle: 'miraç-güntoğar', icon: 'linkedin' },
+  {
+    label: 'LinkedIn',
+    href: 'https://www.linkedin.com/in/mira%C3%A7-g%C3%BCnto%C4%9Far-758b461ab/',
+    handle: 'miraç-güntoğar',
+    icon: 'linkedin',
+  },
   {
     label: 'Stack Overflow',
     href: 'https://stackoverflow.com/users/mirac-gundogar',

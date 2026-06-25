@@ -10,6 +10,16 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Theme-aware semantic tokens (flip via [data-theme] CSS vars).
+        page: 'rgb(var(--c-page) / <alpha-value>)',
+        surface: 'rgb(var(--c-surface) / <alpha-value>)',
+        surface2: 'rgb(var(--c-surface2) / <alpha-value>)',
+        line: 'rgb(var(--c-line) / <alpha-value>)',
+        fg: 'rgb(var(--c-fg) / <alpha-value>)',
+        fg2: 'rgb(var(--c-fg2) / <alpha-value>)',
+        fg3: 'rgb(var(--c-fg3) / <alpha-value>)',
+        fg4: 'rgb(var(--c-fg4) / <alpha-value>)',
+        // Static dark navy — used for text on bright gradients (stays dark in both themes).
         ink: {
           950: '#060912',
           900: '#0a0e1a',
@@ -18,12 +28,12 @@ const config: Config = {
           600: '#1e2740',
         },
         accent: {
-          DEFAULT: '#22d3ee',
-          soft: '#67e8f9',
+          DEFAULT: 'rgb(var(--c-accent) / <alpha-value>)',
+          soft: 'rgb(var(--c-accent-soft) / <alpha-value>)',
           deep: '#0891b2',
         },
         violet: {
-          glow: '#818cf8',
+          glow: 'rgb(var(--c-violet) / <alpha-value>)',
         },
       },
       fontFamily: {

@@ -2,14 +2,16 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import ThemeToggle from './ThemeToggle'
 
 const links = [
-  { href: '/#about', label: 'Hakkımda' },
-  { href: '/#skills', label: 'Yetenekler' },
-  { href: '/#experience', label: 'Deneyim' },
-  { href: '/#projects', label: 'Projeler' },
+  { href: '/#hakkimda', label: 'Hakkımda' },
+  { href: '/#yetenekler', label: 'Yetenekler' },
+  { href: '/#deneyim', label: 'Deneyim' },
+  { href: '/#projeler', label: 'Projeler' },
   { href: '/#blog', label: 'Blog' },
-  { href: '/#contact', label: 'İletişim' },
+  { href: '/blog#calismalar', label: 'Çalışmalarım' },
+  { href: '/#iletisim', label: 'İletişim' },
 ]
 
 export default function Navbar() {
@@ -42,11 +44,11 @@ export default function Navbar() {
             scrolled ? 'glass shadow-[0_8px_40px_-12px_rgba(0,0,0,0.6)]' : 'border border-transparent'
           }`}
         >
-          <Link href="/#home" className="group flex items-center gap-2.5">
+          <Link href="/#anasayfa" className="group flex items-center gap-2.5">
             <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-accent to-violet-glow font-display text-sm font-bold text-ink-950">
               MG
             </span>
-            <span className="font-display text-sm font-semibold tracking-wide text-slate-100">
+            <span className="font-display text-sm font-semibold tracking-wide text-fg">
               Miraç Güntoğar<span className="text-accent">.</span>
             </span>
           </Link>
@@ -56,7 +58,7 @@ export default function Navbar() {
               <li key={l.href}>
                 <Link
                   href={l.href}
-                  className="rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-white/5 hover:text-accent-soft"
+                  className="rounded-lg px-3 py-2 text-sm font-medium text-fg2 transition-colors hover:bg-surface/5 hover:text-accent-soft"
                 >
                   {l.label}
                 </Link>
@@ -64,35 +66,39 @@ export default function Navbar() {
             ))}
           </ul>
 
-          <div className="hidden md:block">
-            <Link href="/#contact" className="btn-primary px-5 py-2.5 text-[13px]">
+          <div className="hidden items-center gap-2 md:flex">
+            <ThemeToggle />
+            <Link href="/#iletisim" className="btn-primary px-5 py-2.5 text-[13px]">
               İletişime Geç
             </Link>
           </div>
 
-          <button
-            aria-label="Menüyü aç/kapat"
-            onClick={() => setOpen((v) => !v)}
-            className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/5 md:hidden"
-          >
-            <div className="space-y-1.5">
-              <span
-                className={`block h-0.5 w-5 bg-slate-200 transition-all duration-300 ${
-                  open ? 'translate-y-2 rotate-45' : ''
-                }`}
-              />
-              <span
-                className={`block h-0.5 w-5 bg-slate-200 transition-all duration-300 ${
-                  open ? 'opacity-0' : ''
-                }`}
-              />
-              <span
-                className={`block h-0.5 w-5 bg-slate-200 transition-all duration-300 ${
-                  open ? '-translate-y-2 -rotate-45' : ''
-                }`}
-              />
-            </div>
-          </button>
+          <div className="flex items-center gap-2 md:hidden">
+            <ThemeToggle />
+            <button
+              aria-label="Menüyü aç/kapat"
+              onClick={() => setOpen((v) => !v)}
+              className="grid h-10 w-10 place-items-center rounded-xl border border-line/10 bg-surface/5"
+            >
+              <div className="space-y-1.5">
+                <span
+                  className={`block h-0.5 w-5 bg-fg2 transition-all duration-300 ${
+                    open ? 'translate-y-2 rotate-45' : ''
+                  }`}
+                />
+                <span
+                  className={`block h-0.5 w-5 bg-fg2 transition-all duration-300 ${
+                    open ? 'opacity-0' : ''
+                  }`}
+                />
+                <span
+                  className={`block h-0.5 w-5 bg-fg2 transition-all duration-300 ${
+                    open ? '-translate-y-2 -rotate-45' : ''
+                  }`}
+                />
+              </div>
+            </button>
+          </div>
         </nav>
       </div>
 
@@ -103,11 +109,11 @@ export default function Navbar() {
         }`}
       >
         <div
-          className="absolute inset-0 bg-ink-950/80 backdrop-blur-md"
+          className="absolute inset-0 bg-page/80 backdrop-blur-md"
           onClick={() => setOpen(false)}
         />
         <div
-          className={`absolute inset-x-4 top-24 rounded-3xl border border-white/10 bg-ink-800/95 p-6 shadow-2xl transition-all duration-500 ${
+          className={`absolute inset-x-4 top-24 rounded-3xl border border-line/10 bg-page/95 p-6 shadow-2xl transition-all duration-500 ${
             open ? 'translate-y-0' : '-translate-y-6'
           }`}
         >
@@ -117,7 +123,7 @@ export default function Navbar() {
                 <Link
                   href={l.href}
                   onClick={() => setOpen(false)}
-                  className="block rounded-xl px-4 py-3 text-base font-medium text-slate-200 transition-colors hover:bg-white/5 hover:text-accent-soft"
+                  className="block rounded-xl px-4 py-3 text-base font-medium text-fg2 transition-colors hover:bg-surface/5 hover:text-accent-soft"
                 >
                   {l.label}
                 </Link>
@@ -125,7 +131,7 @@ export default function Navbar() {
             ))}
           </ul>
           <Link
-            href="/#contact"
+            href="/#iletisim"
             onClick={() => setOpen(false)}
             className="btn-primary mt-4 w-full"
           >

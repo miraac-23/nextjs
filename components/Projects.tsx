@@ -5,7 +5,7 @@ import { ArrowUpRightIcon } from './Icons'
 
 export default function Projects() {
   return (
-    <section id="projects" className="relative py-24 sm:py-32">
+    <section id="projeler" className="relative py-24 sm:py-32">
       <div className="pointer-events-none absolute right-0 top-1/4 h-72 w-72 rounded-full bg-accent/10 blur-[130px]" />
       <div className="container-x relative">
         <SectionHeading
@@ -36,17 +36,17 @@ export default function Projects() {
                           ⭐ Amiral Gemisi Proje
                         </span>
                       )}
-                      <h3 className="font-display text-xl font-bold text-white transition-colors group-hover:text-accent-soft">
+                      <h3 className="font-display text-xl font-bold text-fg transition-colors group-hover:text-accent-soft">
                         {project.title}
                       </h3>
-                      <p className="text-sm font-medium text-slate-400">{project.subtitle}</p>
+                      <p className="text-sm font-medium text-fg3">{project.subtitle}</p>
                     </div>
-                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 text-slate-400 transition-all duration-300 group-hover:border-accent/50 group-hover:text-accent group-hover:rotate-12">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-line/10 bg-surface/5 text-fg3 transition-all duration-300 group-hover:border-accent/50 group-hover:text-accent group-hover:rotate-12">
                       <ArrowUpRightIcon width={18} height={18} />
                     </span>
                   </div>
 
-                  <p className="mt-4 flex-1 text-[14.5px] leading-relaxed text-slate-300">
+                  <p className="mt-4 flex-1 text-[14.5px] leading-relaxed text-fg2">
                     {project.description}
                   </p>
 

@@ -3,6 +3,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import BlogCard from '@/components/BlogCard'
 import Reveal from '@/components/Reveal'
+import WorksSection from '@/components/WorksSection'
 import { blogPosts } from '@/lib/data'
 
 export const metadata: Metadata = {
@@ -24,10 +25,10 @@ export default function BlogPage() {
               <span className="h-px w-6 bg-accent/60" />
               Blog
             </span>
-            <h1 className="font-display text-4xl font-bold tracking-tight text-white sm:text-5xl">
+            <h1 className="font-display text-4xl font-bold tracking-tight text-fg sm:text-5xl">
               Yazılar & <span className="gradient-text">Notlar</span>
             </h1>
-            <p className="mt-4 text-[15px] leading-relaxed text-slate-400">
+            <p className="mt-4 text-[15px] leading-relaxed text-fg3">
               Mühendislik pratiğinden öğrendiklerim. Spring Boot mikroservislerinden Next.js
               performansına, güvenlikten DevOps’a uzanan notlar.
             </p>
@@ -40,6 +41,8 @@ export default function BlogPage() {
               </Reveal>
             ))}
           </div>
+
+          <WorksSection />
         </div>
       </main>
       <Footer />

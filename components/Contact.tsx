@@ -11,10 +11,10 @@ export default function Contact() {
   ]
 
   return (
-    <section id="contact" className="relative py-24 sm:py-32">
+    <section id="iletisim" className="relative py-24 sm:py-32">
       <div className="container-x">
         <Reveal>
-          <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-ink-800 via-ink-900 to-ink-800 p-8 sm:p-14">
+          <div className="relative overflow-hidden rounded-[2.5rem] border border-line/10 bg-gradient-to-br from-page via-page to-surface2/10 p-8 sm:p-14">
             <div className="pointer-events-none absolute inset-0 aurora opacity-70" />
             <div className="pointer-events-none absolute -bottom-20 left-1/2 h-60 w-[120%] -translate-x-1/2 rounded-full bg-accent/10 blur-[120px]" />
 
@@ -24,10 +24,10 @@ export default function Contact() {
                   <span className="h-px w-6 bg-accent/60" />
                   İletişim
                 </span>
-                <h2 className="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                <h2 className="font-display text-3xl font-bold tracking-tight text-fg sm:text-4xl">
                   Birlikte değer <span className="gradient-text">üretelim</span>
                 </h2>
-                <p className="mt-4 max-w-md text-[15px] leading-relaxed text-slate-300">
+                <p className="mt-4 max-w-md text-[15px] leading-relaxed text-fg2">
                   Yeni projeler, iş birlikleri veya sadece bir merhaba için bana ulaşabilirsiniz. En kısa sürede dönüş yapıyorum.
                 </p>
 
@@ -41,7 +41,7 @@ export default function Contact() {
                         target="_blank"
                         rel="noreferrer"
                         aria-label={s.label}
-                        className="group grid h-12 w-12 place-items-center rounded-2xl border border-white/10 bg-white/5 text-slate-300 transition-all duration-300 hover:-translate-y-1 hover:border-accent/50 hover:text-accent-soft"
+                        className="group grid h-12 w-12 place-items-center rounded-2xl border border-line/10 bg-surface/5 text-fg2 transition-all duration-300 hover:-translate-y-1 hover:border-accent/50 hover:text-accent-soft"
                       >
                         {Icon && <Icon width={20} height={20} />}
                       </a>
@@ -58,16 +58,16 @@ export default function Contact() {
                         <item.icon width={22} height={22} />
                       </span>
                       <div className="min-w-0 flex-1">
-                        <div className="text-xs uppercase tracking-wider text-slate-500">
+                        <div className="text-xs uppercase tracking-wider text-fg4">
                           {item.label}
                         </div>
-                        <div className="truncate font-medium text-slate-100">{item.value}</div>
+                        <div className="truncate font-medium text-fg">{item.value}</div>
                       </div>
                       {item.href && (
                         <ArrowUpRightIcon
                           width={18}
                           height={18}
-                          className="text-slate-500 transition-colors group-hover:text-accent"
+                          className="text-fg4 transition-colors group-hover:text-accent"
                         />
                       )}
                     </div>

@@ -4,7 +4,7 @@ import Reveal from './Reveal'
 
 export default function Experience() {
   return (
-    <section id="experience" className="relative py-24 sm:py-32">
+    <section id="deneyim" className="relative py-24 sm:py-32">
       <div className="container-x">
         <SectionHeading
           label="Deneyim"
@@ -24,7 +24,7 @@ export default function Experience() {
                   }`}
                 >
                   <span
-                    className={`absolute top-2 grid h-8 w-8 place-items-center rounded-full border border-accent/40 bg-ink-800 left-0 ${
+                    className={`absolute top-2 grid h-8 w-8 place-items-center rounded-full border border-accent/40 bg-page left-0 ${
                       i % 2 === 0 ? 'sm:left-auto sm:-right-4' : 'sm:-left-4'
                     }`}
                   >
@@ -50,10 +50,10 @@ export default function Experience() {
                         </span>
                       )}
                     </div>
-                    <h3 className="font-display text-lg font-semibold text-white">{exp.role}</h3>
+                    <h3 className="font-display text-lg font-semibold text-fg">{exp.role}</h3>
                     <div className="text-sm font-medium text-accent-soft">{exp.company}</div>
                     <ul
-                      className={`mt-3 space-y-2 text-[13.5px] leading-relaxed text-slate-400 ${
+                      className={`mt-3 space-y-2 text-[13.5px] leading-relaxed text-fg3 ${
                         i % 2 === 0 ? 'sm:text-left' : ''
                       }`}
                     >
