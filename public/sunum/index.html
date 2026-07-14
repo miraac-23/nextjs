@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Java &amp; Spring · Kapsamlı Eğitim Sunumu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <!-- Progress bar -->
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <button class="icon-btn" id="menuBtn" title="İçindekiler (M)" aria-label="Menü">
+      <span class="bars"></span>
+    </button>
+    <button class="brand" id="brandHome" title="Başa dön (Home)" aria-label="Başa dön">
+      <span class="brand-dot"></span>
+      <span class="brand-text">Java &amp; Spring <em>Eğitim</em></span>
+      <span class="brand-home" aria-hidden="true">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+      </span>
+    </button>
+    <div class="topbar-right">
+      <div class="timer" id="timer" title="Sunum süresi">
+        <span class="timer-dot"></span>
+        <span class="timer-time" id="timerTime">00:00</span>
+        <button class="timer-btn" id="timerToggle" title="Duraklat / Başlat (T)" aria-label="Duraklat/Başlat">❚❚</button>
+        <button class="timer-btn" id="timerReset" title="Sıfırla (R)" aria-label="Sıfırla">↺</button>
+      </div>
+      <span class="chip" id="sectionChip">Giriş</span>
+      <button class="icon-btn" id="overviewBtn" title="Genel bakış (O)" aria-label="Genel bakış">▦</button>
+      <button class="icon-btn" id="fsBtn" title="Tam ekran (F)" aria-label="Tam ekran">⤢</button>
+    </div>
+  </header>
+
+  <!-- Sidebar / agenda -->
+  <aside class="sidebar" id="sidebar" aria-hidden="true">
+    <div class="sidebar-head">
+      <span>İçindekiler</span>
+      <button class="icon-btn" id="closeSidebar" aria-label="Kapat">✕</button>
+    </div>
+    <nav class="agenda" id="agenda"></nav>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <!-- Stage -->
+  <main class="stage" id="stage"></main>
+
+  <!-- Overview grid -->
+  <section class="overview" id="overview" aria-hidden="true">
+    <div class="overview-head">
+      <h2>Tüm Slaytlar</h2>
+      <button class="icon-btn" id="closeOverview" aria-label="Kapat">✕</button>
+    </div>
+    <div class="overview-grid" id="overviewGrid"></div>
+  </section>
+
+  <!-- Konu başlıkları modalı (yol haritası "tüm başlıklar") -->
+  <section class="topics-modal" id="topicsModal" aria-hidden="true">
+    <div class="tm-box">
+      <div class="tm-head">
+        <h3 id="tmTitle">Tüm Başlıklar</h3>
+        <button class="icon-btn" id="tmClose" aria-label="Kapat">✕</button>
+      </div>
+      <div class="tm-list" id="tmList"></div>
+    </div>
+  </section>
+
+  <!-- Bottom controls -->
+  <footer class="controls">
+    <button class="nav-btn" id="prevBtn" aria-label="Önceki">‹</button>
+    <div class="counter"><span id="curNo">1</span> <span class="sep">/</span> <span id="totNo">1</span></div>
+    <button class="nav-btn" id="nextBtn" aria-label="Sonraki">›</button>
+  </footer>
+
+  <div class="hint" id="hint">← → ile gez · <b>M</b> menü · <b>O</b> genel bakış · <b>F</b> tam ekran</div>
+
+  <script src="js/slides.js"></script>
+  <script src="js/sec-java.js"></script>
+  <script src="js/sec-version.js"></script>
+  <script src="js/sec-spring.js"></script>
+  <script src="js/sec-boot.js"></script>
+  <script src="js/sec-compare.js"></script>
+  <script src="js/engine.js"></script>
+</body>
+</html>
+
