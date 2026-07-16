@@ -116,16 +116,22 @@ body::before {
   position: relative; z-index: 1;
   height: 100%; width: 100%;
   display: grid; align-items: start; justify-items: center;
+  grid-template-columns: minmax(0, 1fr);   /* sütun içeriğe göre şişmesin → uzun kod satırları kutuda kayar */
   padding: 84px clamp(18px, 4.5vw, 72px) 88px;
 }
 .slide {
-  width: min(1340px, 100%); height: 100%; max-height: 100%; min-height: 0;
+  width: min(1340px, 100%); min-width: 0; height: 100%; max-height: 100%; min-height: 0;
   display: none; flex-direction: column;
   animation: slideIn .5s cubic-bezier(.16, 1, .3, 1);
 }
 .slide.active { display: flex; }
 .slide.cover, .slide.section-slide { align-self: center; height: auto; }
-.slide-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-right: 10px; padding-bottom: 10px; }
+.slide-scroll { flex: 1 1 auto; min-width: 0; min-height: 0; overflow-y: auto; padding-right: 10px; padding-bottom: 10px; }
+/* Yatay taşmayı önle: flex/grid çocukları daralabilsin, taşan içerik kendi içinde kaysın */
+.slide-scroll > * { min-width: 0; max-width: 100%; }
+.split > *, .twocol > * { min-width: 0; }
+.code-wrap, .tbl-wrap { min-width: 0; max-width: 100%; }
+pre.code { min-width: 0; }
 .slide-scroll::-webkit-scrollbar { width: 8px; }
 .slide-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 8px; }
 
@@ -460,7 +466,7 @@ table.cmp tbody tr:last-child td { border-bottom: none; }
 .ov-card.current { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(124,140,255,.4); }
 .ov-card .ov-no { font-family: var(--mono); font-size: 11px; color: var(--text-faint); }
 .ov-card .ov-cat { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-faint); margin-top: 4px; }
-.ov-card .ov-t { font-family: "Sora", sans-serif; font-weight: 600; font-size: 14px; line-height: 1.25; margin-top: 6px; color: var(--text); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.ov-card .ov-t { font-family: "Sora", sans-serif; font-weight: 600; font-size: 14px; line-height: 1.25; margin-top: 6px; color: var(--text); display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .ov-card .ov-bar { position: absolute; left: 0; bottom: 0; height: 4px; width: 100%; }
 
 /* ============================================================
