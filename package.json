@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "rules:build": "node scripts/gen-bundled-rules.mjs"
   },
   "engines": {
     "node": "22.x"
@@ -19,7 +20,8 @@
     "react-dom": "^18",
     "react-markdown": "^9.1.0",
     "react-syntax-highlighter": "^15.6.6",
-    "remark-gfm": "^4.0.1"
+    "remark-gfm": "^4.0.1",
+    "sweetalert2": "^11.26.25"
   },
   "devDependencies": {
     "@types/node": "^20",

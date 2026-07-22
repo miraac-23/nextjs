@@ -12,6 +12,7 @@ const links = [
   { href: '/#sunumlar', label: 'Sunumlar' },
   { href: '/#blog', label: 'Blog' },
   { href: '/blog#calismalar', label: 'Çalışmalarım' },
+  { href: '/code-review', label: 'Code Review' },
   { href: '/#iletisim', label: 'İletişim' },
 ]
 
