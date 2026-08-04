@@ -88,7 +88,8 @@ export default function Hero() {
                     <span className="text-accent-soft">engineer</span> = {'{'}
                     {'\n'} role: <span className="text-emerald-300">{`'Fullstack'`}</span>,
                     {'\n'} stack: [<span className="text-emerald-300">{`'Java'`}</span>,{' '}
-                    <span className="text-emerald-300">{`'Spring'`}</span>,
+                    <span className="text-emerald-300">{`'Spring'`}</span>, {''}
+                    <span className="text-emerald-300">{`'React'`}</span>,
                     {'\n'}    <span className="text-emerald-300">{`'Next.js'`}</span>],
                     {'\n'} focus: <span className="text-emerald-300">{`'ölçeklenebilirlik'`}</span>,
                     {'\n'} learning: <span className="text-amber-300">true</span>,

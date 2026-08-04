@@ -62,6 +62,32 @@ export const presentations: Presentation[] = [
       'Elle denenebilir demolar & ölçümler',
     ],
   },
+  {
+    slug: 'api-gateway-merkezi-trafik-yonetimi',
+    title: 'API Gateway & Merkezi Trafik Yönetimi — Mimari Sunumu',
+    subtitle: 'Temelden uzman seviyesine, dört aşamalı yolculuk',
+    description:
+      'Gateway nedir sorusundan üretim gerçeklerine ve ürün/custom gateway kararına uzanan, seviye seçtirmeyen — okuyucuyu Temel → Uygulama → İleri → Uzman aşamalarından yürüten bir sunum. Filtre zinciri, kimlik, kota, dayanıklılık ve gözlemlenebilirlik konuları canlı canvas animasyonlarıyla; devre kesici yarışı, dağıtım stratejileri ve topoloji senaryoları ise yan yana ölçülebilen etkileşimli sahnelerle anlatılıyor.',
+    tags: ['API Gateway', 'Spring Cloud Gateway', 'Resilience4j', 'Circuit Breaker', 'Observability'],
+    cover: 'from-emerald-500/30 via-sky-500/20 to-fuchsia-600/30',
+    badge: 'İnteraktif Sunum',
+    embedUrl: '/sunum-api-gateway/index.html',
+    stats: [
+      { value: '46', label: 'Slayt' },
+      { value: '4', label: 'Aşama' },
+      { value: '30+', label: 'Canlı Sahne' },
+    ],
+    topics: [
+      'Vaka & problem — çapraz kesen görev tekrarı',
+      'Temel: gateway, proxy/LB/mesh farkı, 16 durak',
+      'Uygulama: rota, keşif, JWT, kota, versiyonlama',
+      'İleri: timeout, devre kesici, yük atma, canary',
+      'Resilience4j dekoratör zinciri & parametreler',
+      'SPOF, blast radius, gözlem ve güvenlik',
+      'Uzman: ürün manzarası, kıyaslama arenası',
+      'Custom gateway, anti-pattern’ler ve PoC planı',
+    ],
+  },
 ]
 
 export function getPresentation(slug: string): Presentation | undefined {

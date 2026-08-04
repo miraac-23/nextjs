@@ -5,7 +5,7 @@ import Reveal from './Reveal'
 import { ArrowRightIcon } from './Icons'
 
 export default function SunumlarPreview() {
-  const items = presentations.slice(0, 2)
+  const items = presentations.slice(0, 3)
   return (
     <section id="sunumlar" className="relative py-24 sm:py-32">
       <div className="container-x">

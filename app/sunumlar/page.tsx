@@ -9,7 +9,7 @@ import { ArrowRightIcon, ArrowUpRightIcon } from '@/components/Icons'
 export const metadata: Metadata = {
   title: 'Sunumlar — Miraç Güntoğar',
   description:
-    'Tarayıcıda gezilebilen interaktif eğitim sunumları. Java & Spring kapsamlı eğitim sunumu ve daha fazlası.',
+    'Tarayıcıda gezilebilen interaktif eğitim sunumları. Java & Spring, rate limit & kota yönetimi ve API gateway mimarisi.',
 }
 
 export default function SunumlarPage() {
@@ -93,7 +93,7 @@ export default function SunumlarPage() {
                     <ul className="relative space-y-1.5 rounded-xl border border-line/10 bg-page/70 p-4 text-[12px] leading-relaxed text-fg3 backdrop-blur">
                       {p.topics.map((t, idx) => (
                         <li key={t} className="flex items-center gap-2">
-                          <span className="font-mono text-[10px] text-accent-soft">
+                          <span className="shrink-0 font-mono text-[10px] text-accent-soft">
                             {String(idx + 1).padStart(2, '0')}
                           </span>
                           {t}
