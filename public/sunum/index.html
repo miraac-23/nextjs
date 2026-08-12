@@ -35,6 +35,7 @@
       <span class="chip" id="sectionChip">Giriş</span>
       <button class="icon-btn" id="overviewBtn" title="Genel bakış (O)" aria-label="Genel bakış">▦</button>
       <button class="icon-btn" id="fsBtn" title="Tam ekran (F)" aria-label="Tam ekran">⤢</button>
+      <span id="langHost" data-no-i18n></span>
     </div>
   </header>
 
@@ -86,7 +87,11 @@
   <script src="js/sec-spring.js"></script>
   <script src="js/sec-boot.js"></script>
   <script src="js/sec-compare.js"></script>
+  <script src="/deck-i18n.js"></script>
+  <script src="js/i18n.en.js"></script>
   <script src="js/engine.js"></script>
+  <script>DeckI18n.init({ dict: window.DECK_EN || {} });
+  DeckI18n.mountToggle(document.getElementById("langHost"), "icon-btn deck-lang-btn");</script>
 </body>
 </html>
 

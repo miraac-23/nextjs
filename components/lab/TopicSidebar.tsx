@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useT } from '@/lib/i18n/LanguageProvider'
 
 export type NavItem = {
   id: string
@@ -28,6 +29,8 @@ export default function TopicSidebar({
     () => Object.fromEntries(categories.map((c) => [c.id, c.id === activeCat]))
   )
   const [mobileOpen, setMobileOpen] = useState(false)
+  const t = useT()
+  const catLabel = (id: string, fallback: string) => t.portal.categories[id]?.label ?? fallback
 
   const toggle = (id: string) => setOpen((s) => ({ ...s, [id]: !s[id] }))
 
@@ -46,7 +49,7 @@ export default function TopicSidebar({
               <span className="flex items-center gap-2">
                 <span className={`h-2 w-2 rounded-full bg-gradient-to-r ${cat.accent}`} />
                 <span className="text-[12px] font-semibold uppercase tracking-wider text-fg2">
-                  {cat.label}
+                  {catLabel(cat.id, cat.label)}
                 </span>
                 <span className="text-[11px] text-fg4">{list.length}</span>
               </span>
@@ -56,21 +59,21 @@ export default function TopicSidebar({
             </button>
             {isOpen && (
               <ul className="space-y-0.5 px-2 pb-2">
-                {list.map((t) => (
-                  <li key={t.id}>
+                {list.map((item) => (
+                  <li key={item.id}>
                     <Link
-                      href={`${BASE}/${t.category}/${t.slug}`}
+                      href={`${BASE}/${item.category}/${item.slug}`}
                       onClick={() => setMobileOpen(false)}
                       className={`flex items-center justify-between gap-2 rounded-lg px-3 py-1.5 text-[12.5px] leading-snug transition-colors ${
-                        t.id === activeId
+                        item.id === activeId
                           ? 'bg-accent/10 font-semibold text-accent-soft'
                           : 'text-fg3 hover:bg-surface/5 hover:text-fg2'
                       }`}
                     >
-                      <span>{t.title}</span>
-                      {t.comingSoon && (
+                      <span>{item.title}</span>
+                      {item.comingSoon && (
                         <span className="shrink-0 rounded-full bg-fuchsia-400/15 px-1.5 py-0.5 text-[8.5px] font-semibold uppercase tracking-wider text-fuchsia-300">
-                          Yakında
+                          {t.portal.comingSoon}
                         </span>
                       )}
                     </Link>
@@ -90,7 +93,7 @@ export default function TopicSidebar({
         onClick={() => setMobileOpen((v) => !v)}
         className="glass mb-4 flex w-full items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold text-fg2 lg:hidden"
       >
-        <span>Tüm Konular ({items.length})</span>
+        <span>{t.portal.allTopics(items.length)}</span>
         <span className={`transition-transform ${mobileOpen ? 'rotate-180' : ''}`}>▾</span>
       </button>
       <div className={`${mobileOpen ? 'block' : 'hidden'} lg:block`}>

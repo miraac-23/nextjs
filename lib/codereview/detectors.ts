@@ -254,10 +254,13 @@ export interface InlineChecks {
 // Desen gövdesi: kaçışlı karakterler dahil, ama satır sonu yok ve makul uzunlukta.
 // Uzunluk sınırı, metin bozulduğunda (bkz. parseInlineChecks) iki ayrı desenin
 // birleşip "sessizce geçerli ama saçma" tek bir regex'e dönüşmesini engeller.
-const INLINE_RE = /\b(Yasak|Zorunlu)\s*:\s*\/((?:[^/\\\n]|\\.){1,200})\/([gimsuy]*)/gi
+// İngilizce arayüzde kural yazanlar için "Forbidden:"/"Required:" de tanınır;
+// anlamları Türkçe karşılıklarıyla birebir aynıdır.
+const INLINE_RE = /\b(Yasak|Zorunlu|Forbidden|Required)\s*:\s*\/((?:[^/\\\n]|\\.){1,200})\/([gimsuy]*)/gi
 
 /**
- * Kural metnindeki "Yasak: /…/" ve "Zorunlu: /…/" desenlerini ayrıştırır.
+ * Kural metnindeki "Yasak: /…/" ve "Zorunlu: /…/" (eş anlamlıları: "Forbidden:" / "Required:")
+ * desenlerini ayrıştırır.
  * DİKKAT: yalnızca kuralın `body` alanı verilmelidir. `name` alanı body'nin 90 karaktere
  * kısaltılmış bir kopyasıdır; ikisi birleştirilirse desen yarıda kesilmiş halde tekrar eder
  * ve ayrıştırma iki kopya arasına taşabilir.
@@ -273,7 +276,8 @@ export function parseInlineChecks(text: string): InlineChecks {
     let re: RegExp
     try { re = new RegExp(m[2], flags) } catch { continue } // bozuk desen → sessizce atla
     const kind = m[1].toLocaleLowerCase('tr')
-    ;(kind === 'yasak' ? out.forbidden : out.required).push({ re, src: m[2] })
+    const isForbidden = kind === 'yasak' || kind === 'forbidden'
+    ;(isForbidden ? out.forbidden : out.required).push({ re, src: m[2] })
   }
   return out
 }

@@ -4,6 +4,7 @@
 // GitLab/gateway CORS'a takılabilir — hatalar kullanıcıya aynen gösterilir.
 
 import type { LlmConfig } from './types'
+import { err } from './i18n'
 
 const KEY = 'pcr-llm-config'
 const SEEDED = 'pcr-llm-seeded'
@@ -57,9 +58,9 @@ export function clearConfig(): void {
 
 /** Küçük bir istekle bağlantıyı doğrular. Hata varsa mesajı döner (yoksa null). */
 export async function testConfig(cfg: LlmConfig): Promise<string | null> {
-  const res = await complete('Bağlantı testi.', "Sadece 'OK' yaz.", cfg)
+  const res = await complete(err().connTestPrompt, "Sadece 'OK' yaz.", cfg)
   if (res.error) return res.error
-  return res.text.trim() ? null : 'Model boş yanıt döndü (model adı/kota hatalı olabilir).'
+  return res.text.trim() ? null : err().emptyModelReply
 }
 
 /** system + user promptunu modele gönderir. { text, error } döner. */
@@ -74,7 +75,7 @@ export async function complete(
     return await callOpenAiCompatible(system, user, cfg)
   } catch (e) {
     // Ağ/CORS hatası fetch'i fırlatır (TypeError). Kullanıcıya net mesaj.
-    return { text: '', error: (e instanceof Error ? e.message : String(e)) + ' (CORS/erişim engeli olabilir)' }
+    return { text: '', error: (e instanceof Error ? e.message : String(e)) + err().corsSuffix }
   }
 }
 

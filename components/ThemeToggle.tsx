@@ -1,12 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useT } from '@/lib/i18n/LanguageProvider'
 import { SunIcon, MoonIcon } from './Icons'
 
 type Theme = 'dark' | 'light'
 
 export default function ThemeToggle({ className = '' }: { className?: string }) {
   const [theme, setTheme] = useState<Theme | null>(null)
+  const t = useT()
 
   useEffect(() => {
     const current = (document.documentElement.getAttribute('data-theme') as Theme) || 'dark'
@@ -27,8 +29,8 @@ export default function ThemeToggle({ className = '' }: { className?: string }) 
   return (
     <button
       onClick={toggle}
-      aria-label={isLight ? 'Koyu temaya geç' : 'Açık temaya geç'}
-      title={isLight ? 'Koyu tema' : 'Açık tema'}
+      aria-label={isLight ? t.theme.toDark : t.theme.toLight}
+      title={isLight ? t.theme.dark : t.theme.light}
       className={`grid h-10 w-10 place-items-center rounded-xl border border-line/10 bg-surface/5 text-fg2 transition-colors hover:border-accent/50 hover:text-accent-soft ${className}`}
     >
       {/* Render after mount to avoid hydration mismatch */}

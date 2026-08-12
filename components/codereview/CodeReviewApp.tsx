@@ -20,6 +20,9 @@ import type { GitProvider, GitTarget } from '@/lib/codereview/git'
 import { GIT_PROVIDERS, parsePrUrl, fetchChanges, postComment, tokenPageUrl, passwordLogin } from '@/lib/codereview/git'
 import type { CommitTarget, FileEdit } from '@/lib/codereview/commit'
 import { resolveCommitTarget, prepareTodoEdits, pushCommit, defaultCommitMessage } from '@/lib/codereview/commit'
+import { useLanguage } from '@/lib/i18n/LanguageProvider'
+import { setCrLang, gitNote } from '@/lib/codereview/i18n'
+import { ui } from '@/lib/codereview/ui-text'
 import AiProviderLogo from './AiProviderLogo'
 import Swal from 'sweetalert2'
 import 'sweetalert2/dist/sweetalert2.min.css'
@@ -65,6 +68,12 @@ type Tab = 'review' | 'rules'
 export default function CodeReviewApp() {
   const [mounted, setMounted] = useState(false)
   const [tab, setTab] = useState<Tab>('review')
+  const { lang } = useLanguage()
+
+  // Motor modülleri (review.ts, git.ts) React context'ine erişemediği için aktif dil
+  // modül düzeyinde tutulur. Ebeveyn çocuklardan önce render edildiğinden burada set etmek güvenlidir.
+  setCrLang(lang)
+  const t = ui()
 
   // SSR sırasında localStorage yok; tüm iç bileşenler (localStorage lazy-init'li) yalnız mount sonrası render edilir.
   useEffect(() => { setMounted(true) }, [])
@@ -76,16 +85,16 @@ export default function CodeReviewApp() {
       <div className="app">
         <header>
           <h1>‹/› Code Review</h1>
-          <p className="sub">AI + kural tabanlı kod inceleme — tarayıcıda</p>
+          <p className="sub">{t.appSub}</p>
         </header>
         <nav>
           <button className={tab === 'review' ? 'active' : ''} onClick={() => setTab('review')}>
             <span className="nav-ic">🔍</span>
-            <span className="nav-txt"><b>İnceleme</b><small>MR&apos;ı çek &amp; incele</small></span>
+            <span className="nav-txt"><b>{t.tabReview}</b><small>{t.tabReviewSub}</small></span>
           </button>
           <button className={tab === 'rules' ? 'active' : ''} onClick={() => setTab('rules')}>
             <span className="nav-ic">📜</span>
-            <span className="nav-txt"><b>Kurallar</b><small>md dosyaları &amp; kurallar</small></span>
+            <span className="nav-txt"><b>{t.tabRules}</b><small>{t.tabRulesSub}</small></span>
           </button>
         </nav>
         <main>
@@ -122,8 +131,9 @@ function SuccessCheck() {
 /** Döngüde akan anahtar kelimeler: `out` üst kolda (giden), `in` alt kolda (dönen). */
 export interface FlowWords { out: string[]; in: string[] }
 
-export const FLOW_WORDS_GIT: FlowWords = { out: ['diff', 'merge request'], in: ['yorum', 'commit'] }
-export const FLOW_WORDS_AI: FlowWords = { out: ['kod', 'prompt'], in: ['bulgu', 'analiz'] }
+/** Akış kelimeleri arayüz diline göre çözülür. */
+export const flowWordsGit = (): FlowWords => ({ out: [...ui().flowGitOut], in: [...ui().flowGitIn] })
+export const flowWordsAi = (): FlowWords => ({ out: [...ui().flowAiOut], in: [...ui().flowAiIn] })
 
 /** Hattın ortasındaki rozet: bağlıyken onay, bağlanırken şimşek, kopukken kırık halka. */
 function FlowBadge({ state }: { state: ConnState }) {
@@ -149,16 +159,17 @@ type ConnState = 'on' | 'off' | 'busy' | 'err'
  * @param words Hat üzerinde akacak anahtar kelimeler
  * @param onDisconnect Verilirse sağda bir kesme düğmesi gösterilir
  */
-function ConnFlow({ state, logo, title, detail, words, fresh, onDisconnect, disconnectLabel = 'Çıkış' }: {
+function ConnFlow({ state, logo, title, detail, words, fresh, onDisconnect, disconnectLabel }: {
   state: ConnState; logo: React.ReactNode; title: string; detail?: string
   words: FlowWords; fresh?: boolean; onDisconnect?: () => void; disconnectLabel?: string
 }) {
+  const t = ui()
   const flowing = state === 'on' || state === 'busy'
   return (
     <div className={`cflow ${state} ${fresh ? 'fresh' : ''}`}>
       <div className="cflow-node">
         <span className="cflow-ic app" aria-hidden="true">&lt;/&gt;</span>
-        <span className="cflow-cap"><b>Code Review</b><small>tarayıcı</small></span>
+        <span className="cflow-cap"><b>Code Review</b><small>{t.browser}</small></span>
       </div>
 
       <div className="cflow-rail" aria-hidden="true">
@@ -184,7 +195,7 @@ function ConnFlow({ state, logo, title, detail, words, fresh, onDisconnect, disc
         <span className="cflow-cap"><b>{title}</b>{detail && <small>{detail}</small>}</span>
       </div>
 
-      {onDisconnect && <button className="ghost small cflow-x" onClick={onDisconnect}>{disconnectLabel}</button>}
+      {onDisconnect && <button className="ghost small cflow-x" onClick={onDisconnect}>{disconnectLabel ?? t.logout}</button>}
     </div>
   )
 }
@@ -205,6 +216,10 @@ const AI_PROVIDERS: {
   { id: 'mistral', label: 'Mistral', provider: 'openai', base: 'https://api.mistral.ai/v1', needsKey: true, defModel: 'mistral-small-latest', keyUrl: 'https://console.mistral.ai', note: 'Ücretsiz katman.' },
   { id: 'custom', label: 'Özel', provider: 'openai', base: '', custom: true, needsKey: false, defModel: '', note: 'OpenAI-uyumlu gateway / vLLM.' },
 ]
+
+/** Sağlayıcı etiketi/notu arayüz diline göre çözülür (marka adları çevrilmez). */
+const provLabel = (p: { id: ProviderId; label: string }) => ui().aiProviderLabels[p.id] ?? p.label
+const provNote = (p: { id: ProviderId; note: string }) => ui().aiProviderNotes[p.id] ?? p.note
 
 /** Kayıtlı bağlantıdan sağlayıcı sekmesini çözer (bağlı durum satırında logoyu göstermek için). */
 function providerIdOf(cfg: LlmConfig): ProviderId {
@@ -228,6 +243,7 @@ function AiPanel({ cfg, onChange }: { cfg: LlmConfig | null; onChange: (c: LlmCo
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [fresh, setFresh] = useState(false)   // yeni bağlanıldı → kısa vurgu animasyonu
+  const t = ui()
 
   const prov = AI_PROVIDERS.find((p) => p.id === sel)!
   const pick = (id: ProviderId) => {
@@ -256,10 +272,10 @@ function AiPanel({ cfg, onChange }: { cfg: LlmConfig | null; onChange: (c: LlmCo
   return (
     <div className="llmbox">
       <div className="llmbox-head">
-        <span className="llmbox-title">🤖 AI Bağlantısı</span>
+        <span className="llmbox-title">{t.aiTitle}</span>
         <span className={`cstate ${cfg ? 'ok' : busy ? 'busy' : 'warn'}`}>
           <ConnDot state={cfg ? 'on' : busy ? 'busy' : 'off'} />
-          {cfg ? `${cfg.model} bağlı` : busy ? 'doğrulanıyor…' : 'bağlı değil (AI modları çalışmaz)'}
+          {cfg ? t.aiConnected(cfg.model) : busy ? t.aiVerifying : t.aiNotConnected}
         </span>
       </div>
       <ConnFlow
@@ -267,15 +283,17 @@ function AiPanel({ cfg, onChange }: { cfg: LlmConfig | null; onChange: (c: LlmCo
         fresh={fresh}
         logo={<AiProviderLogo id={cfg ? providerIdOf(cfg) : sel} size={22} />}
         title={cfg
-          ? `${AI_PROVIDERS.find((p) => p.id === providerIdOf(cfg))?.label ?? 'AI'} bağlı`
-          : busy ? `${prov.label}’a bağlanılıyor…` : prov.label}
-        detail={cfg ? cfg.model : 'bağlı değil — AI modları çalışmaz'}
-        words={FLOW_WORDS_AI}
+          ? t.aiFlowConnected(
+              (() => { const p = AI_PROVIDERS.find((x) => x.id === providerIdOf(cfg)); return p ? provLabel(p) : 'AI' })(),
+            )
+          : busy ? t.aiFlowConnecting(provLabel(prov)) : provLabel(prov)}
+        detail={cfg ? cfg.model : t.aiFlowDetailOff}
+        words={flowWordsAi()}
         onDisconnect={cfg ? disconnect : undefined}
-        disconnectLabel="Bağlantıyı Kes"
+        disconnectLabel={t.aiDisconnect}
       />
       <div className="llm-actions">
-        {cfg && <button className="ghost small" onClick={() => setOpen((v) => !v)}>{open ? 'Kapat' : 'Farklı AI Bağla'}</button>}
+        {cfg && <button className="ghost small" onClick={() => setOpen((v) => !v)}>{open ? t.close : t.aiConnectOther}</button>}
       </div>
       {showForm && (
         <div className="llm-form">
@@ -283,25 +301,24 @@ function AiPanel({ cfg, onChange }: { cfg: LlmConfig | null; onChange: (c: LlmCo
             {AI_PROVIDERS.map((p) => (
               <button key={p.id} className={`prov ${sel === p.id ? 'sel' : ''}`} onClick={() => pick(p.id)}>
                 <span className="prov-logo"><AiProviderLogo id={p.id} size={15} /></span>
-                {p.label}
+                {provLabel(p)}
               </button>
             ))}
           </div>
-          <div className="prov-note">{prov.note}{prov.keyUrl && <> · <a href={prov.keyUrl} target="_blank" rel="noreferrer">ücretsiz anahtar al</a></>}</div>
+          <div className="prov-note">{provNote(prov)}{prov.keyUrl && <> · <a href={prov.keyUrl} target="_blank" rel="noreferrer">{t.aiFreeKey}</a></>}</div>
           <div className="row">
-            {prov.needsKey && <label>API Key
-              <input value={apiKey} onChange={(e) => setApiKey(e.target.value)} type="password" placeholder="anahtarı yapıştır" /></label>}
-            {prov.custom && <label>Base URL
+            {prov.needsKey && <label>{t.aiApiKey}
+              <input value={apiKey} onChange={(e) => setApiKey(e.target.value)} type="password" placeholder={t.aiKeyPh} /></label>}
+            {prov.custom && <label>{t.aiBaseUrl}
               <input value={base} onChange={(e) => setBase(e.target.value)} placeholder="http://host:port/v1" /></label>}
-            <label>Model
+            <label>{t.aiModel}
               <input value={model} onChange={(e) => setModel(e.target.value)} placeholder={prov.defModel || 'model'} /></label>
           </div>
           <button className="conn-go" onClick={connect} disabled={busy || (prov.needsKey && !apiKey.trim()) || (prov.custom && !base.trim())}>
-            {busy ? <><Spinner /> Bağlanıyor &amp; doğrulanıyor…</> : <><AiProviderLogo id={sel} size={15} /> {prov.label} ile bağlan</>}
+            {busy ? <><Spinner /> {t.aiConnecting}</> : <><AiProviderLogo id={sel} size={15} /> {t.aiConnectWith(provLabel(prov))}</>}
           </button>
           {error && <div className="error small shake" key={error}>⚠️ {error}</div>}
-          <small>Bağlantı tarayıcıdan doğrulanır (başarısızsa neden gösterilir). Anahtar bu tarayıcıda hatırlanır.
-            Tarayıcı CORS'u nedeniyle bazı sağlayıcılar/kurumsal servisler engellenebilir; en garantisi yerel Ollama.</small>
+          <small>{t.aiFootnote}</small>
         </div>
       )}
     </div>
@@ -310,29 +327,19 @@ function AiPanel({ cfg, onChange }: { cfg: LlmConfig | null; onChange: (c: LlmCo
 
 /* ============================ İnceleme sayfası ============================ */
 
+/** Mod tanımı — metinler arayüz sözlüğünden (ui().modes) gelir. */
 const MODES: {
-  value: ReviewMode; label: string; short: string; desc: string
+  value: ReviewMode
   /** Modun kullandığı kaynaklar — kartta rozet olarak gösterilir. */
   uses: ('rules' | 'ai')[]
-  /** Öne çıkarma etiketi (yalnızca bir modda). */
-  tag?: string
 }[] = [
-  {
-    value: 'AI_WITH_RULES', label: 'Yapay zeka + mevcut kurallar', short: 'Hibrit', tag: 'en kapsamlı',
-    desc: 'Kural motoru ile AI birlikte çalışır: deterministik ihlaller + optimizasyon, performans ve mantık bulguları.',
-    uses: ['rules', 'ai'],
-  },
-  {
-    value: 'RULES_ONLY', label: 'Yalnızca mevcut kurallar', short: 'Deterministik',
-    desc: 'Sadece md kuralları; tarayıcıda satır satır denetlenir. Yapay zeka kullanılmaz, sonuç her seferinde aynıdır.',
-    uses: ['rules'],
-  },
-  {
-    value: 'AI_ONLY', label: 'Yalnızca yapay zeka', short: 'Serbest',
-    desc: 'Sadece AI incelemesi: kod optimizasyonu, performans ve mantık hataları. Kurallara bakmaz.',
-    uses: ['ai'],
-  },
+  { value: 'AI_WITH_RULES', uses: ['rules', 'ai'] },
+  { value: 'RULES_ONLY', uses: ['rules'] },
+  { value: 'AI_ONLY', uses: ['ai'] },
 ]
+
+/** Bir modun aktif dildeki etiketi/açıklaması. */
+const modeText = (value: ReviewMode) => ui().modes[value]
 
 /** İnceleme modu kartındaki simge — modun kural/AI karışımını görselleştirir. */
 function ModeIcon({ mode }: { mode: ReviewMode }) {
@@ -390,6 +397,7 @@ function GitConnectPanel({ provider, host, token, username, onProvider, onHost, 
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [fresh, setFresh] = useState(false)   // yeni bağlanıldı → kısa vurgu animasyonu
+  const t = ui()
 
   const meta = GIT_PROVIDERS.find((p) => p.id === provider)!
   const connected = !!token.trim() && (!meta.needsUser || !!username.trim())
@@ -409,16 +417,17 @@ function GitConnectPanel({ provider, host, token, username, onProvider, onHost, 
   const useToken = () => { if (manualToken.trim()) { onToken(manualToken.trim()); setManualToken(''); markFresh() } }
   const logout = () => { onToken(''); setError(null); setFresh(false) }
   const tokenLink = tokenPageUrl(provider, host)
-  const passLabel = provider === 'gitlab' ? 'Parola' : provider === 'github' ? 'Parola / Token' : 'App Password'
-  const writeReq = provider === 'gitlab' ? 'api scope' : provider === 'github' ? 'repo izni' : 'Pull requests: write'
+  const passLabel = provider === 'gitlab' ? t.gitPassGitlab : provider === 'github' ? t.gitPassGithub : t.gitPassBitbucket
+  const passPh = provider === 'gitlab' ? t.gitPassPhGitlab : provider === 'github' ? t.gitPassPhGithub : t.gitPassPhBitbucket
+  const writeReq = provider === 'gitlab' ? t.gitWriteScopeGitlab : provider === 'github' ? t.gitWriteScopeGithub : t.gitWriteScopeBitbucket
 
   return (
     <div className="connbox">
       <div className="connbox-head">
-        <span className="connbox-title">🔗 Git Bağlantısı</span>
+        <span className="connbox-title">{t.gitTitle}</span>
         <span className={`cstate ${connected ? 'ok' : busy ? 'busy' : 'warn'}`}>
           <ConnDot state={connected ? 'on' : busy ? 'busy' : 'off'} />
-          {connected ? `${meta.label} bağlı` : busy ? 'bağlanılıyor…' : 'bağlı değil'}
+          {connected ? t.gitConnected(meta.label) : busy ? t.gitConnecting : t.gitNotConnected}
         </span>
       </div>
 
@@ -436,45 +445,45 @@ function GitConnectPanel({ provider, host, token, username, onProvider, onHost, 
         state={connected ? 'on' : busy ? 'busy' : error ? 'err' : 'off'}
         fresh={fresh}
         logo={<ProviderLogo id={provider} size={22} />}
-        title={connected ? `${meta.label} bağlı` : busy ? `${meta.label}’a bağlanılıyor…` : meta.label}
+        title={connected ? t.gitConnected(meta.label) : busy ? t.gitFlowConnecting(meta.label) : meta.label}
         detail={connected
           ? ([host.replace(/^https?:\/\//, ''), username].filter(Boolean).join(' · ') || undefined)
-          : (host.replace(/^https?:\/\//, '') || 'sunucu adresi girilmedi')}
-        words={FLOW_WORDS_GIT}
+          : (host.replace(/^https?:\/\//, '') || t.gitNoHost)}
+        words={flowWordsGit()}
         onDisconnect={connected ? logout : undefined}
       />
 
       {connected ? null : (
         <>
-          <p className="conn-note">{meta.note}</p>
-          <label>{meta.label} sunucu adresi
+          <p className="conn-note">{gitNote(meta.id, meta.note)}</p>
+          <label>{t.gitHostLabel(meta.label)}
             <input value={host} onChange={(e) => onHost(e.target.value)} placeholder={new URL(meta.urlExample).origin} /></label>
 
           {/* Kullanıcı adı + parola ile giriş (tüm sağlayıcılar) */}
           <div className="row">
-            <label>Kullanıcı adı
-              <input value={user} onChange={(e) => setUser(e.target.value)} autoComplete="username" placeholder="kullanıcı adı" /></label>
+            <label>{t.gitUsername}
+              <input value={user} onChange={(e) => setUser(e.target.value)} autoComplete="username" placeholder={t.gitUsernamePh} /></label>
             <label>{passLabel}
               <input type="password" value={pass} onChange={(e) => setPass(e.target.value)} autoComplete="current-password"
-                     placeholder={provider === 'gitlab' ? 'parola' : provider === 'github' ? 'parola veya token' : 'app password'}
+                     placeholder={passPh}
                      onKeyDown={(e) => { if (e.key === 'Enter') login() }} /></label>
           </div>
           <button className="conn-go" onClick={login} disabled={busy || !host.trim() || !user.trim() || !pass}>
-            {busy ? <><Spinner /> Giriş yapılıyor…</> : <>🔓 Giriş yap</>}
+            {busy ? <><Spinner /> {t.gitLoggingIn}</> : <>{t.gitLogin}</>}
           </button>
-          {provider !== 'gitlab' && <small style={{ marginTop: 6 }}>{meta.label} düz parolayı desteklemez; “{passLabel}” alanına {meta.tokenLabel} girin. <a href={tokenLink} target="_blank" rel="noreferrer">oluştur →</a></small>}
+          {provider !== 'gitlab' && <small style={{ marginTop: 6 }}>{t.gitNoPlainPassword(meta.label, passLabel, meta.tokenLabel)} <a href={tokenLink} target="_blank" rel="noreferrer">{t.gitCreate}</a></small>}
 
-          <div className="or">— veya doğrudan token ile —</div>
+          <div className="or">{t.gitOrToken}</div>
           <div className="row">
-            {meta.needsUser && <label>Kullanıcı adı
-              <input value={username} onChange={(e) => onUsername(e.target.value)} autoComplete="username" placeholder="kullanıcı adın" /></label>}
-            <label>{meta.tokenLabel} <a href={tokenLink} target="_blank" rel="noreferrer">oluştur →</a>
-              <input type="password" value={manualToken} onChange={(e) => setManualToken(e.target.value)} placeholder="token / app password" /></label>
-            <button onClick={useToken} disabled={!manualToken.trim() || (meta.needsUser && !username.trim())} style={{ alignSelf: 'end', marginBottom: 10 }}>Kullan</button>
+            {meta.needsUser && <label>{t.gitUsername}
+              <input value={username} onChange={(e) => onUsername(e.target.value)} autoComplete="username" placeholder={t.gitUsernameOwnPh} /></label>}
+            <label>{meta.tokenLabel} <a href={tokenLink} target="_blank" rel="noreferrer">{t.gitCreate}</a>
+              <input type="password" value={manualToken} onChange={(e) => setManualToken(e.target.value)} placeholder={t.gitTokenPh} /></label>
+            <button onClick={useToken} disabled={!manualToken.trim() || (meta.needsUser && !username.trim())} style={{ alignSelf: 'end', marginBottom: 10 }}>{t.gitUse}</button>
           </div>
 
           {error && <div className="error small shake" key={error}>⚠️ {error}</div>}
-          <small>Yorum göndermek için erişimin <b>yazma</b> yetkili olmalı ({writeReq}). Yetki yoksa gönderim sırasında token istenir. Kurumsal sunucu CORS’a takarsa token yolunu kullan.</small>
+          <small>{t.gitWriteNote(writeReq)}</small>
         </>
       )}
     </div>
@@ -492,6 +501,7 @@ function ReviewPage() {
   const [filter, setFilter] = useState<FindingFilter>(null)   // özet grafiğinden seçilen bulgu filtresi
   const [progress, setProgress] = useState<ReviewProgress | null>(null)  // yükleme ekranı ilerlemesi
   const [startedAt, setStartedAt] = useState(0)
+  const t = ui()
 
   // Git bağlantısı (dinamik) — sağlayıcı + host + token (+ Bitbucket kullanıcı adı) sağlayıcı bazında hatırlanır.
   const initProvider = ((localStorage.getItem('pcr-git-provider') as GitProvider) || 'gitlab')
@@ -527,12 +537,12 @@ function ReviewPage() {
   const reviewFromGit = async () => {
     if (!prUrl.trim()) return
     setLoading(true); setError(null); setResult(null)
-    setStartedAt(Date.now()); setProgress({ label: `${gitMeta.prLabel} diff'i çekiliyor…`, done: 0, total: 0 })
+    setStartedAt(Date.now()); setProgress({ label: t.fetchingDiff(gitMeta.prLabel), done: 0, total: 0 })
     try {
       const target = parsePrUrl(provider, prUrl)
       localStorage.setItem('pcr-pr-url', prUrl.trim())
       const files = await fetchChanges(target, { token, username })
-      if (files.length === 0) { setError(`${gitMeta.prLabel}’da değişen dosya bulunamadı.`); return }
+      if (files.length === 0) { setError(t.noChangedFiles(gitMeta.prLabel)); return }
       await reviewFiles(files)
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
@@ -545,7 +555,7 @@ function ReviewPage() {
   return (
     <section className="card">
       {loading && <ReviewLoader mode={mode} progress={progress} startedAt={startedAt} />}
-      <h2>Kod İncelemesi</h2>
+      <h2>{t.reviewTitle}</h2>
 
       <GitConnectPanel provider={provider} host={host} token={token} username={username}
         onProvider={setProvider} onHost={setHost} onToken={setToken} onUsername={setUsername} />
@@ -553,11 +563,12 @@ function ReviewPage() {
       <AiPanel cfg={cfg} onChange={setCfg} />
 
       <div className="modes">
-        <div className="modes-title">İnceleme modu</div>
-        <div className="modecards" role="radiogroup" aria-label="İnceleme modu">
+        <div className="modes-title">{t.modesTitle}</div>
+        <div className="modecards" role="radiogroup" aria-label={t.modesTitle}>
           {MODES.map((m) => {
             const on = mode === m.value
             const needsAi = m.uses.includes('ai')
+            const mt = modeText(m.value)
             return (
               <button
                 key={m.value} type="button" role="radio" aria-checked={on}
@@ -565,15 +576,15 @@ function ReviewPage() {
               >
                 <span className="modecard-top">
                   <span className="modecard-ic"><ModeIcon mode={m.value} /></span>
-                  <span className="modecard-short">{m.short}</span>
-                  {m.tag && <span className="modecard-tag">{m.tag}</span>}
+                  <span className="modecard-short">{mt.short}</span>
+                  {mt.tag && <span className="modecard-tag">{mt.tag}</span>}
                   <span className="modecard-check" aria-hidden="true">✓</span>
                 </span>
-                <b className="modecard-title">{m.label}</b>
-                <small className="modecard-desc">{m.desc}</small>
+                <b className="modecard-title">{mt.label}</b>
+                <small className="modecard-desc">{mt.desc}</small>
                 <span className="modecard-uses">
-                  {m.uses.includes('rules') && <i className="mu rules">⚙️ kurallar</i>}
-                  {needsAi && <i className={`mu ai ${cfg ? '' : 'off'}`}>🤖 yapay zeka{cfg ? '' : ' · bağlı değil'}</i>}
+                  {m.uses.includes('rules') && <i className="mu rules">{t.useRules}</i>}
+                  {needsAi && <i className={`mu ai ${cfg ? '' : 'off'}`}>{t.useAi}{cfg ? '' : t.useAiOff}</i>}
                 </span>
               </button>
             )
@@ -583,11 +594,11 @@ function ReviewPage() {
 
       {/* MR/PR linkinden inceleme */}
       <div className="gitbox">
-        <div className="gitbox-title"><span className={`gt-logo pl-${provider}`}><ProviderLogo id={provider} size={16} /></span> {gitMeta.label} {gitMeta.prLabel} linkinden incele</div>
-        <label>{gitMeta.prLabel} URL
+        <div className="gitbox-title"><span className={`gt-logo pl-${provider}`}><ProviderLogo id={provider} size={16} /></span> {t.gitboxTitle(gitMeta.label, gitMeta.prLabel)}</div>
+        <label>{t.gitboxUrl(gitMeta.prLabel)}
           <input value={prUrl} onChange={(e) => setPrUrl(e.target.value)} placeholder={gitMeta.urlExample} /></label>
-        <button onClick={reviewFromGit} disabled={loading || !prUrl.trim()}>{loading ? 'İnceleniyor…' : `${gitMeta.prLabel}’ı Çek ve İncele`}</button>
-        {!token && <small>Private depo için önce yukarıdan {gitMeta.label} bağlantısını yap (token oturumda kullanılır).</small>}
+        <button onClick={reviewFromGit} disabled={loading || !prUrl.trim()}>{loading ? t.reviewing : t.fetchAndReview(gitMeta.prLabel)}</button>
+        {!token && <small>{t.privateNote(gitMeta.label)}</small>}
       </div>
 
       {error && <div className="error">⚠️ {error}</div>}
@@ -597,8 +608,8 @@ function ReviewPage() {
           {result.notice && <div className="notice">ℹ️ {result.notice}</div>}
           {result.findings.length > 0 && !showSend && (
             <div className="send-cta">
-              <button onClick={() => setShowSend(true)}>📤 Bu değişiklikleri Git'e gönder</button>
-              <small>Seçtiğin bulgular MR'a <b>yorum</b> olarak eklenir ya da kaynak dala <b>commit</b> atılıp ilgili satırın üstüne TODO notu yazılır.</small>
+              <button onClick={() => setShowSend(true)}>{t.sendCta}</button>
+              <small>{t.sendCtaNote}</small>
             </div>
           )}
           {showSend && result.findings.length > 0 && (
@@ -613,7 +624,7 @@ function ReviewPage() {
             if (filter && fileFindings.length === 0) return null
             return (
               <div key={file.path} className="filecard">
-                <div className="filehead"><code>{file.path}</code><span className="count">{fileFindings.length} bulgu</span></div>
+                <div className="filehead"><code>{file.path}</code><span className="count">{t.findingCount(fileFindings.length)}</span></div>
                 <Diff raw={file.rawDiff} />
                 {fileFindings.length > 0 && (
                   <div className="findings-in-file">
@@ -621,12 +632,12 @@ function ReviewPage() {
                       <div key={f.id} className={`finding-block sevb-${f.severity} ${f.source === 'LLM' ? 'ai' : ''}`}>
                         <div className="finding-head">
                           <span className={`sev ${f.severity}`}>{f.severity}</span>
-                          <span className={`badge ${f.source}`}>{f.source === 'LLM' ? `🤖 ${cfg?.provider ?? 'AI'}` : 'KURAL'}</span>
-                          <code>satır {f.line ?? '?'}</code>
+                          <span className={`badge ${f.source}`}>{f.source === 'LLM' ? `🤖 ${cfg?.provider ?? 'AI'}` : t.badgeRule}</span>
+                          <code>{t.line} {f.line ?? '?'}</code>
                           <strong>{f.ruleName}</strong>
                         </div>
                         <div className="finding-msg">{f.message}</div>
-                        {f.suggestion && <div className="finding-fix">{f.source === 'LLM' ? '🤖 AI önerisi: ' : '💡 Öneri: '}{f.suggestion}</div>}
+                        {f.suggestion && <div className="finding-fix">{f.source === 'LLM' ? t.aiSuggestionPrefix : t.suggestionPrefix}{f.suggestion}</div>}
                       </div>
                     ))}
                   </div>
@@ -662,6 +673,7 @@ function SendToGitPanel({ findings, provider, prUrl, host, token, username, onTo
   const [combine, setCombine] = useState(false)
   const [sendMode, setSendMode] = useState<SendMode>('comment')
   const [sending, setSending] = useState(false)
+  const t = ui()
   const meta = GIT_PROVIDERS.find((p) => p.id === provider)!
 
   const allSelected = sel.size === findings.length && findings.length > 0
@@ -672,15 +684,15 @@ function SendToGitPanel({ findings, provider, prUrl, host, token, username, onTo
     const chosen = findings.filter((f) => sel.has(f.id))
     if (chosen.length === 0) return
     let target: GitTarget
-    try { target = parsePrUrl(provider, prUrl) } catch (e) { pcrSwal.fire({ icon: 'error', title: 'Link geçersiz', text: e instanceof Error ? e.message : String(e) }); return }
+    try { target = parsePrUrl(provider, prUrl) } catch (e) { pcrSwal.fire({ icon: 'error', title: t.linkInvalid, text: e instanceof Error ? e.message : String(e) }); return }
 
     if (sendMode === 'commit') { await sendAsCommit(chosen, target, token); return }
 
     const c = await pcrSwal.fire({
-      title: `${meta.label}’a gönderilsin mi?`,
-      html: `<b>${chosen.length}</b> bulgu <b>${meta.prLabel} #${target.id}</b>’a ${combine ? 'tek bir özet yorum' : 'ayrı yorumlar'} olarak gönderilecek.`,
+      title: t.confirmSendTitle(meta.label),
+      html: t.confirmSendHtml(chosen.length, meta.prLabel, String(target.id), combine),
       icon: 'question', showCancelButton: true,
-      confirmButtonText: 'Evet, gönder', cancelButtonText: 'Hayır',
+      confirmButtonText: t.yesSend, cancelButtonText: t.no,
     })
     if (!c.isConfirmed) return
 
@@ -696,7 +708,7 @@ function SendToGitPanel({ findings, provider, prUrl, host, token, username, onTo
     const auth = { token: authToken, username }
     try {
       if (combine && sentIds.size === 0) {
-        const body = `## 🔍 Portal Code Review — ${chosen.length} bulgu\n\n` + chosen.map(formatComment).join('\n\n---\n\n')
+        const body = `${t.combinedHeader(chosen.length)}\n\n` + chosen.map(formatComment).join('\n\n---\n\n')
         try { await postComment(target, auth, body); chosen.forEach((f) => sentIds.add(f.id)) }
         catch (e) { const m = e instanceof Error ? e.message : String(e); if (isAuthError(m)) authFail = true; else fail = chosen.length; errs.push(m) }
       } else {
@@ -717,35 +729,34 @@ function SendToGitPanel({ findings, provider, prUrl, host, token, username, onTo
     // Yetki hatası → token ile doğrula ve devam et ekranı
     if (authFail) {
       const { value: newToken } = await pcrSwal.fire({
-        title: '🔑 Yetki gerekli — token ile doğrula',
-        html: `Yorum göndermek için <b>yazma</b> yetkili bir ${meta.tokenLabel} gir; girince <b>kaldığın yerden devam</b> edilir.` +
-          (ok > 0 ? `<br><small>${ok} yorum zaten gönderildi, tekrar gönderilmeyecek.</small>` : ''),
+        title: t.authTitle,
+        html: t.authCommentHtml(meta.tokenLabel) + (ok > 0 ? t.authAlreadySent(ok) : ''),
         input: 'password',
-        inputPlaceholder: 'token / app password',
+        inputPlaceholder: t.gitTokenPh,
         inputAttributes: { autocapitalize: 'off', autocorrect: 'off' },
         showCancelButton: true,
-        confirmButtonText: 'Doğrula ve devam et',
-        cancelButtonText: 'Vazgeç',
-        footer: `<a href="${tokenPageUrl(provider, host || target.webBase)}" target="_blank" rel="noreferrer">yazma yetkili ${meta.tokenLabel} oluştur →</a>`,
-        inputValidator: (v) => (!v || !v.trim() ? 'Token gerekli' : undefined),
+        confirmButtonText: t.authConfirm,
+        cancelButtonText: t.cancel,
+        footer: `<a href="${tokenPageUrl(provider, host || target.webBase)}" target="_blank" rel="noreferrer">${t.authFooter(meta.tokenLabel)}</a>`,
+        inputValidator: (v) => (!v || !v.trim() ? t.authTokenRequired : undefined),
       })
       if (newToken && newToken.trim()) {
-        const t = newToken.trim()
-        onToken(t) // yeni token'ı üst state'e ve localStorage'a yaz
-        await attemptSend(chosen, target, t, sentIds) // kaldığı yerden devam
+        const tok = newToken.trim()
+        onToken(tok) // yeni token'ı üst state'e ve localStorage'a yaz
+        await attemptSend(chosen, target, tok, sentIds) // kaldığı yerden devam
         return
       }
       // Vazgeçti
-      await pcrSwal.fire({ icon: 'info', title: 'Gönderim durduruldu', html: `✅ ${ok} yorum gönderildi, kalanı gönderilmedi.` })
+      await pcrSwal.fire({ icon: 'info', title: t.sendStopped, html: t.sendStoppedHtml(ok) })
       if (ok >= chosen.length) onClose()
       return
     }
 
     if (fail === 0) {
-      await pcrSwal.fire({ icon: 'success', title: 'Gönderildi', html: `✅ <b>${ok}</b> yorum MR'a eklendi.` })
+      await pcrSwal.fire({ icon: 'success', title: t.sentTitle, html: t.sentHtml(ok) })
       onClose()
     } else {
-      await pcrSwal.fire({ icon: 'warning', title: 'Kısmen gönderildi', html: `✅ ${ok} gönderildi · ❌ ${fail} başarısız.<br><small>${errs.join('<br>')}</small>` })
+      await pcrSwal.fire({ icon: 'warning', title: t.partialTitle, html: t.partialHtml(ok, fail, errs.join('<br>')) })
     }
   }
 
@@ -765,7 +776,7 @@ function SendToGitPanel({ findings, provider, prUrl, host, token, username, onTo
       setSending(false)
       const m = e instanceof Error ? e.message : String(e)
       if (isAuthError(m)) { await retryWithToken(chosen, target, m); return }
-      await pcrSwal.fire({ icon: 'error', title: 'Hazırlanamadı', html: esc(m) })
+      await pcrSwal.fire({ icon: 'error', title: t.prepareFailed, html: esc(m) })
       return
     } finally { setSending(false) }
 
@@ -773,27 +784,25 @@ function SendToGitPanel({ findings, provider, prUrl, host, token, username, onTo
     const skipped = edits.reduce((n, e) => n + e.skipped.length, 0)
     if (touched.length === 0) {
       await pcrSwal.fire({
-        icon: 'info', title: 'Eklenecek TODO yok',
-        html: skipped > 0
-          ? `Seçilen bulguların satır bilgisi yok ya da dosyada karşılığı bulunamadı (${skipped} bulgu).`
-          : 'Bu TODO notları dosyalarda zaten mevcut görünüyor.'
+        icon: 'info', title: t.noTodoTitle,
+        html: skipped > 0 ? t.noTodoSkipped(skipped) : t.noTodoExisting,
       })
       return
     }
 
-    const rows = touched.map((e) => `<li><code>${esc(e.path)}</code> — <b>${e.inserted}</b> TODO satırı</li>`).join('')
+    const rows = touched.map((e) => `<li><code>${esc(e.path)}</code> — ${t.commitRow(e.inserted)}</li>`).join('')
     const { isConfirmed, value: message } = await pcrSwal.fire({
-      title: 'Commit atılsın mı?',
+      title: t.commitConfirmTitle,
       html:
-        `<div style="text-align:left">Kaynak dal: <b>${esc(ct.branch)}</b><br>` +
-        `<b>${touched.length}</b> dosyaya toplam <b>${touched.reduce((n, e) => n + e.inserted, 0)}</b> satır TODO notu eklenecek:` +
+        `<div style="text-align:left">${t.commitBranch}: <b>${esc(ct.branch)}</b><br>` +
+        t.commitSummary(touched.length, touched.reduce((n, e) => n + e.inserted, 0)) +
         `<ul style="margin:8px 0 0;padding-left:18px;font-size:13px">${rows}</ul>` +
-        (skipped > 0 ? `<small style="color:#b45309">⚠️ Satır bilgisi olmayan ${skipped} bulgu atlandı.</small>` : '') +
+        (skipped > 0 ? `<small style="color:#b45309">${t.commitSkipped(skipped)}</small>` : '') +
         `</div>`,
-      icon: 'question', input: 'text', inputLabel: 'Commit mesajı',
+      icon: 'question', input: 'text', inputLabel: t.commitMessageLabel,
       inputValue: defaultCommitMessage(edits).split('\n')[0],
-      inputValidator: (v) => (!v || !v.trim() ? 'Commit mesajı gerekli' : undefined),
-      showCancelButton: true, confirmButtonText: 'Evet, commit at', cancelButtonText: 'Vazgeç',
+      inputValidator: (v) => (!v || !v.trim() ? t.commitMessageRequired : undefined),
+      showCancelButton: true, confirmButtonText: t.yesCommit, cancelButtonText: t.cancel,
     })
     if (!isConfirmed) return
 
@@ -801,32 +810,32 @@ function SendToGitPanel({ findings, provider, prUrl, host, token, username, onTo
     try {
       const url = await pushCommit(target, auth, ct, edits, String(message).trim())
       await pcrSwal.fire({
-        icon: 'success', title: 'Commit atıldı',
-        html: `✅ <b>${esc(ct.branch)}</b> dalına commit atıldı.` + (url ? `<br><a href="${esc(url)}" target="_blank" rel="noreferrer">commit’i aç →</a>` : '')
+        icon: 'success', title: t.commitDoneTitle,
+        html: t.commitDoneHtml(esc(ct.branch)) + (url ? `<br><a href="${esc(url)}" target="_blank" rel="noreferrer">${t.commitOpen}</a>` : '')
       })
       onClose()
     } catch (e) {
       const m = e instanceof Error ? e.message : String(e)
       if (isAuthError(m)) { await retryWithToken(chosen, target, m); return }
-      await pcrSwal.fire({ icon: 'error', title: 'Commit atılamadı', html: esc(m) })
+      await pcrSwal.fire({ icon: 'error', title: t.commitFailed, html: esc(m) })
     } finally { setSending(false) }
   }
 
   // Yetki hatasında yazma yetkili token isteyip commit akışını baştan dener (henüz commit atılmadığı için güvenli).
   const retryWithToken = async (chosen: Finding[], target: GitTarget, reason: string) => {
     const { value: newToken } = await pcrSwal.fire({
-      title: '🔑 Yetki gerekli — token ile doğrula',
-      html: `Commit atmak için <b>yazma</b> yetkili bir ${meta.tokenLabel} gir.<br><small>${esc(reason.slice(0, 180))}</small>`,
-      input: 'password', inputPlaceholder: 'token / app password',
+      title: t.authTitle,
+      html: t.authCommitHtml(meta.tokenLabel) + `<br><small>${esc(reason.slice(0, 180))}</small>`,
+      input: 'password', inputPlaceholder: t.gitTokenPh,
       inputAttributes: { autocapitalize: 'off', autocorrect: 'off' },
-      showCancelButton: true, confirmButtonText: 'Doğrula ve tekrar dene', cancelButtonText: 'Vazgeç',
-      footer: `<a href="${tokenPageUrl(provider, host || target.webBase)}" target="_blank" rel="noreferrer">yazma yetkili ${meta.tokenLabel} oluştur →</a>`,
-      inputValidator: (v) => (!v || !v.trim() ? 'Token gerekli' : undefined),
+      showCancelButton: true, confirmButtonText: t.authConfirmRetry, cancelButtonText: t.cancel,
+      footer: `<a href="${tokenPageUrl(provider, host || target.webBase)}" target="_blank" rel="noreferrer">${t.authFooter(meta.tokenLabel)}</a>`,
+      inputValidator: (v) => (!v || !v.trim() ? t.authTokenRequired : undefined),
     })
     if (!newToken || !String(newToken).trim()) return
-    const t = String(newToken).trim()
-    onToken(t)
-    await sendAsCommit(chosen, target, t)
+    const tok = String(newToken).trim()
+    onToken(tok)
+    await sendAsCommit(chosen, target, tok)
   }
 
   const noLine = findings.filter((f) => sel.has(f.id) && f.line == null).length
@@ -837,46 +846,43 @@ function SendToGitPanel({ findings, provider, prUrl, host, token, username, onTo
         <div className="send-head-l">
           <span className="send-ic">📤</span>
           <div>
-            <h3>Git'e gönder</h3>
-            <p>{sendMode === 'comment'
-              ? 'Bulguları seç, seçtiklerin MR\'a yorum olarak eklensin'
-              : 'Bulguları seç, kaynak dala commit atılıp ilgili satırın üstüne TODO yazılsın'}</p>
+            <h3>{t.sendTitle}</h3>
+            <p>{sendMode === 'comment' ? t.sendSubComment : t.sendSubCommit}</p>
           </div>
         </div>
-        <button className="send-x" onClick={onClose} aria-label="Kapat">✕</button>
+        <button className="send-x" onClick={onClose} aria-label={t.close}>✕</button>
       </div>
 
       <div className="send-modes">
         <button type="button" className={`smode ${sendMode === 'comment' ? 'on' : ''}`} onClick={() => setSendMode('comment')}>
           <span className="smode-ic">💬</span>
-          <span className="smode-txt"><b>Yorum olarak gönder</b><small>{meta.prLabel}’a not düşülür, kod değişmez</small></span>
+          <span className="smode-txt"><b>{t.sendModeComment}</b><small>{t.sendModeCommentSub(meta.prLabel)}</small></span>
         </button>
         <button type="button" className={`smode ${sendMode === 'commit' ? 'on' : ''}`} onClick={() => setSendMode('commit')}>
           <span className="smode-ic">📝</span>
-          <span className="smode-txt"><b>Commit olarak gönder (TODO)</b><small>Kaynak dala commit; ilgili satırın üstüne TODO eklenir</small></span>
+          <span className="smode-txt"><b>{t.sendModeCommit}</b><small>{t.sendModeCommitSub}</small></span>
         </button>
       </div>
 
       <div className="send-tools">
         <button type="button" className={`sw ${allSelected ? 'on' : ''}`} onClick={toggleAll}>
           <span className="sw-box">{allSelected ? '✓' : ''}</span>
-          Tümünü seç
+          {t.selectAll}
           <span className="sw-count">{sel.size}/{findings.length}</span>
         </button>
         {sendMode === 'comment' && (
           <label className={`sw ${combine ? 'on' : ''}`}>
             <input type="checkbox" checked={combine} onChange={(e) => setCombine(e.target.checked)} />
             <span className="sw-box">{combine ? '✓' : ''}</span>
-            Tek özet yorumda birleştir
+            {t.combineOne}
           </label>
         )}
       </div>
 
       {sendMode === 'commit' && (
         <div className="send-hint">
-          ℹ️ Dosyalar {meta.prLabel}’ın <b>kaynak dalından</b> okunur, TODO satırları eklenir ve <b>tek commit</b> olarak aynı dala push edilir.
-          Yorum sözdizimi dosya uzantısına göre seçilir. Commit öncesi özet gösterilir.
-          {noLine > 0 && <> <b>⚠️ Seçilenlerden {noLine} tanesinin satır bilgisi yok; bunlar atlanır.</b></>}
+          ℹ️ {t.commitHint(meta.prLabel)}
+          {noLine > 0 && <> <b>{t.commitHintNoLine(noLine)}</b></>}
         </div>
       )}
 
@@ -889,7 +895,7 @@ function SendToGitPanel({ findings, provider, prUrl, host, token, username, onTo
               <div className="send-item-body">
                 <div className="send-item-top">
                   <span className={`sev ${f.severity}`}>{f.severity}</span>
-                  <span className={`badge ${f.source}`}>{f.source === 'LLM' ? '🤖 AI' : '⚙️ KURAL'}</span>
+                  <span className={`badge ${f.source}`}>{f.source === 'LLM' ? '🤖 AI' : `⚙️ ${t.badgeRule}`}</span>
                   <code className="send-loc">{f.filePath}:{f.line ?? '?'}</code>
                   <strong className="send-rule">{f.ruleName}</strong>
                 </div>
@@ -903,11 +909,11 @@ function SendToGitPanel({ findings, provider, prUrl, host, token, username, onTo
       <div className="send-actions">
         <button className="send-go" onClick={send} disabled={sending || sel.size === 0}>
           {sending
-            ? (sendMode === 'commit' ? 'Commit hazırlanıyor…' : 'Gönderiliyor…')
-            : sendMode === 'commit' ? `📝 Seçilenleri commit'le (${sel.size})` : `📨 Seçilenleri gönder (${sel.size})`}
+            ? (sendMode === 'commit' ? t.preparingCommit : t.sending)
+            : sendMode === 'commit' ? t.commitSelected(sel.size) : t.sendSelected(sel.size)}
         </button>
-        <button className="send-cancel" onClick={onClose} disabled={sending}>Vazgeç</button>
-        {!token.trim() && <span className="send-warn">⚠️ Token yok — göndermek için yazma yetkili {meta.tokenLabel} gerekir.</span>}
+        <button className="send-cancel" onClick={onClose} disabled={sending}>{t.cancel}</button>
+        {!token.trim() && <span className="send-warn">{t.noTokenWarn(meta.tokenLabel)}</span>}
       </div>
     </div>
   )
@@ -915,8 +921,9 @@ function SendToGitPanel({ findings, provider, prUrl, host, token, username, onTo
 
 /** Bir bulguyu GitLab markdown yorumuna çevirir. */
 function formatComment(f: Finding): string {
-  const src = f.source === 'LLM' ? '🤖 AI' : '⚙️ Kural'
-  const fix = f.suggestion ? `\n\n> 💡 **Öneri:** ${f.suggestion}` : ''
+  const t = ui()
+  const src = f.source === 'LLM' ? '🤖 AI' : t.commentRule
+  const fix = f.suggestion ? `\n\n> 💡 **${t.commentSuggestion}:** ${f.suggestion}` : ''
   return `**[${f.severity}] ${f.ruleName}** · \`${f.filePath}:${f.line ?? '?'}\` · ${src}\n\n${f.message}${fix}\n\n<sub>Portal Code Review</sub>`
 }
 
@@ -944,9 +951,10 @@ function matchesFilter(f: Finding, filter: FindingFilter): boolean {
 /** Filtrenin insan-okur etiketi (temizle çubuğunda gösterilir). */
 function filterLabel(filter: FindingFilter): string {
   if (!filter) return ''
-  if (filter.kind === 'sev') return `önem: ${filter.value}`
-  if (filter.kind === 'src') return filter.value === 'LLM' ? 'kaynak: AI' : 'kaynak: kural'
-  return `dosya: ${filter.value.split('/').pop()}`
+  const t = ui()
+  if (filter.kind === 'sev') return t.filterSev(filter.value)
+  if (filter.kind === 'src') return filter.value === 'LLM' ? t.filterSrcAi : t.filterSrcRule
+  return t.filterFile(filter.value.split('/').pop() ?? filter.value)
 }
 
 /** İki filtre aynı seçimi mi gösteriyor? (aynı satıra tekrar tıklayınca filtreyi kaldırmak için) */
@@ -965,6 +973,7 @@ const SEV_COLOR: Record<Severity, string> = {
 function FindingStats({ findings, fileCount, filter, onFilter }: {
   findings: Finding[]; fileCount: number; filter: FindingFilter; onFilter: (f: FindingFilter) => void
 }) {
+  const t = ui()
   // Satıra tıklamak filtreyi uygular; aynı satıra tekrar tıklamak temizler.
   const pick = (f: NonNullable<FindingFilter>) => onFilter(sameFilter(filter, f) ? null : f)
   const dim = (f: NonNullable<FindingFilter>) => (filter && !sameFilter(filter, f) ? 'dim' : '')
@@ -1007,25 +1016,25 @@ function FindingStats({ findings, fileCount, filter, onFilter }: {
             />
           ))}
         </svg>
-        <span className="fstats-ring-txt"><b>{total}</b><small>bulgu</small></span>
+        <span className="fstats-ring-txt"><b>{total}</b><small>{t.findingsWord}</small></span>
       </div>
 
       <div className="fstats-body">
         <div className="fstats-top">
-          <span className="fstats-kpi"><b>{touchedFiles}</b>/{fileCount} dosyada bulgu</span>
+          <span className="fstats-kpi">{t.filesWithFindings(touchedFiles, fileCount)}</span>
           <span className={`fstats-kpi ${blockerish > 0 ? 'bad' : 'good'}`}>
-            <b>{blockerish}</b> engelleyici/kritik
+            <b>{blockerish}</b> {t.blockerish}
           </span>
-          <span className="fstats-kpi"><b>{(total / Math.max(touchedFiles, 1)).toFixed(1)}</b> bulgu/dosya</span>
+          <span className="fstats-kpi"><b>{(total / Math.max(touchedFiles, 1)).toFixed(1)}</b> {t.perFile}</span>
         </div>
 
         <div className="fstats-cols">
           <div className="fstats-col">
-            <h5>Önem dağılımı</h5>
+            <h5>{t.sevDistribution}</h5>
             {shownSev.map((s) => (
               <button
                 key={s} className={`fstats-row ${filter?.kind === 'sev' && filter.value === s ? 'on' : ''} ${dim({ kind: 'sev', value: s })}`}
-                onClick={() => pick({ kind: 'sev', value: s })} title={`Yalnızca ${s} bulguları göster`}
+                onClick={() => pick({ kind: 'sev', value: s })} title={t.onlySev(s)}
               >
                 <span className="fstats-key"><i style={{ background: SEV_COLOR[s] }} />{s}</span>
                 <span className="fstats-bar"><i style={{ width: `${(bySev(s) / total) * 100}%`, background: SEV_COLOR[s] }} /></span>
@@ -1034,23 +1043,23 @@ function FindingStats({ findings, fileCount, filter, onFilter }: {
             ))}
             <div className="fstats-src">
               <button className={`${filter?.kind === 'src' && filter.value === 'RULE' ? 'on' : ''} ${dim({ kind: 'src', value: 'RULE' })}`}
-                      onClick={() => pick({ kind: 'src', value: 'RULE' })} title="Yalnızca kural bulguları" disabled={rule === 0}>
-                <i className="src rule" /> {rule} kural
+                      onClick={() => pick({ kind: 'src', value: 'RULE' })} title={t.onlyRuleFindings} disabled={rule === 0}>
+                <i className="src rule" /> {rule} {t.rules}
               </button>
               <button className={`${filter?.kind === 'src' && filter.value === 'LLM' ? 'on' : ''} ${dim({ kind: 'src', value: 'LLM' })}`}
-                      onClick={() => pick({ kind: 'src', value: 'LLM' })} title="Yalnızca AI bulguları" disabled={ai === 0}>
+                      onClick={() => pick({ kind: 'src', value: 'LLM' })} title={t.onlyAiFindings} disabled={ai === 0}>
                 <i className="src ai" /> {ai} AI
               </button>
             </div>
           </div>
 
           <div className="fstats-col">
-            <h5>Dosya bazında bulgular <span className="fstats-count">{fileRows.length}</span></h5>
+            <h5>{t.findingsPerFile} <span className="fstats-count">{fileRows.length}</span></h5>
             <div className="fstats-scroll">
               {fileRows.map(([path, n]) => (
                 <button
                   key={path} className={`fstats-row ${filter?.kind === 'file' && filter.value === path ? 'on' : ''} ${dim({ kind: 'file', value: path })}`}
-                  onClick={() => pick({ kind: 'file', value: path })} title={`${path} — yalnızca bu dosyanın bulguları`}
+                  onClick={() => pick({ kind: 'file', value: path })} title={t.onlyThisFile(path)}
                 >
                   <span className="fstats-key file">{path.split('/').pop()}</span>
                   <span className="fstats-bar"><i style={{ width: `${(n / worst) * 100}%`, background: 'var(--accent)' }} /></span>
@@ -1075,6 +1084,7 @@ function ReviewSummary({ findings, mode, cfg, fileCount, files, filter, onFilter
   files: ChangedFile[]; filter: FindingFilter; onFilter: (f: FindingFilter) => void
 }) {
   const [detail, setDetail] = useState<Finding | null>(null)   // detay penceresinde açık bulgu
+  const t = ui()
   const ai = findings.filter((f) => f.source === 'LLM').length
   const rule = findings.length - ai
   const bySev = (s: Severity) => findings.filter((f) => f.severity === s).length
@@ -1083,29 +1093,29 @@ function ReviewSummary({ findings, mode, cfg, fileCount, files, filter, onFilter
   return (
     <div className="rsum">
       <div className="rsum-head">
-        <div className="rsum-title">📋 İnceleme Özeti</div>
-        <div className="rsum-meta">{fileCount} dosya · mod: {MODES.find((m) => m.value === mode)?.label}{mode !== 'RULES_ONLY' && cfg && <> · 🤖 {cfg.provider}/{cfg.model}</>}</div>
+        <div className="rsum-title">{t.summaryTitle}</div>
+        <div className="rsum-meta">{t.summaryMeta(fileCount)}{modeText(mode)?.label}{mode !== 'RULES_ONLY' && cfg && <> · 🤖 {cfg.provider}/{cfg.model}</>}</div>
       </div>
       <div className="tiles">
-        <div className="tile total"><b>{findings.length}</b><span>toplam</span></div>
-        <div className="tile ruletile"><b>{rule}</b><span>kural</span></div>
+        <div className="tile total"><b>{findings.length}</b><span>{t.total}</span></div>
+        <div className="tile ruletile"><b>{rule}</b><span>{t.rules}</span></div>
         <div className="tile aitile"><b>{ai}</b><span>🤖 AI</span></div>
         {SEV_ORDER.filter((s) => bySev(s) > 0).map((s) => (<div key={s} className={`tile sevtile ${s}`}><b>{bySev(s)}</b><span>{s}</span></div>))}
       </div>
       {findings.length > 0 && <FindingStats findings={findings} fileCount={fileCount} filter={filter} onFilter={onFilter} />}
       {filter && (
         <div className="rsum-filter">
-          <span>🔎 Filtre: <b>{filterLabel(filter)}</b> · <b>{shown.length}</b>/{findings.length} bulgu gösteriliyor</span>
-          <button className="ghost small" onClick={() => onFilter(null)}>filtreyi temizle</button>
+          <span>{t.filterPrefix}<b>{filterLabel(filter)}</b> · {t.filterShowing(shown.length, findings.length)}</span>
+          <button className="ghost small" onClick={() => onFilter(null)}>{t.clearFilter}</button>
         </div>
       )}
       {sorted.length > 0 ? (
         <ol className="rsum-list">
           {sorted.map((f) => (
             <li key={f.id} className={f.source === 'LLM' ? 'ai' : ''}>
-              <button className="rsum-open" onClick={() => setDetail(f)} title="Detayları gör">
+              <button className="rsum-open" onClick={() => setDetail(f)} title={t.seeDetails}>
                 <span className={`sev ${f.severity}`}>{f.severity}</span>
-                <span className={`badge ${f.source}`}>{f.source === 'LLM' ? '🤖 AI' : 'KURAL'}</span>
+                <span className={`badge ${f.source}`}>{f.source === 'LLM' ? '🤖 AI' : t.badgeRule}</span>
                 <code>{f.filePath.split('/').pop()}:{f.line ?? '?'}</code>
                 <span className="rsum-rule">{f.ruleName}</span>
                 <span className="rsum-msg">{f.message}</span>
@@ -1114,7 +1124,7 @@ function ReviewSummary({ findings, mode, cfg, fileCount, files, filter, onFilter
             </li>
           ))}
         </ol>
-      ) : <p className="rsum-empty">Seçilen moda göre bulgu bulunamadı. ✅</p>}
+      ) : <p className="rsum-empty">{t.noFindings}</p>}
 
       {detail && (
         <FindingDetail
@@ -1160,6 +1170,7 @@ function snippetFor(file: ChangedFile | undefined, line: number | null, around =
 function FindingDetail({ finding, file, cfg, onClose }: {
   finding: Finding; file?: ChangedFile; cfg: LlmConfig | null; onClose: () => void
 }) {
+  const t = ui()
   const snippet = snippetFor(file, finding.line)
   // Kural kaynaklı bulgularda, kuralı md deposundan bulup hangi desenin çalıştığını göster.
   const rule = finding.source === 'RULE'
@@ -1176,43 +1187,43 @@ function FindingDetail({ finding, file, cfg, onClose }: {
   return (
     <Portal>
       <div className="fd-overlay" onClick={onClose}>
-        <div className="fd" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Bulgu detayı">
+        <div className="fd" onClick={(e) => e.stopPropagation()} role="dialog" aria-label={t.fdTitle}>
           <header className={`fd-head sev-${finding.severity}`}>
             <div className="fd-head-l">
               <span className={`sev ${finding.severity}`}>{finding.severity}</span>
               <span className={`badge ${finding.source}`}>
-                {finding.source === 'LLM' ? `🤖 ${cfg?.provider ?? 'AI'}` : '⚙️ KURAL'}
+                {finding.source === 'LLM' ? `🤖 ${cfg?.provider ?? 'AI'}` : `⚙️ ${t.badgeRule}`}
               </span>
               <h3>{finding.ruleName}</h3>
             </div>
-            <button className="fd-x" onClick={onClose} aria-label="Kapat">✕</button>
+            <button className="fd-x" onClick={onClose} aria-label={t.close}>✕</button>
           </header>
 
           <div className="fd-body">
             <section className="fd-sec">
-              <h4>Konum</h4>
+              <h4>{t.fdLocation}</h4>
               <div className="fd-loc">
                 <code>{finding.filePath}</code>
                 {finding.line != null
-                  ? <span className="fd-line">satır {finding.line}</span>
-                  : <span className="fd-line file">dosya düzeyi</span>}
+                  ? <span className="fd-line">{t.line} {finding.line}</span>
+                  : <span className="fd-line file">{t.fdFileLevel}</span>}
               </div>
             </section>
 
             <section className="fd-sec">
-              <h4>Bulgu</h4>
+              <h4>{t.fdFinding}</h4>
               <p className="fd-msg">{finding.message}</p>
             </section>
 
             {finding.suggestion && (
               <section className="fd-sec">
-                <h4>Öneri</h4>
+                <h4>{t.fdSuggestion}</h4>
                 <p className="fd-fix">{finding.source === 'LLM' ? '🤖 ' : '💡 '}{finding.suggestion}</p>
               </section>
             )}
 
             <section className="fd-sec">
-              <h4>Denk geldiği kod</h4>
+              <h4>{t.fdMatchedCode}</h4>
               {snippet.length > 0 ? (
                 <pre className="fd-code">
                   {snippet.map((l) => (
@@ -1224,18 +1235,16 @@ function FindingDetail({ finding, file, cfg, onClose }: {
                 </pre>
               ) : (
                 <p className="fd-none">
-                  {finding.line == null
-                    ? 'Bu bulgu tek bir satıra değil, dosyanın tamamına ait.'
-                    : 'Bu satır diff’in eklenen satırları arasında bulunamadı.'}
+                  {finding.line == null ? t.fdWholeFile : t.fdNotInDiff}
                 </p>
               )}
             </section>
 
             {explain && (
               <section className="fd-sec">
-                <h4>Bu bulguyu üreten kural</h4>
+                <h4>{t.fdProducedBy}</h4>
                 <div className="fd-rule">
-                  <span className={`cover ${COVER_META[explain.coverage].cls}`}>{COVER_META[explain.coverage].label}</span>
+                  <span className={`cover ${COVER_META[explain.coverage].cls}`}>{coverText(explain.coverage).label}</span>
                   <p>{explain.message}</p>
                 </div>
                 {explain.checks.map((c, i) => (
@@ -1274,11 +1283,16 @@ function Diff({ raw }: { raw: string }) {
   )
 }
 
-const M = { fetch: '📥 Diff okunuyor…', rules: '📐 Kurallar uygulanıyor…', scan: '🔎 Satırlar taranıyor…', ai: '🧠 Yapay zeka kodu analiz ediyor…', find: '🧾 Bulgular derleniyor…', sug: '💡 Öneriler hazırlanıyor…' }
-const LOADER_SETS: Record<ReviewMode, { title: string; sub: string; msgs: string[] }> = {
-  AI_ONLY: { title: 'AI Tabanlı İnceleme', sub: 'Yapay zeka incelemesi', msgs: [M.fetch, M.ai, M.find, M.sug] },
-  AI_WITH_RULES: { title: 'AI + Kural İncelemesi', sub: 'Yapay zeka ve kurallar birlikte', msgs: [M.fetch, M.rules, M.ai, M.find, M.sug] },
-  RULES_ONLY: { title: 'Kural Tabanlı İnceleme', sub: 'Deterministik kurallar', msgs: [M.fetch, M.rules, M.scan, M.find] },
+/** Yükleme ekranı başlıkları/mesajları — aktif dile göre çözülür. */
+function loaderSet(mode: ReviewMode): { title: string; sub: string; msgs: string[] } {
+  const t = ui()
+  const M = {
+    fetch: t.loaderMsgFetch, rules: t.loaderMsgRules, scan: t.loaderMsgScan,
+    ai: t.loaderMsgAi, find: t.loaderMsgFind, sug: t.loaderMsgSug,
+  }
+  if (mode === 'AI_ONLY') return { title: t.loaderAiOnly, sub: t.loaderAiOnlySub, msgs: [M.fetch, M.ai, M.find, M.sug] }
+  if (mode === 'RULES_ONLY') return { title: t.loaderRules, sub: t.loaderRulesSub, msgs: [M.fetch, M.rules, M.scan, M.find] }
+  return { title: t.loaderHybrid, sub: t.loaderHybridSub, msgs: [M.fetch, M.rules, M.ai, M.find, M.sug] }
 }
 
 /** mm:ss biçiminde geçen süre. */
@@ -1295,7 +1309,8 @@ function formatElapsed(ms: number): string {
 function ReviewLoader({ mode, progress, startedAt }: {
   mode: ReviewMode; progress: ReviewProgress | null; startedAt: number
 }) {
-  const set = LOADER_SETS[mode] ?? LOADER_SETS.AI_WITH_RULES
+  const t = ui()
+  const set = loaderSet(mode)
   const [i, setI] = useState(0)
   const [elapsed, setElapsed] = useState(0)
 
@@ -1349,8 +1364,8 @@ function ReviewLoader({ mode, progress, startedAt }: {
             <div className="rl-meta">
               <span className="rl-timer">⏱ {formatElapsed(elapsed)}</span>
               {determinate
-                ? <span className="rl-count">{progress!.done}/{progress!.total} dosya · %{pct}</span>
-                : <span className="rl-count">süre değişkendir</span>}
+                ? <span className="rl-count">{t.loaderFiles(progress!.done, progress!.total, pct)}</span>
+                : <span className="rl-count">{t.loaderVariable}</span>}
             </div>
           </div>
         </div>
@@ -1365,23 +1380,32 @@ const emptyDraft: RuleDraft = { name: '', description: '', type: 'REGEX', severi
 
 /* ============================ "Nasıl kural eklenir?" rehberi (modal) ============================ */
 
-const DETECTOR_KEYWORDS = [
+// Dedektörleri tetikleyen anahtar kelimeler — dedektörler hem TR hem EN terimleri tanır,
+// bu yüzden listeyi arayüz diline göre gösteriyoruz (bkz. detectors.ts `keywords`).
+const DETECTOR_KEYWORDS_TR = [
   'yorum', 'console', 'System.out', 'print(', 'println( / puts', 'println! / dbg!', 'fmt.Print',
   'Console.WriteLine', 'var_dump / dd(', 'printStackTrace', 'TODO', 'FIXME', 'any', 'var',
   'debugger', 'alert', 'die / exit / panic', 'parola / secret / token', 'boş catch', '=== / eşitlik',
 ]
+const DETECTOR_KEYWORDS_EN = [
+  'comment', 'console', 'System.out', 'print(', 'println( / puts', 'println! / dbg!', 'fmt.Print',
+  'Console.WriteLine', 'var_dump / dd(', 'printStackTrace', 'TODO', 'FIXME', 'any', 'var',
+  'debugger', 'alert', 'die / exit / panic', 'password / secret / token', 'empty catch', '=== / strict equal',
+]
 
 type GuideTab = 'basla' | 'desen' | 'ornek'
-
-const GUIDE_TABS: { id: GuideTab; icon: string; label: string; sub: string }[] = [
-  { id: 'basla', icon: '🚀', label: 'Başla', sub: 'kural nasıl eklenir' },
-  { id: 'desen', icon: '🔧', label: 'Desen ekle', sub: 'soyut kuralı otomatiğe çevir' },
-  { id: 'ornek', icon: '📌', label: 'Örnekler', sub: 'hazır kalıplar' },
-]
 
 /** Kural yazma rehberi — sekmeli, ortalanmış modal. */
 function GuideModal({ onClose }: { onClose: () => void }) {
   const [tab, setTab] = useState<GuideTab>('basla')
+  const t = ui()
+  const { lang } = useLanguage()
+  const detectorKeywords = lang === 'en' ? DETECTOR_KEYWORDS_EN : DETECTOR_KEYWORDS_TR
+  const guideTabs: { id: GuideTab; icon: string; label: string; sub: string }[] = [
+    { id: 'basla', icon: '🚀', label: t.guideTabStart, sub: t.guideTabStartSub },
+    { id: 'desen', icon: '🔧', label: t.guideTabPattern, sub: t.guideTabPatternSub },
+    { id: 'ornek', icon: '📌', label: t.guideTabExamples, sub: t.guideTabExamplesSub },
+  ]
 
   useEffect(() => {
     const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -1392,23 +1416,23 @@ function GuideModal({ onClose }: { onClose: () => void }) {
   return (
     <Portal>
     <div className="gm-overlay" onClick={onClose}>
-      <div className="gm" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Kural yazma rehberi">
+      <div className="gm" onClick={(e) => e.stopPropagation()} role="dialog" aria-label={t.guideTitle}>
         <header className="gm-head">
           <div className="gm-head-l">
             <span className="gm-ic">💡</span>
             <div>
-              <h3>Nasıl kural eklenir?</h3>
-              <p>Kurallar deterministik çalışır — yapay zeka kullanılmaz</p>
+              <h3>{t.guideTitle}</h3>
+              <p>{t.guideSub}</p>
             </div>
           </div>
-          <button className="gm-x" onClick={onClose} aria-label="Kapat">✕</button>
+          <button className="gm-x" onClick={onClose} aria-label={t.close}>✕</button>
         </header>
 
         <nav className="gm-tabs">
-          {GUIDE_TABS.map((t) => (
-            <button key={t.id} className={tab === t.id ? 'on' : ''} onClick={() => setTab(t.id)}>
-              <span className="gm-tab-ic">{t.icon}</span>
-              <span className="gm-tab-txt"><b>{t.label}</b><small>{t.sub}</small></span>
+          {guideTabs.map((g) => (
+            <button key={g.id} className={tab === g.id ? 'on' : ''} onClick={() => setTab(g.id)}>
+              <span className="gm-tab-ic">{g.icon}</span>
+              <span className="gm-tab-txt"><b>{g.label}</b><small>{g.sub}</small></span>
             </button>
           ))}
         </nav>
@@ -1417,64 +1441,61 @@ function GuideModal({ onClose }: { onClose: () => void }) {
           {tab === 'basla' && (
             <>
               <div className="guide-steps">
-                <div className="gstep"><span className="gnum">1</span><div><b>Formu doldur</b><small>Ad, tip, önem, dosya deseni ve gövdeyi gir.</small></div></div>
-                <div className="gstep"><span className="gnum">2</span><div><b>Hedef md seç</b><small>Kural konusuna uygun dosyayı seç (ör. react, spring).</small></div></div>
-                <div className="gstep"><span className="gnum">3</span><div><b>Ekle</b><small>Kural anında listeye ve incelemeye dahil olur.</small></div></div>
+                <div className="gstep"><span className="gnum">1</span><div><b>{t.guideStep1}</b><small>{t.guideStep1Sub}</small></div></div>
+                <div className="gstep"><span className="gnum">2</span><div><b>{t.guideStep2}</b><small>{t.guideStep2Sub}</small></div></div>
+                <div className="gstep"><span className="gnum">3</span><div><b>{t.guideStep3}</b><small>{t.guideStep3Sub}</small></div></div>
               </div>
 
               <div className="guide-types">
                 <div className="gtype">
-                  <div className="gtype-h"><span className="badge REGEX">Desen</span> REGEX ile eşleştir</div>
-                  <p>Kendi düzenli ifadeni yazarsın; eşleşen her satır bulgu olur. En hassas yol.</p>
-                  <div className="gex"><span>Gövde</span><code>console\.log</code></div>
+                  <div className="gtype-h"><span className="badge REGEX">{t.badgePattern}</span> {t.guideRegexHead}</div>
+                  <p>{t.guideRegexBody}</p>
+                  <div className="gex"><span>{t.guideBody}</span><code>console\.log</code></div>
                 </div>
                 <div className="gtype">
-                  <div className="gtype-h"><span className="badge LLM">Metin</span> Düz dille yaz</div>
-                  <p>Kuralı normal cümleyle yazarsın; içindeki <b>anahtar kelime</b> yerleşik bir dedektöre bağlanır ve otomatik denetlenir.</p>
-                  <div className="gex"><span>Gövde</span><code>Kodda yorum satırı olmamalı</code></div>
+                  <div className="gtype-h"><span className="badge LLM">{t.badgeText}</span> {t.guideTextHead}</div>
+                  <p>{t.guideTextBody}</p>
+                  <div className="gex"><span>{t.guideBody}</span><code>{t.guideTextBodyEx}</code></div>
                 </div>
               </div>
 
               <div className="guide-kw">
-                <b>⚙️ Otomatik denetime bağlayan anahtar kelimeler</b>
-                <div className="kws">{DETECTOR_KEYWORDS.map((k) => <span key={k} className="kw">{k}</span>)}</div>
-                <small>Bu kelimelerden birini içermeyen genel kurallar <b>✋ Elle</b> olarak işaretlenir — “Desen ekle” sekmesindeki ekle bunları da otomatiğe çevirebilirsin.</small>
+                <b>{t.guideKwTitle}</b>
+                <div className="kws">{detectorKeywords.map((k) => <span key={k} className="kw">{k}</span>)}</div>
+                <small>{t.guideKwNote}</small>
               </div>
             </>
           )}
 
           {tab === 'desen' && (
             <>
-              <p className="gm-lead">
-                Kuralın tipini değiştirmeden, <b>metnin sonuna</b> açık bir desen yazarsın. Tahmin yoktur;
-                yalnızca yazdığın desen çalışır.
-              </p>
+              <p className="gm-lead">{t.guideLead}</p>
 
               <div className="gm-cards">
                 <div className="gm-card forbid">
-                  <div className="gm-card-h"><span>⛔</span><b>Yasak:</b> eşleşen satır ihlaldir</div>
-                  <code>Bileşende inline style kullanılmaz. Yasak: /style=\{'{{'}/</code>
-                  <p>Diff’te eklenen satırlardan biri desene uyarsa bulgu üretilir.</p>
+                  <div className="gm-card-h"><span>⛔</span><b>{t.guideForbidHead}</b></div>
+                  <code>{t.guideForbidEx}/style=\{'{{'}/</code>
+                  <p>{t.guideForbidNote}</p>
                 </div>
                 <div className="gm-card require">
-                  <div className="gm-card-h"><span>✅</span><b>Zorunlu:</b> hiç eşleşme yoksa ihlaldir</div>
-                  <code>Her test describe ile başlar. Zorunlu: /describe\s*\(/</code>
-                  <p>Dosyanın eklenen satırlarının hiçbiri uymuyorsa bulgu üretilir. Yanlış pozitife açıktır — dikkatli kullanın.</p>
+                  <div className="gm-card-h"><span>✅</span><b>{t.guideRequireHead}</b></div>
+                  <code>{t.guideRequireEx}/describe\s*\(/</code>
+                  <p>{t.guideRequireNote}</p>
                 </div>
                 <div className="gm-card limit">
-                  <div className="gm-card-h"><span>📏</span><b>Sınır:</b> ölçülebilir üst sınır</div>
-                  <code>Bileşen en fazla 300 satır olmalı</code>
-                  <p>“en fazla / &lt; / aşmamalı” + sayı → dosya uzunluğu diff üzerinden ölçülür.</p>
+                  <div className="gm-card-h"><span>📏</span><b>{t.guideLimitHead}</b></div>
+                  <code>{t.guideLimitEx}</code>
+                  <p>{t.guideLimitNote}</p>
                 </div>
               </div>
 
               <div className="gm-warn">
-                <b>⚠️ Desen yazarken</b>
+                <b>{t.guideWarnTitle}</b>
                 <ul>
-                  <li>Desen içinde <b>backtick</b> ve <code>**</code> kullanma — metin temizliğinde silinir, regex bozulur.</li>
-                  <li><code>[metin](hedef)</code> dizilimi oluşturma — markdown bağlantısı sanılıp yenir.</li>
-                  <li><code>/</code> karakterini <code>\/</code> olarak kaçır; bayrak (flag) yazma.</li>
-                  <li>Neredeyse her satıra uyan desen, denetimsiz kuraldan kötüdür — o durumda kuralı elle bırak.</li>
+                  <li>{t.guideWarn1}</li>
+                  <li><code>[metin](hedef)</code> — {t.guideWarn2}</li>
+                  <li><code>/</code> → <code>\/</code> {t.guideWarn3}</li>
+                  <li>{t.guideWarn4}</li>
                 </ul>
               </div>
             </>
@@ -1482,19 +1503,21 @@ function GuideModal({ onClose }: { onClose: () => void }) {
 
           {tab === 'ornek' && (
             <div className="guide-ex">
-              <div className="exrow"><span className="badge LLM">Metin</span><code>**</code><span className="exname">Yorum satırı yasak</span><span className="exbody">Gövde: “Kodda yorum satırı olmamalı” → tüm <code>//</code>, <code>/* */</code> yakalanır</span></div>
-              <div className="exrow"><span className="badge REGEX">Desen</span><code>*.tsx</code><span className="exname">console.log yasak</span><span className="exbody">Gövde: <code>console\.log</code></span></div>
-              <div className="exrow"><span className="badge LLM">Metin</span><code>*.java</code><span className="exname">System.out yasak</span><span className="exbody">Gövde: “System.out ile loglama yapılmamalı”</span></div>
-              <div className="exrow"><span className="badge LLM">Metin</span><code>*.tsx</code><span className="exname">Inline style yasak</span><span className="exbody">Gövde: “Inline style kullanılmaz. Yasak: <code>/style=\{'{{'}/</code>”</span></div>
-              <div className="exrow"><span className="badge LLM">Metin</span><code>*.java</code><span className="exname">Field injection yasak</span><span className="exbody">Gövde: “Constructor injection kullanılmalı. Yasak: <code>/@Autowired\b/</code>”</span></div>
-              <div className="exrow"><span className="badge LLM">Metin</span><code>*.tsx</code><span className="exname">Bileşen boyutu</span><span className="exbody">Gövde: “Bileşen en fazla 300 satır olmalı” → Sınır denetimi</span></div>
+              {t.guideExamples.map((ex, i) => (
+                <div key={i} className="exrow">
+                  <span className={`badge ${ex.type}`}>{ex.type === 'REGEX' ? t.badgePattern : t.badgeText}</span>
+                  <code>{ex.pattern}</code>
+                  <span className="exname">{ex.name}</span>
+                  <span className="exbody">{ex.body}</span>
+                </div>
+              ))}
             </div>
           )}
         </div>
 
         <footer className="gm-foot">
-          <small>Kural dosyaları: <code>rules-md/*.md</code> · biçim ayrıntıları için <code>rules-md/README.md</code></small>
-          <button onClick={onClose}>Anladım</button>
+          <small>{t.guideFoot}</small>
+          <button onClick={onClose}>{t.guideOk}</button>
         </footer>
       </div>
     </div>
@@ -1502,14 +1525,17 @@ function GuideModal({ onClose }: { onClose: () => void }) {
   )
 }
 
-/** Kuralın hangi yolla denetlendiğini gösteren rozet/grafik bilgisi. */
-const COVER_META: Record<RuleCoverage, { label: string; short: string; cls: string; color: string; title: string }> = {
-  REGEX: { label: '⚙️ Regex', short: 'Regex', cls: 'auto', color: '#3b82f6', title: 'Kuralın kendi düzenli ifadesiyle satır satır denetlenir.' },
-  PATTERN: { label: '⚙️ Desen', short: 'Desen', cls: 'auto', color: '#8b5cf6', title: 'Kural metnine yazılmış "Yasak:" / "Zorunlu:" deseniyle denetlenir.' },
-  DETECTOR: { label: '⚙️ Yerleşik', short: 'Yerleşik', cls: 'auto', color: '#10b981', title: 'Kural metni yerleşik bir dedektöre bağlandı; satır satır denetlenir.' },
-  LIMIT: { label: '⚙️ Sınır', short: 'Sınır', cls: 'auto', color: '#f59e0b', title: 'Kuraldaki satır üst sınırı diff üzerinden ölçülerek denetlenir.' },
-  MANUAL: { label: '✋ Elle', short: 'Elle', cls: 'manual', color: '#94a3b8', title: 'Soyut kural — makine ile denetlenemez. Kural metnine "Yasak:/Zorunlu:" deseni ekleyin.' },
+/** Kuralın hangi yolla denetlendiğini gösteren rozet/grafik bilgisi (dilden bağımsız kısım). */
+const COVER_META: Record<RuleCoverage, { cls: string; color: string }> = {
+  REGEX: { cls: 'auto', color: '#3b82f6' },
+  PATTERN: { cls: 'auto', color: '#8b5cf6' },
+  DETECTOR: { cls: 'auto', color: '#10b981' },
+  LIMIT: { cls: 'auto', color: '#f59e0b' },
+  MANUAL: { cls: 'manual', color: '#94a3b8' },
 }
+
+/** Denetim türünün aktif dildeki etiketi/kısaltması/açıklaması. */
+const coverText = (c: RuleCoverage) => ui().coverMeta[c]
 
 const COVER_ORDER: RuleCoverage[] = ['PATTERN', 'DETECTOR', 'REGEX', 'LIMIT', 'MANUAL']
 
@@ -1528,8 +1554,10 @@ const CHECK_KIND: Record<RuleCheck['kind'], { icon: string; cls: string }> = {
 function RuleDetail({ rule, onClose, onEdit, onToggle, onDelete }: {
   rule: Rule; onClose: () => void; onEdit: () => void; onToggle: () => void; onDelete: () => void
 }) {
+  const t = ui()
   const ex = explainRule(rule)
   const m = COVER_META[ex.coverage]
+  const cm = coverText(ex.coverage)
   const trace = md.traceParse(rule)
   const [showTrace, setShowTrace] = useState(false)
   const [probeLine, setProbeLine] = useState('')
@@ -1552,23 +1580,23 @@ function RuleDetail({ rule, onClose, onEdit, onToggle, onDelete }: {
   return (
     <Portal>
     <div className="rd-overlay" onClick={onClose}>
-      <aside className="rd" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Kural detayı">
+      <aside className="rd" onClick={(e) => e.stopPropagation()} role="dialog" aria-label={t.ruleDetailTitle}>
         <header className="rd-head" style={{ borderTopColor: m.color }}>
           <div className="rd-head-txt">
-            <span className={`cover ${m.cls}`}>{m.label}</span>
+            <span className={`cover ${m.cls}`}>{cm.label}</span>
             <h3>{rule.name}</h3>
           </div>
-          <button className="rd-x" onClick={onClose} aria-label="Kapat">✕</button>
+          <button className="rd-x" onClick={onClose} aria-label={t.close}>✕</button>
         </header>
 
         <div className="rd-body">
           <section className="rd-sec">
-            <h4>Kural ne diyor?</h4>
+            <h4>{t.rdWhatSays}</h4>
             <p className="rd-msg">{ex.message}</p>
           </section>
 
           <section className="rd-sec">
-            <h4>Denetim durumu</h4>
+            <h4>{t.rdStatus}</h4>
             <div className="rd-cov" style={{ borderColor: m.color + '66', background: m.color + '14' }}>
               <span className="rd-cov-ic" style={{ background: m.color }}>{ex.coverage === 'MANUAL' ? '✋' : '⚙️'}</span>
               <div>
@@ -1580,14 +1608,14 @@ function RuleDetail({ rule, onClose, onEdit, onToggle, onDelete }: {
 
           {ex.checks.length > 0 && (
             <section className="rd-sec">
-              <h4>Çalışan denetim{ex.checks.length > 1 ? 'ler' : ''}</h4>
+              <h4>{ex.checks.length > 1 ? t.rdChecksMany : t.rdChecksOne}</h4>
               {ex.checks.map((c, i) => (
                 <div key={i} className={`rd-check ${CHECK_KIND[c.kind].cls}`}>
                   <div className="rd-check-h">
                     <span>{CHECK_KIND[c.kind].icon}</span>{c.label}
                     {c.code && (
                       <button className="rd-copy" onClick={() => copy(c.code!, `copy-${i}`)}>
-                        {copied === `copy-${i}` ? '✓ kopyalandı' : '⧉ kopyala'}
+                        {copied === `copy-${i}` ? t.rdCopied : t.rdCopy}
                       </button>
                     )}
                   </div>
@@ -1600,39 +1628,39 @@ function RuleDetail({ rule, onClose, onEdit, onToggle, onDelete }: {
 
           {ex.fix && (
             <section className="rd-sec">
-              <h4>Nasıl denetlenebilir yapılır?</h4>
+              <h4>{t.rdHowFix}</h4>
               <div className="rd-fix">
                 <p>{ex.fix}</p>
                 <div className="rd-fix-ex">
-                  <code>… Yasak: /style=\{'{{'}/</code>
-                  <code>… Zorunlu: /describe\s*\(/</code>
+                  <code>{t.fixExForbidden}/style=\{'{{'}/</code>
+                  <code>{t.fixExRequired}/describe\s*\(/</code>
                 </div>
               </div>
             </section>
           )}
 
           <section className="rd-sec">
-            <h4>Kapsam</h4>
+            <h4>{t.rdScope}</h4>
             <dl className="rd-facts">
-              <div><dt>Dosya deseni</dt><dd><code>{rule.filePattern}</code></dd></div>
-              <div><dt>Önem</dt><dd><span className={`sev ${rule.severity}`}>{rule.severity}</span></dd></div>
-              <div><dt>Tip</dt><dd><span className={`badge ${rule.type}`}>{rule.type === 'REGEX' ? 'Desen' : 'Metin'}</span></dd></div>
-              <div><dt>Durum</dt><dd>{rule.enabled ? '● aktif' : '○ pasif'}</dd></div>
-              <div><dt>Kaynak</dt><dd><small>{rule.sourceFile}</small></dd></div>
+              <div><dt>{t.rdFilePattern}</dt><dd><code>{rule.filePattern}</code></dd></div>
+              <div><dt>{t.rdSeverity}</dt><dd><span className={`sev ${rule.severity}`}>{rule.severity}</span></dd></div>
+              <div><dt>{t.rdType}</dt><dd><span className={`badge ${rule.type}`}>{rule.type === 'REGEX' ? t.badgePattern : t.badgeText}</span></dd></div>
+              <div><dt>{t.rdState}</dt><dd>{rule.enabled ? t.rdActive : t.rdInactive}</dd></div>
+              <div><dt>{t.rdSource}</dt><dd><small>{rule.sourceFile}</small></dd></div>
             </dl>
           </section>
 
           <section className="rd-sec">
             <div className="rd-sec-h">
-              <h4>md satırından kurala</h4>
+              <h4>{t.rdPipeline}</h4>
               <button className="rd-toggle" onClick={() => setShowTrace((v) => !v)}>
-                {showTrace ? 'adımları gizle' : 'adımları göster'}
+                {showTrace ? t.rdHideSteps : t.rdShowSteps}
               </button>
             </div>
 
             <div className="rd-pipe">
               <div className="rd-pipe-step">
-                <span className="rd-pipe-tag">HAM SATIR</span>
+                <span className="rd-pipe-tag">{t.rdRawLine}</span>
                 <pre className="rd-raw">{rule.raw}</pre>
               </div>
 
@@ -1647,33 +1675,33 @@ function RuleDetail({ rule, onClose, onEdit, onToggle, onDelete }: {
               ))}
 
               <div className="rd-pipe-step">
-                <span className="rd-pipe-tag">İŞLENMİŞ GÖVDE</span>
+                <span className="rd-pipe-tag">{t.rdCleanBody}</span>
                 <pre className="rd-raw">{trace.cleaned}</pre>
-                <small className="rd-pipe-note">Motorun sakladığı metin; desen ekleri burada durur.</small>
+                <small className="rd-pipe-note">{t.rdCleanNote}</small>
               </div>
 
               <div className="rd-pipe-step">
-                <span className="rd-pipe-tag ok">BULGUDA GÖRÜNEN MESAJ</span>
+                <span className="rd-pipe-tag ok">{t.rdFinalMsg}</span>
                 <pre className="rd-raw done">{ex.message}</pre>
-                <small className="rd-pipe-note">Bir ihlal bulunduğunda incelemede bu metin gösterilir.</small>
+                <small className="rd-pipe-note">{t.rdFinalNote}</small>
               </div>
             </div>
 
             <dl className="rd-facts tight">
-              <div><dt>Ad nereden</dt><dd>{trace.origins.name}</dd></div>
-              <div><dt>Önem nereden</dt><dd>{trace.origins.severity}</dd></div>
-              <div><dt>Dosya deseni nereden</dt><dd>{trace.origins.filePattern}</dd></div>
+              <div><dt>{t.rdNameFrom}</dt><dd>{trace.origins.name}</dd></div>
+              <div><dt>{t.rdSevFrom}</dt><dd>{trace.origins.severity}</dd></div>
+              <div><dt>{t.rdPatternFrom}</dt><dd>{trace.origins.filePattern}</dd></div>
             </dl>
           </section>
 
           {examples.length > 0 && (
             <section className="rd-sec">
-              <h4>Bu kural nasıl bulguya girer?</h4>
+              <h4>{t.rdExamples}</h4>
               <div className="rd-ex">
                 {examples.map((e, i) => (
                   <button
                     key={i} className={`rd-ex-row ${e.fires ? 'hit' : 'clean'}`}
-                    onClick={() => setProbeLine(e.code)} title="Canlı denemeye taşı"
+                    onClick={() => setProbeLine(e.code)} title={t.rdMoveToProbe}
                   >
                     <span className="rd-ex-tag">{e.fires ? '⛔' : '✓'} {e.label}</span>
                     <code>{e.code}</code>
@@ -1682,24 +1710,21 @@ function RuleDetail({ rule, onClose, onEdit, onToggle, onDelete }: {
                 ))}
               </div>
               {ex.coverage !== 'DETECTOR' && ex.coverage !== 'LIMIT' && (
-                <small className="rd-ex-note">
-                  Örnek satırlar kuralın kendi deseninden türetilir ve gerçek desenle doğrulanır —
-                  gerçek kodun birebir hali değil, desenin neyi yakaladığının en sade göstergesidir.
-                </small>
+                <small className="rd-ex-note">{t.rdExamplesNote}</small>
               )}
             </section>
           )}
 
           <section className="rd-sec">
-            <h4>Canlı deneme</h4>
+            <h4>{t.rdProbe}</h4>
             {probe.applicable ? (
               <div className="rd-try">
                 <input
                   value={probeLine} onChange={(e) => setProbeLine(e.target.value)}
-                  placeholder="Bir kod satırı yapıştırın…" spellCheck={false}
+                  placeholder={t.rdProbePh} spellCheck={false}
                 />
                 <div className={`rd-try-res ${probeLine.trim() ? (probe.fires ? 'hit' : 'clean') : 'idle'}`}>
-                  <b>{!probeLine.trim() ? '·' : probe.fires ? '⛔ Bulgu üretir' : '✓ Bulgu üretmez'}</b>
+                  <b>{!probeLine.trim() ? '·' : probe.fires ? t.rdProbeFires : t.rdProbeClean}</b>
                   <span>{probe.detail}</span>
                 </div>
               </div>
@@ -1710,9 +1735,9 @@ function RuleDetail({ rule, onClose, onEdit, onToggle, onDelete }: {
         </div>
 
         <footer className="rd-foot">
-          <button onClick={onEdit}>✏ Düzenle</button>
-          <button className="ghost" onClick={onToggle}>{rule.enabled ? 'Pasifleştir' : 'Aktifleştir'}</button>
-          <button className="ghost rd-del" onClick={onDelete}>Sil</button>
+          <button onClick={onEdit}>{t.rdEdit}</button>
+          <button className="ghost" onClick={onToggle}>{rule.enabled ? t.rdDisable : t.rdEnable}</button>
+          <button className="ghost rd-del" onClick={onDelete}>{t.rdDelete}</button>
         </footer>
       </aside>
     </div>
@@ -1727,6 +1752,7 @@ function RuleDetail({ rule, onClose, onEdit, onToggle, onDelete }: {
 function CoverageStats({ rules, active, onPick }: {
   rules: Rule[]; active: '' | 'AUTO' | RuleCoverage; onPick: (c: '' | 'AUTO' | RuleCoverage) => void
 }) {
+  const t = ui()
   const total = rules.length
   const counts = {} as Record<RuleCoverage, number>
   for (const c of COVER_ORDER) counts[c] = 0
@@ -1751,7 +1777,7 @@ function CoverageStats({ rules, active, onPick }: {
       <button
         className={`cov-ring ${active === 'AUTO' ? 'on' : ''}`}
         onClick={() => onPick(active === 'AUTO' ? '' : 'AUTO')}
-        title={`${auto} kural makine ile denetleniyor — listeyi filtrelemek için tıkla`}
+        title={t.coverRingTitle(auto)}
       >
         <svg viewBox="0 0 128 128" width="128" height="128" aria-hidden="true">
           <circle cx="64" cy="64" r={R} fill="none" stroke="var(--border-2)" strokeWidth="13" />
@@ -1767,21 +1793,21 @@ function CoverageStats({ rules, active, onPick }: {
           ))}
         </svg>
         <span className="cov-ring-txt">
-          <b>%{pct}</b>
-          <small>otomatik</small>
+          <b>{pct}%</b>
+          <small>{t.coverAuto}</small>
         </span>
       </button>
 
       <div className="cov-body">
         <div className="cov-head">
           <div className="cov-total">
-            <b>{total}</b> kural
+            <b>{total}</b> {t.coverRules}
             <span className="cov-split">
-              <i className="dot auto" /> {auto} makine
-              <i className="dot manual" /> {manual} elle
+              <i className="dot auto" /> {auto} {t.coverMachine}
+              <i className="dot manual" /> {manual} {t.coverManual}
             </span>
           </div>
-          {active && <button className="ghost small" onClick={() => onPick('')}>filtreyi temizle</button>}
+          {active && <button className="ghost small" onClick={() => onPick('')}>{t.clearFilter}</button>}
         </div>
 
         <div className="cov-rows">
@@ -1791,9 +1817,9 @@ function CoverageStats({ rules, active, onPick }: {
             return (
               <button
                 key={c} className={`cov-row ${active === c ? 'on' : ''} ${n === 0 ? 'zero' : ''}`}
-                onClick={() => onPick(active === c ? '' : c)} title={COVER_META[c].title} disabled={n === 0}
+                onClick={() => onPick(active === c ? '' : c)} title={coverText(c).title} disabled={n === 0}
               >
-                <span className="cov-key"><i style={{ background: COVER_META[c].color }} />{COVER_META[c].short}</span>
+                <span className="cov-key"><i style={{ background: COVER_META[c].color }} />{coverText(c).short}</span>
                 <span className="cov-bar"><i style={{ width: `${share}%`, background: COVER_META[c].color }} /></span>
                 <span className="cov-n">{n}</span>
               </button>
@@ -1802,9 +1828,7 @@ function CoverageStats({ rules, active, onPick }: {
         </div>
 
         <small className="cov-note">
-          {manual === 0
-            ? 'Tüm kurallar makine ile denetleniyor.'
-            : <>Kalan <b>{manual}</b> kural soyut (dosya konumu, kod tekrarı, katmanlar arası tutarlılık gibi) — tek satırdan denetlenemez, insan incelemesi gerekir.</>}
+          {manual === 0 ? t.coverAllAuto : t.coverNote(manual)}
         </small>
       </div>
     </div>
@@ -1813,11 +1837,14 @@ function CoverageStats({ rules, active, onPick }: {
 
 /** md dosyalarını alanlarına göre gruplayan <optgroup> listesi (select içinde kullanılır). */
 function GroupedFileOptions({ files }: { files: string[] }) {
+  const t = ui()
   const AREAS = ['Frontend', 'Backend', 'Genel'] as const
+  // Alan anahtarları mdStore'dan gelir (TR); etiketler arayüz diline göre gösterilir.
+  const areaLabel: Record<string, string> = { Frontend: t.areaFrontend, Backend: t.areaBackend, Genel: t.areaGeneral }
   const byArea: Record<string, string[]> = { Frontend: [], Backend: [], Genel: [] }
   for (const f of files) byArea[md.fileGroup(f).area].push(f)
   return <>{AREAS.filter((a) => byArea[a].length).map((a) => (
-    <optgroup key={a} label={a}>{byArea[a].map((f) => <option key={f} value={f}>{md.fileGroup(f).icon} {f}</option>)}</optgroup>
+    <optgroup key={a} label={areaLabel[a]}>{byArea[a].map((f) => <option key={f} value={f}>{md.fileGroup(f).icon} {f}</option>)}</optgroup>
   ))}</>
 }
 
@@ -1844,6 +1871,7 @@ function RulesPage() {
   const [content, setContentState] = useState('')
   const [fileMode, setFileMode] = useState<'view' | 'edit'>('view')
   const [newFile, setNewFile] = useState('')
+  const t = ui()
 
   const load = () => {
     const fs = md.listMdFiles(); setFiles(fs)
@@ -1855,10 +1883,10 @@ function RulesPage() {
 
   // --- kural işlemleri ---
   const saveRule = () => {
-    if (!draft.name || !draft.body || !target) { setMsg('⚠️ Ad, gövde ve hedef md gerekli.'); return }
+    if (!draft.name || !draft.body || !target) { setMsg(t.ruleSaveNeeds); return }
     try {
       if (editing) md.updateRule(editing, draft); else md.addRule(target, draft)
-      setDraft(emptyDraft); setEditing(null); setMsg(`✅ Kural '${editing ? editing.sourceFile : target}' dosyasına yazıldı.`); load()
+      setDraft(emptyDraft); setEditing(null); setMsg(t.ruleSaved(editing ? editing.sourceFile : target)); load()
     } catch (e) { setMsg('⚠️ ' + (e instanceof Error ? e.message : String(e))) }
   }
   const editRule = (r: Rule) => { setEditing(r); setTarget(r.sourceFile); setDraft({ name: r.name, description: r.description, type: r.type, severity: r.severity, filePattern: r.filePattern, body: r.body, enabled: r.enabled }) }
@@ -1867,14 +1895,14 @@ function RulesPage() {
 
   // --- md dosya işlemleri ---
   const openFile = (name: string) => { setSelFile(name); setContentState(md.getContent(name)); setFileMode('view') }
-  const saveFile = () => { md.setContent(selFile, content); setMsg(`✅ '${selFile}' güncellendi.`); load() }
+  const saveFile = () => { md.setContent(selFile, content); setMsg(t.updatedOk(selFile)); load() }
   const downloadFile = () => md.downloadFile(selFile)
   const deleteFile = () => { if (confirmDelete(selFile)) { md.deleteFile(selFile); setSelFile(''); setContentState(''); load() } }
   const createFile = () => {
-    try { md.createFile(newFile); const name = newFile.trim().endsWith('.md') ? newFile.trim() : newFile.trim() + '.md'; setNewFile(''); load(); openFile(name); setView('files'); setMsg(`✅ '${name}' oluşturuldu.`) }
+    try { md.createFile(newFile); const name = newFile.trim().endsWith('.md') ? newFile.trim() : newFile.trim() + '.md'; setNewFile(''); load(); openFile(name); setView('files'); setMsg(t.createdOk(name)) }
     catch (e) { setMsg('⚠️ ' + (e instanceof Error ? e.message : String(e))) }
   }
-  const resetAll = () => { if (confirmReset()) { md.resetToBundled(); setSelFile(''); setContentState(''); setMsg('↻ Projedeki md dosyalarından yeniden yüklendi.'); load() } }
+  const resetAll = () => { if (confirmReset()) { md.resetToBundled(); setSelFile(''); setContentState(''); setMsg(t.resetOk); load() } }
 
   const shown = rules.filter((r) =>
     (!fileFilter || r.sourceFile === fileFilter) &&
@@ -1889,25 +1917,25 @@ function RulesPage() {
           <div className="rules-hero-l">
             <span className="rules-hero-ic">📜</span>
             <div>
-              <h2>Kurallar & md Dosyaları</h2>
-              <p>Kurallar projedeki <code>rules-md/*.md</code> dosyalarından okunur; değişiklikler tarayıcıda saklanır.</p>
+              <h2>{t.rulesHeroTitle}</h2>
+              <p>{t.rulesHeroSub}</p>
             </div>
           </div>
-          <button className="hero-help-btn" onClick={() => setShowHelp((v) => !v)}>{showHelp ? '✕ Rehberi kapat' : '💡 Nasıl kural eklenir?'}</button>
+          <button className="hero-help-btn" onClick={() => setShowHelp((v) => !v)}>{showHelp ? t.guideClose : t.guideOpen}</button>
         </div>
 
         {outdated.length > 0 && (
           <div className="mdupdate">
             <span className="mdupdate-ic">🆕</span>
             <div className="mdupdate-txt">
-              <b>Projede {outdated.length} kural dosyası güncellendi</b>
+              <b>{t.mdUpdated(outdated.length)}</b>
               <small>
-                Tarayıcıdaki kopyanız düzenlenmiş olduğu için otomatik güncellenmedi:{' '}
+                {t.mdUpdatedNote}
                 {outdated.slice(0, 4).join(', ')}{outdated.length > 4 ? ` +${outdated.length - 4}` : ''}
               </small>
             </div>
-            <button onClick={() => { md.refreshFromBundled(outdated); setMsg(`✅ ${outdated.length} dosya projedeki sürümle güncellendi.`); load() }}>
-              Güncelle
+            <button onClick={() => { md.refreshFromBundled(outdated); setMsg(t.mdUpdatedOk(outdated.length)); load() }}>
+              {t.mdUpdate}
             </button>
           </div>
         )}
@@ -1916,10 +1944,10 @@ function RulesPage() {
 
         <div className="rules-hero-bar">
           <div className="seg">
-            <button className={view === 'rules' ? 'on' : ''} onClick={() => setView('rules')}>⚙️ Kurallar</button>
-            <button className={view === 'files' ? 'on' : ''} onClick={() => setView('files')}>📄 md Dosyaları</button>
+            <button className={view === 'rules' ? 'on' : ''} onClick={() => setView('rules')}>{t.segRules}</button>
+            <button className={view === 'files' ? 'on' : ''} onClick={() => setView('files')}>{t.segFiles}</button>
           </div>
-          <button className="ghost small" onClick={load}>↻ Yenile</button>
+          <button className="ghost small" onClick={load}>{t.refresh}</button>
         </div>
 
         {showHelp && <GuideModal onClose={() => setShowHelp(false)} />}
@@ -1939,45 +1967,45 @@ function RulesPage() {
       {view === 'rules' ? (
         <div className="grid">
           <section className="card">
-            <h2>{editing ? 'Kuralı Düzenle' : 'Yeni Kural'}</h2>
-            <label>Ad<input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} /></label>
-            <label>Açıklama<input value={draft.description ?? ''} onChange={(e) => setDraft({ ...draft, description: e.target.value })} /></label>
+            <h2>{editing ? t.editRule : t.newRule}</h2>
+            <label>{t.fName}<input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} /></label>
+            <label>{t.fDescription}<input value={draft.description ?? ''} onChange={(e) => setDraft({ ...draft, description: e.target.value })} /></label>
             <div className="row">
-              <label>Tip<select value={draft.type} onChange={(e) => setDraft({ ...draft, type: e.target.value as RuleType })}><option value="REGEX">REGEX</option><option value="LLM">LLM</option></select></label>
-              <label>Önem<select value={draft.severity} onChange={(e) => setDraft({ ...draft, severity: e.target.value as Severity })}>{SEV_LIST.map((s) => <option key={s} value={s}>{s}</option>)}</select></label>
-              <label>Dosya deseni<input value={draft.filePattern} onChange={(e) => setDraft({ ...draft, filePattern: e.target.value })} placeholder="*.java" /></label>
+              <label>{t.fType}<select value={draft.type} onChange={(e) => setDraft({ ...draft, type: e.target.value as RuleType })}><option value="REGEX">REGEX</option><option value="LLM">LLM</option></select></label>
+              <label>{t.fSeverity}<select value={draft.severity} onChange={(e) => setDraft({ ...draft, severity: e.target.value as Severity })}>{SEV_LIST.map((s) => <option key={s} value={s}>{s}</option>)}</select></label>
+              <label>{t.fFilePattern}<input value={draft.filePattern} onChange={(e) => setDraft({ ...draft, filePattern: e.target.value })} placeholder="*.java" /></label>
             </div>
-            <label>Gövde (REGEX deseni / LLM talimatı)<textarea value={draft.body} onChange={(e) => setDraft({ ...draft, body: e.target.value })} rows={3} /></label>
-            <label>Hedef md dosyası<select value={target} onChange={(e) => setTarget(e.target.value)} disabled={!!editing}><GroupedFileOptions files={files} /></select></label>
-            <label className="inline"><input type="checkbox" checked={draft.enabled} onChange={(e) => setDraft({ ...draft, enabled: e.target.checked })} /> Aktif</label>
+            <label>{t.fBody}<textarea value={draft.body} onChange={(e) => setDraft({ ...draft, body: e.target.value })} rows={3} /></label>
+            <label>{t.fTargetMd}<select value={target} onChange={(e) => setTarget(e.target.value)} disabled={!!editing}><GroupedFileOptions files={files} /></select></label>
+            <label className="inline"><input type="checkbox" checked={draft.enabled} onChange={(e) => setDraft({ ...draft, enabled: e.target.checked })} /> {t.fEnabled}</label>
             <div className="actions">
-              <button onClick={saveRule}>{editing ? 'Güncelle' : 'Ekle'}</button>
-              {editing && <button className="ghost" onClick={() => { setEditing(null); setDraft(emptyDraft) }}>İptal</button>}
+              <button onClick={saveRule}>{editing ? t.update : t.add}</button>
+              {editing && <button className="ghost" onClick={() => { setEditing(null); setDraft(emptyDraft) }}>{t.cancelBtn}</button>}
             </div>
           </section>
 
           <section className="card">
-            <h2>Kurallar ({shown.length}{shown.length !== rules.length ? ` / ${rules.length}` : ''})</h2>
+            <h2>{t.tabRules} ({shown.length}{shown.length !== rules.length ? ` / ${rules.length}` : ''})</h2>
             <div className="row" style={{ marginBottom: 10 }}>
-              <label>Ara<input value={q} onChange={(e) => setQ(e.target.value)} placeholder="ad / gövde / dosya" /></label>
-              <label>Kaynak md<select value={fileFilter} onChange={(e) => setFileFilter(e.target.value)}><option value="">Tümü</option><GroupedFileOptions files={files} /></select></label>
-              <label>Denetim
+              <label>{t.search}<input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t.searchPh} /></label>
+              <label>{t.sourceMd}<select value={fileFilter} onChange={(e) => setFileFilter(e.target.value)}><option value="">{t.all}</option><GroupedFileOptions files={files} /></select></label>
+              <label>{t.checking}
                 <select value={covFilter} onChange={(e) => setCovFilter(e.target.value as typeof covFilter)}>
-                  <option value="">Tümü</option>
-                  <option value="AUTO">⚙️ Otomatik (hepsi)</option>
-                  <option value="REGEX">{COVER_META.REGEX.label}</option>
-                  <option value="PATTERN">{COVER_META.PATTERN.label}</option>
-                  <option value="DETECTOR">{COVER_META.DETECTOR.label}</option>
-                  <option value="LIMIT">{COVER_META.LIMIT.label}</option>
-                  <option value="MANUAL">{COVER_META.MANUAL.label} ({manualCount})</option>
+                  <option value="">{t.all}</option>
+                  <option value="AUTO">{t.autoAll}</option>
+                  <option value="REGEX">{t.coverMeta.REGEX.label}</option>
+                  <option value="PATTERN">{t.coverMeta.PATTERN.label}</option>
+                  <option value="DETECTOR">{t.coverMeta.DETECTOR.label}</option>
+                  <option value="LIMIT">{t.coverMeta.LIMIT.label}</option>
+                  <option value="MANUAL">{t.coverMeta.MANUAL.label} ({manualCount})</option>
                 </select>
               </label>
             </div>
             {covFilter === 'MANUAL' && (
               <div className="cover-hint">
-                Bu kurallar soyut olduğu için makine ile denetlenemiyor. Denetlenebilir yapmak için kural
-                metninin sonuna açık bir desen ekleyin: <code>Yasak: /style=\{'{{'}/</code> (eşleşen satır ihlaldir)
-                veya <code>Zorunlu: /describe\s*\(/</code> (dosyada hiç eşleşme yoksa ihlaldir).
+                {t.coverHint}
+                <code>{t.fixExForbidden.trim()} /style=\{'{{'}/</code>{t.coverHintForbid}
+                <code>{t.fixExRequired.trim()} /describe\s*\(/</code>{t.coverHintRequire}
               </div>
             )}
             <div className="rulelist">
@@ -1987,17 +2015,17 @@ function RulesPage() {
                 return (
                   <button
                     key={r.id} className={`rulerow ${r.enabled ? '' : 'off'} ${detail?.id === r.id ? 'sel' : ''}`}
-                    onClick={() => setDetail(r)} title="Detayları gör"
+                    onClick={() => setDetail(r)} title={t.seeDetails}
                   >
                     <span className="rr-accent" style={{ background: m.color }} />
                     <span className="rr-main">
                       <span className="rr-name">{r.name}</span>
                       <span className="rr-meta">
-                        <span className={`cover ${m.cls}`}>{m.label}</span>
+                        <span className={`cover ${m.cls}`}>{coverText(cov).label}</span>
                         <span className={`sev ${r.severity}`}>{r.severity}</span>
                         <code>{r.filePattern}</code>
                         <small>{r.sourceFile.replace(/\.md$/, '')}</small>
-                        {!r.enabled && <span className="rr-off">pasif</span>}
+                        {!r.enabled && <span className="rr-off">{t.ruleInactive}</span>}
                       </span>
                     </span>
                     <span className="rr-go">›</span>
@@ -2005,7 +2033,7 @@ function RulesPage() {
                 )
               })}
               {shown.length === 0 && (
-                <p className="rulelist-empty">{rules.length === 0 ? 'md dosyalarında kural yok.' : 'Filtreye uyan kural yok.'}</p>
+                <p className="rulelist-empty">{rules.length === 0 ? t.noRulesAtAll : t.noRulesMatch}</p>
               )}
             </div>
           </section>
@@ -2013,15 +2041,16 @@ function RulesPage() {
       ) : (
         <div className="grid">
           <section className="card">
-            <h2>md Dosyaları ({files.length})</h2>
+            <h2>{t.mdFiles} ({files.length})</h2>
             {(() => {
               const AREAS = ['Frontend', 'Backend', 'Genel'] as const
               const areaIcon = { Frontend: '🎨', Backend: '⚙️', Genel: '📄' } as const
+              const areaLabel: Record<string, string> = { Frontend: t.areaFrontend, Backend: t.areaBackend, Genel: t.areaGeneral }
               const byArea: Record<string, string[]> = { Frontend: [], Backend: [], Genel: [] }
               for (const f of files) byArea[md.fileGroup(f).area].push(f)
               return AREAS.filter((a) => byArea[a].length).map((area) => (
                 <div key={area} className="mdgroup">
-                  <div className="mdgroup-h">{areaIcon[area]} {area} <span>{byArea[area].length}</span></div>
+                  <div className="mdgroup-h">{areaIcon[area]} {areaLabel[area]} <span>{byArea[area].length}</span></div>
                   {byArea[area].map((f) => {
                     const g = md.fileGroup(f)
                     return (
@@ -2036,10 +2065,10 @@ function RulesPage() {
               ))
             })()}
             <div style={{ marginTop: 12 }}>
-              <label>Yeni md dosyası<input value={newFile} onChange={(e) => setNewFile(e.target.value)} placeholder="07-yeni-standart.md" /></label>
+              <label>{t.newMdFile}<input value={newFile} onChange={(e) => setNewFile(e.target.value)} placeholder="07-yeni-standart.md" /></label>
               <div className="actions">
-                <button onClick={createFile} disabled={!newFile.trim()}>Oluştur</button>
-                <button className="ghost" onClick={resetAll}>↻ Projedekilerden sıfırla</button>
+                <button onClick={createFile} disabled={!newFile.trim()}>{t.create}</button>
+                <button className="ghost" onClick={resetAll}>{t.resetFromProject}</button>
               </div>
             </div>
           </section>
@@ -2048,11 +2077,11 @@ function RulesPage() {
             {selFile ? (<>
               <div className="rules-top-head"><h2>{selFile}</h2>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <button className={`ghost small ${fileMode === 'view' ? 'active' : ''}`} onClick={() => setFileMode('view')}>👁 Görüntüle</button>
-                  <button className={`ghost small ${fileMode === 'edit' ? 'active' : ''}`} onClick={() => setFileMode('edit')}>✏ Düzenle</button>
-                  {fileMode === 'edit' && <button onClick={saveFile}>Kaydet</button>}
-                  <button className="ghost small" onClick={downloadFile}>⬇ İndir</button>
-                  <button className="ghost small" onClick={deleteFile}>Sil</button>
+                  <button className={`ghost small ${fileMode === 'view' ? 'active' : ''}`} onClick={() => setFileMode('view')}>{t.view}</button>
+                  <button className={`ghost small ${fileMode === 'edit' ? 'active' : ''}`} onClick={() => setFileMode('edit')}>{t.edit}</button>
+                  {fileMode === 'edit' && <button onClick={saveFile}>{t.save}</button>}
+                  <button className="ghost small" onClick={downloadFile}>{t.download}</button>
+                  <button className="ghost small" onClick={deleteFile}>{t.deleteBtn}</button>
                 </div>
               </div>
               {fileMode === 'view' ? (
@@ -2060,8 +2089,8 @@ function RulesPage() {
               ) : (
                 <textarea value={content} onChange={(e) => setContentState(e.target.value)} rows={22} style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 12 }} />
               )}
-              <small>{fileMode === 'view' ? 'Düzenlemek için ✏ Düzenle\'ye geç.' : 'Değişiklikler tarayıcıda saklanır.'} Projeye kalıcı almak için <b>İndir</b> → <code>src/rules-md/{selFile}</code> ile değiştir.</small>
-            </>) : <p className="hint">Düzenlemek için soldan bir md dosyası seç ya da yeni dosya oluştur.</p>}
+              <small>{fileMode === 'view' ? t.editHint : t.savedInBrowser}{t.permanentHint(selFile)}</small>
+            </>) : <p className="hint">{t.pickFileHint}</p>}
           </section>
         </div>
       )}
@@ -2070,6 +2099,6 @@ function RulesPage() {
 }
 
 /** md dosyası silme onayı — yalnızca tarayıcı kopyası silinir. */
-function confirmDelete(name: string): boolean { return window.confirm(`'${name}' silinsin mi? (tarayıcı kopyası)`) }
+function confirmDelete(name: string): boolean { return window.confirm(ui().confirmDeleteFile(name)) }
 /** Tüm md değişikliklerini geri alma onayı (projedeki dosyalardan yeniden tohumlama). */
-function confirmReset(): boolean { return window.confirm('Tüm md değişiklikleri silinip projedeki dosyalardan yeniden yüklensin mi?') }
+function confirmReset(): boolean { return window.confirm(ui().confirmResetAll) }

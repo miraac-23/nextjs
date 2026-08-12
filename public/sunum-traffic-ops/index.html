@@ -1,0 +1,1263 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>Trafik Polisi Operasyon ve Takip Sistemi — Sunum</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ===================== IKON SPRITE ===================== -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+ <defs>
+  <symbol id="i-siren" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18v-5a5 5 0 0110 0v5"/><rect x="4" y="18" width="16" height="3" rx="1.2"/><path d="M12 3v2M4.5 6.5l1.4 1.4M19.5 6.5l-1.4 1.4"/></symbol>
+  <symbol id="i-car" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v2.5M20 16v2.5"/><path d="M3 16v-3.4L5 8h14l2 4.6V16z"/><path d="M3 12.6h18"/><circle cx="7.5" cy="16" r="1.4"/><circle cx="16.5" cy="16" r="1.4"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></symbol>
+  <symbol id="i-map" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="4"/><path d="M11 11l9 9M17 17l2-2M15 15l2-2"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5.5a3 3 0 010 5.4"/><path d="M18 20c0-2.2-.9-4.1-2.3-5.4"/></symbol>
+  <symbol id="i-db" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5.5" rx="7" ry="3"/><path d="M5 5.5v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/><path d="M5 11.5v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></symbol>
+  <symbol id="i-server" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="6" rx="1.6"/><rect x="3" y="14" width="18" height="6" rx="1.6"/><path d="M7 7h.01M7 17h.01"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/><path d="M3 17.5l9 5 9-5"/></symbol>
+  <symbol id="i-stream" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11M3 12h16M3 17h8"/><circle cx="18" cy="7" r="2.2"/><circle cx="14" cy="17" r="2.2"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4"/><path d="M4 20h16"/><path d="M7 16l4-5 3 3 5-7"/></symbol>
+  <symbol id="i-gauge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18a8 8 0 1116 0"/><path d="M12 18l4-5"/><path d="M12 18h.01"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.4"/><rect x="14" y="3" width="7" height="7" rx="1.4"/><rect x="3" y="14" width="7" height="7" rx="1.4"/><rect x="14" y="14" width="7" height="7" rx="1.4"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 8l-4 4 4 4M15 8l4 4-4 4"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 5l12 7-12 7z"/></symbol>
+  <symbol id="i-repeat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9a6 6 0 0110-4l3 3"/><path d="M20 15a6 6 0 01-10 4l-3-3"/><path d="M17 4v4h-4M7 20v-4h4"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor"/></symbol>
+  <symbol id="i-flask" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v6L4 19a2 2 0 001.7 3h12.6A2 2 0 0020 19l-6-10V3"/><path d="M8.5 3h7"/><path d="M7 15h10"/></symbol>
+  <symbol id="i-cpu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="10" height="10" rx="1.6"/><rect x="3.5" y="3.5" width="17" height="17" rx="2.6"/><path d="M9 1.5v2M15 1.5v2M9 20.5v2M15 20.5v2M1.5 9h2M1.5 15h2M20.5 9h2M20.5 15h2"/></symbol>
+  <symbol id="i-net" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="2.2"/><circle cx="4.5" cy="19" r="2.2"/><circle cx="19.5" cy="19" r="2.2"/><path d="M12 6.2v5.3M12 11.5L6 17.2M12 11.5L18 17.2"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8l8.5 4.7v9L12 21.2 3.5 16.5v-9z"/><path d="M3.5 7.5L12 12.2l8.5-4.7"/><path d="M12 12.2v9"/></symbol>
+  <symbol id="i-branch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="5" r="2.4"/><circle cx="6" cy="19" r="2.4"/><circle cx="18" cy="12" r="2.4"/><path d="M6 7.4v9.2"/><path d="M15.6 12H8"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 1112 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 20a2 2 0 004 0"/></symbol>
+  <symbol id="i-spring" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 018-8c4 0 6 3 6 6 0 2.5-2 4-4 4-1.5 0-3-1-3-3"/><circle cx="12" cy="12" r="9" opacity=".4"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5A2.5 2.5 0 016.5 2H20v16H6.5A2.5 2.5 0 004 20.5z"/><path d="M4 20.5A2.5 2.5 0 016.5 18H20v4H6.5A2.5 2.5 0 014 19.5z"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
+  <symbol id="i-rocket" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c3.5 2.4 5.5 6 5.5 10L12 17l-5.5-5C6.5 8 8.5 4.4 12 2z"/><circle cx="12" cy="9" r="1.8"/><path d="M8 17l-2.5 4L9 20M16 17l2.5 4L15 20"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.8-6.5 10-6.5S22 12 22 12s-3.8 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.8"/></symbol>
+  <symbol id="i-cloud" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 18a4.5 4.5 0 01-.6-8.96A6 6 0 0117.7 9.4 4 4 0 0117.5 18z"/></symbol>
+  <symbol id="i-terminal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="19" height="16" rx="2"/><path d="M6.5 9l3 3-3 3M12.5 15h5"/></symbol>
+  <symbol id="i-stack" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="5" rx="1.4"/><rect x="3" y="10" width="18" height="5" rx="1.4"/><rect x="3" y="17" width="18" height="4" rx="1.4"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22V3"/><path d="M5 4h11l-2 4 2 4H5"/></symbol>
+  <symbol id="i-route" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="5" r="2.4"/><circle cx="19" cy="19" r="2.4"/><path d="M7.4 5H15a4 4 0 010 8H9a4 4 0 000 8h7.6"/></symbol>
+  <symbol id="i-thread" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v6a3 3 0 003 3h8a3 3 0 013 3v6"/><path d="M19 3v6a3 3 0 01-3 3H8a3 3 0 00-3 3v6"/></symbol>
+  <symbol id="i-finger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 016 6v2c0 4-1 7-2 10"/><path d="M12 7a2 2 0 012 2v3c0 3-.6 6-1.6 8.5"/><path d="M6 9a6 6 0 013-5.2"/><path d="M6 13v-2"/><path d="M8.5 21c1-2.4 1.5-5 1.5-8V9"/></symbol>
+  <symbol id="i-timer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2"/><path d="M9 2h6"/></symbol>
+  <symbol id="i-split" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h5"/><path d="M8 12c4 0 4-6 8-6h4"/><path d="M8 12c4 0 4 6 8 6h4"/><path d="M17 3l3 3-3 3"/><path d="M17 15l3 3-3 3"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></symbol>
+  <symbol id="i-scale" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M6 7h12"/><path d="M6 7l-3 6h6z"/><path d="M18 7l-3 6h6z"/><path d="M8 21h8"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.6 2.6 3.9 5.7 3.9 9s-1.3 6.4-3.9 9c-2.6-2.6-3.9-5.7-3.9-9S9.4 5.6 12 3z"/></symbol>
+ </defs>
+</svg>
+
+<div class="progress-stages" id="progressStages"></div>
+<div class="progress" id="progress"></div>
+<div class="brand-mini">
+  <span class="dotlogo"></span><span class="brandtext">TRAFİK POLİSİ OPERASYON VE TAKİP SİSTEMİ</span>
+  <span class="sep">·</span><span class="stagename" id="stageName" data-no-i18n>GİRİŞ</span>
+</div>
+
+<div class="deck" id="deck">
+
+<!-- ══════════════════════════ 1 · KAPAK ══════════════════════════ -->
+<section class="slide cover" id="slide-cover" data-lv="0" data-title="Kapak">
+  <h1 class="reveal" style="margin-top:18px">Sahayı Gören,<br><span class="grad-text">Doğru Görevlendiren</span><br>Operasyon Merkezi</h1>
+  <p class="lead reveal" style="margin-top:20px">Trafik polislerinin konumu saniyeler içinde değişirken; olayın nerede
+    olduğunu, en yakın uygun ekibin kim olduğunu ve o ekibin gerçekten müsait olup olmadığını <b>tek ekranda</b>
+    cevaplayan; görevlendirmeyi <b>iki operatör aynı anda denese bile</b> tutarlı tutan sistem.</p>
+  <div class="tech-strip reveal">
+    <span class="t"><svg><use href="#i-spring"/></svg>Java 21 · Spring Boot 3.4</span>
+    <span class="t"><svg><use href="#i-db"/></svg>PostgreSQL 16 · Flyway</span>
+    <span class="t"><svg><use href="#i-layers"/></svg>Redis 7</span>
+    <span class="t"><svg><use href="#i-stream"/></svg>Apache Kafka</span>
+    <span class="t"><svg><use href="#i-bolt"/></svg>SSE</span>
+    <span class="t"><svg><use href="#i-code"/></svg>React 18 · MUI · RTK Query</span>
+  </div>
+  <div class="badge-row reveal">
+    <span class="pill b"><svg><use href="#i-layers"/></svg>32 slayt · 4 aşama</span>
+    <span class="pill a"><svg><use href="#i-play"/></svg>10 canlı sahne</span>
+    <span class="pill c"><svg><use href="#i-target"/></svg>7 elle denenebilir demo</span>
+    <span class="pill g"><svg><use href="#i-check"/></svg>Ölçülerek doğrulandı</span>
+  </div>
+  <canvas class="cover-art" id="coverCv"
+    aria-label="Şehir planı üzerinde dağınık duran ekiplerin bir olay noktasına yönlendirilmesini gösteren animasyon"></canvas>
+</section>
+
+<!-- ══════════════════════════ 2 · YOLCULUK ══════════════════════════ -->
+<section class="slide" id="slide-journey" data-lv="0" data-title="Bu sunum nasıl ilerliyor?">
+  <div class="slide-head reveal">
+    <span class="kicker"><svg><use href="#i-map"/></svg> Nasıl okunmalı</span>
+    <h2>Dört aşamada: sahadan ölçeğe</h2>
+    <p class="sub">Önce sistemin ne işe yaradığını görürüz. Sonra onu ayakta tutan mimari kararlara ineriz.
+      Ardından "iki operatör aynı anda ne yaparsa ne olur" sorusuyla yüzleşiriz. En sonunda sistemi
+      bugünkünün on katı yüke hazırlayan kararları tartışırız. Soldaki renkli şerit her an hangi aşamada
+      olduğunuzu söyler.</p>
+  </div>
+
+  <div class="lvrail reveal">
+    <div class="lvrail-track"><div class="lvrail-fill" id="jFill"></div></div>
+    <div class="lvrail-stops" id="jStops">
+      <div class="lvstop" data-l="1"><span class="pin"><i></i></span><span class="lvname">1 · OPERASYON</span>
+        <span class="lvdesc">Problem, roller, uçtan uca akış ve ekranlar</span></div>
+      <div class="lvstop" data-l="2"><span class="pin"><i></i></span><span class="lvname">2 · MİMARİ</span>
+        <span class="lvdesc">Paket düzeni, sözleşme, veri modeli, indeksler</span></div>
+      <div class="lvstop" data-l="3"><span class="pin"><i></i></span><span class="lvname">3 · DOĞRULUK</span>
+        <span class="lvdesc">Yarış koşulu, kilitleme, sürüm kontrolü, güvenlik</span></div>
+      <div class="lvstop" data-l="4"><span class="pin"><i></i></span><span class="lvname">4 · ÖLÇEK</span>
+        <span class="lvdesc">SSE, Kafka, virtual thread, idempotency, hız sınırı</span></div>
+    </div>
+  </div>
+
+  <div class="grid g4 r2" style="margin-top:44px">
+    <div class="stat a"><div class="s">Kod tabanı</div><div class="v num" data-count="150">0</div><div class="l">Java dosyası</div></div>
+    <div class="stat b"><div class="s">Arayüz</div><div class="v num" data-count="54">0</div><div class="l">TypeScript dosyası</div></div>
+    <div class="stat d"><div class="s">Test</div><div class="v num" data-count="91">0</div><div class="l">otomatik test (49+8+34)</div></div>
+    <div class="stat c"><div class="s">Veri</div><div class="v num" data-count="7" data-suffix=" M">0</div><div class="l">günlük konum satırı</div></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 3 · AŞAMA 1 ══════════════════════════ -->
+<section class="slide stage" id="stage-1" data-lv="1" data-title="Aşama 1 · Operasyon">
+  <div class="stage-grid">
+    <div class="stage-num reveal">01</div>
+    <div>
+      <div class="reveal"><span class="lvbadge lv1"><span class="lvdot"></span>Aşama 1</span></div>
+      <h2 class="reveal" style="margin-top:14px">Operasyon: sistem ne yapıyor?</h2>
+      <p class="lead reveal" style="margin-top:12px">Kod yazmadan önce cevaplanması gereken soru: bir trafik
+        operasyon merkezinde gün nasıl geçiyor ve hangi an kritik?</p>
+      <div class="stage-list r2">
+        <div class="sl"><svg><use href="#i-warn"/></svg><span>Telsizle yürüyen görevlendirmenin ürettiği somut hatalar</span></div>
+        <div class="sl"><svg><use href="#i-users"/></svg><span>Üç rol, üç farklı yetki sınırı</span></div>
+        <div class="sl"><svg><use href="#i-route"/></svg><span>Konum bildiriminden görevlendirmeye uçtan uca akış</span></div>
+        <div class="sl"><svg><use href="#i-eye"/></svg><span>Operatörün gerçekten baktığı ekran</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 4 · PROBLEM ══════════════════════════ -->
+<section class="slide" id="slide-problem" data-lv="1" data-title="Problem — telsizle görevlendirme">
+  <div class="slide-head reveal">
+    <div class="hrow"><span class="lvbadge lv1"><span class="lvdot"></span>Operasyon</span>
+      <span class="ihint pulse"><svg><use href="#i-play"/></svg> canlı sahne</span></div>
+    <h2>Ekip nerede? Müsait mi? — telsizde cevabı yok</h2>
+    <p class="sub">Aşağıdaki sahne gerçek bir vardiyayı temsil ediyor: solda olaylar birikiyor, sağda ekipler
+      sahada. Operatör kimin nerede olduğunu bilmediği için görevlendirmeyi <b>tahminle</b> yapıyor.</p>
+  </div>
+
+  <div class="scene reveal">
+    <div class="scene-head"><svg><use href="#i-siren"/></svg> Vardiya simülasyonu <span class="sp"></span>
+      <span class="sbadge r" id="probBad">0 hatalı görevlendirme</span></div>
+    <canvas id="dispatchCv" class="cv-flex"
+      aria-label="Olayların biriktiği ve ekiplerin rastgele yönlendirildiği vardiya animasyonu"></canvas>
+  </div>
+
+  <div class="grid g3 r2" style="margin-top:18px">
+    <div class="card bad"><div class="ico"><svg><use href="#i-x"/></svg></div>
+      <h3>Çift görevlendirme</h3>
+      <p>Aynı ekip iki ayrı olaya yönlendirilir. İkinci olay ekip gelmediği için bekler; kimse fark etmez.</p></div>
+    <div class="card bad"><div class="ico"><svg><use href="#i-clock"/></svg></div>
+      <h3>Yanlış ekip seçimi</h3>
+      <p>Olaya 12 km uzaktaki ekip gönderilirken 800 m ötedeki müsait ekip beklemede kalır.</p></div>
+    <div class="card bad"><div class="ico"><svg><use href="#i-search"/></svg></div>
+      <h3>Geriye dönük iz yok</h3>
+      <p>"Bu ekip saat 14:20'de neredeydi?" sorusunun cevabı hiçbir yerde tutulmaz.</p></div>
+  </div>
+
+  <div class="note bad reveal" style="margin-top:18px"><svg><use href="#i-warn"/></svg>
+    <div><b>Problem bir yazılım problemi değil, bir görünürlük problemi.</b> Operatörün elinde konum yok,
+      durum yok, geçmiş yok. Sistemin ilk işi karar vermek değil; <b>karar verebilmek için gereken üç bilgiyi
+      aynı anda göstermek.</b></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 5 · ÇÖZÜM ══════════════════════════ -->
+<section class="slide" id="slide-solution" data-lv="1" data-title="Çözüm — üç soru, tek ekran">
+  <div class="slide-head reveal">
+    <span class="kicker"><svg><use href="#i-target"/></svg> Sistemin sözü</span>
+    <h2>Üç soru, tek ekranda, canlı</h2>
+    <p class="sub">Sistem yeni bir iş akışı dayatmaz. Operatörün zaten sorduğu üç soruyu, sayfa yenilemeden
+      güncellenen tek bir ekranda cevaplar.</p>
+  </div>
+
+  <div class="grid g3 r2">
+    <div class="card acc"><span class="cnum">01</span><div class="ico"><svg><use href="#i-pin"/></svg></div>
+      <h3>Olay nerede?</h3>
+      <p>Olay, öncelik rengiyle haritaya düşer. Konumu, türü ve açılış zamanı kayıt altındadır.</p>
+      <ul><li>Kaza · tıkanıklık · ihlal · yol çalışması</li><li>Dört öncelik seviyesi</li></ul></div>
+    <div class="card acc"><span class="cnum">02</span><div class="ico"><svg><use href="#i-car"/></svg></div>
+      <h3>En yakın uygun ekip kim?</h3>
+      <p>Sahadaki tüm personel harita üzerinde. İşaretçi rengi görev durumunu gösterir.</p>
+      <ul><li>Konum 3 saniyede bir güncellenir</li><li>Geçmiş rota sorgulanabilir</li></ul></div>
+    <div class="card acc"><span class="cnum">03</span><div class="ico"><svg><use href="#i-shield"/></svg></div>
+      <h3>Gerçekten müsait mi?</h3>
+      <p>Görevlendirme anında kilitle doğrulanır. Meşgul bir ekip ikinci bir olaya atanamaz.</p>
+      <ul><li>Veritabanı seviyesinde garanti</li><li>Kritik olay öncelik devralabilir</li></ul></div>
+  </div>
+
+  <div class="note good reveal" style="margin-top:20px"><svg><use href="#i-check"/></svg>
+    <div><b>Tasarımın omurgası:</b> "müsait mi?" sorusunun cevabı ekranda gösterilen bir bilgi değil,
+      görevlendirme anında <b>veritabanının zorladığı bir kural</b>. Ekranda gördüğünüz eskimiş olabilir;
+      kural eskiyemez.</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 6 · ROLLER ══════════════════════════ -->
+<section class="slide" id="slide-roles" data-lv="1" data-title="Roller ve yetkiler">
+  <div class="slide-head reveal">
+    <span class="kicker"><svg><use href="#i-users"/></svg> Yetkilendirme</span>
+    <h2>Üç rol, keskin sınırlar</h2>
+    <p class="sub">Yetki kontrolü uç nokta seviyesinde yapılır ve API sözleşmesinin görünür parçasıdır.
+      Yeni bir uç nokta eklendiğinde yetki kuralı yazılmadıysa bu, sözleşme dosyasında gözle görülür.</p>
+  </div>
+
+  <div class="tbl-wrap reveal">
+    <table class="mtable">
+      <thead><tr><th>Rol</th><th>Personel</th><th>Olay</th><th>Görevlendirme</th><th>Görüntüleme</th></tr></thead>
+      <tbody>
+        <tr><td><b>ADMIN</b><div class="muted" style="font-size:12px">sistem yöneticisi</div></td>
+          <td class="yes">Oluştur · Güncelle · Pasifleştir</td><td class="yes">Tam yetki</td>
+          <td class="yes">Tam yetki</td><td class="yes">Tümü</td></tr>
+        <tr><td><b>OPERATOR</b><div class="muted" style="font-size:12px">merkez operatörü</div></td>
+          <td class="no">Yazamaz</td><td class="yes">Oluştur · Güncelle</td>
+          <td class="yes">Ata · Kaldır · Durum değiştir</td><td class="yes">Tümü</td></tr>
+        <tr><td><b>VIEWER</b><div class="muted" style="font-size:12px">izleyici</div></td>
+          <td class="no">Yazamaz</td><td class="no">Yazamaz</td>
+          <td class="no">Yazamaz</td><td class="yes">Tümü</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="two" style="margin-top:20px">
+    <div class="code reveal">
+      <div class="hd"><svg><use href="#i-code"/></svg> PoliceOfficerClient.java <span class="tag">sözleşme</span></div>
+<pre><span class="c-c">/** Yeni personel oluşturur. Sicil numarası benzersizdir. */</span>
+<span class="c-y">@PostMapping</span>
+<span class="c-y">@PreAuthorize</span>(<span class="c-s">"hasRole('ADMIN')"</span>)
+<span class="c-y">@Idempotent</span>
+ResponseEntity&lt;PoliceOfficerDetail&gt; <span class="c-f">create</span>(
+    <span class="c-y">@RequestBody</span> <span class="c-y">@Valid</span> CreatePoliceOfficerRequest request);</pre>
+    </div>
+    <div class="note acc reveal"><svg><use href="#i-info"/></svg>
+      <div><b>Neden anotasyonlar arayüzde?</b> Bir uç noktanın yolu, yetkisi, doğrulaması ve ne yaptığı tek
+        dosyada okunur. Controller sınıfı yalnızca <span class="chip-mono">@Override</span> içerir; iş kuralı
+        oraya sızdırmak yapının kendisiyle çelişir.<br><br>
+        Spring MVC'nin arayüzdeki anotasyonları işlediği <b>varsayılmadı</b>: her parametre tipi çalışan
+        sisteme karşı ayrı ayrı denendikten sonra sekiz controller'ın tamamına uygulandı.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 7 · UÇTAN UCA AKIŞ ══════════════════════════ -->
+<section class="slide" id="slide-flow" data-lv="1" data-title="Uçtan uca akış">
+  <div class="slide-head reveal">
+    <div class="hrow"><span class="lvbadge lv1"><span class="lvdot"></span>Operasyon</span>
+      <span class="ihint pulse"><svg><use href="#i-play"/></svg> canlı akış</span></div>
+    <h2>Konum bildiriminden görevlendirmeye</h2>
+    <p class="sub">Aynı olay, altı durakta izleniyor. Her durak farklı bir teknolojiye denk geliyor; sunumun
+      geri kalanı bu durakları tek tek açacak.</p>
+  </div>
+
+  <div class="scene reveal">
+    <div class="scene-head"><svg><use href="#i-route"/></svg> İstek yolu <span class="sp"></span>
+      <span class="sbadge a" id="flowStep">1 · Konum bildirimi</span></div>
+    <canvas id="flowCv" class="cv-flex"
+      aria-label="Konum bildiriminin Kafka üzerinden veritabanına, oradan SSE ile operatör ekranına ulaşmasını gösteren animasyon"></canvas>
+  </div>
+
+  <div class="explain reveal" id="flowNote" style="margin-top:14px"></div>
+</section>
+
+<!-- ══════════════════════════ 8 · EKRAN ══════════════════════════ -->
+<section class="slide" id="slide-screen" data-lv="1" data-title="Operasyon panosu">
+  <div class="slide-head reveal">
+    <span class="kicker"><svg><use href="#i-eye"/></svg> Arayüz</span>
+    <h2>Operatörün baktığı ekran</h2>
+    <p class="sub">Aşağıdaki pano canlı çalışıyor: işaretçiler hareket ediyor, başka bir operatörün açtığı olay
+      bildirim olarak düşüyor. Ekran tasarımı MUI v6 üzerine kurulu; renk kodlaması tüm ekranlarda aynı.</p>
+  </div>
+
+  <div class="mock reveal">
+    <div class="mock-bar">
+      <span class="dotr"></span><span class="dotr"></span><span class="dotr"></span>
+      <span class="url">localhost:3000/dashboard</span>
+    </div>
+    <div class="mock-bd">
+      <div class="mock-map">
+        <canvas id="mockCv"></canvas>
+        <div class="mock-toast" id="mockToast"><svg><use href="#i-bell"/></svg><span id="mockToastTx">Yeni olay</span></div>
+      </div>
+      <div class="mock-side">
+        <div class="mock-kpis">
+          <div class="mock-kpi"><div class="k">Aktif olay</div><div class="v" id="kpiEv" style="color:var(--accent-2)">14</div></div>
+          <div class="mock-kpi"><div class="k">Müsait</div><div class="v" id="kpiAv" style="color:var(--good)">126</div></div>
+          <div class="mock-kpi"><div class="k">Görevde</div><div class="v" id="kpiOn" style="color:var(--accent)">78</div></div>
+          <div class="mock-kpi"><div class="k">Kritik</div><div class="v" id="kpiCr" style="color:var(--danger)">3</div></div>
+        </div>
+        <div class="mock-list">
+          <div class="lh">Aktif olaylar</div>
+          <div class="mock-row"><span class="pr" style="background:var(--danger)"></span>
+            <span class="txt"><span class="tt">Zincirleme kaza</span><span class="ts">EVT-2026-001042 · D-100</span></span>
+            <span class="bd" style="color:var(--danger);border-color:rgba(248,113,113,.4)">KRİTİK</span></div>
+          <div class="mock-row"><span class="pr" style="background:var(--warn)"></span>
+            <span class="txt"><span class="tt">Şerit ihlali</span><span class="ts">EVT-2026-001041 · E-5</span></span>
+            <span class="bd" style="color:var(--warn);border-color:rgba(251,191,36,.4)">YÜKSEK</span></div>
+          <div class="mock-row"><span class="pr" style="background:var(--accent)"></span>
+            <span class="txt"><span class="tt">Yoğun trafik</span><span class="ts">EVT-2026-001039 · Sahil yolu</span></span>
+            <span class="bd" style="color:var(--accent);border-color:rgba(79,141,255,.4)">ORTA</span></div>
+          <div class="mock-row"><span class="pr" style="background:var(--t3)"></span>
+            <span class="txt"><span class="tt">Yol çalışması</span><span class="ts">EVT-2026-001036 · Merkez</span></span>
+            <span class="bd" style="color:var(--t3);border-color:var(--line-2)">DÜŞÜK</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid g4 r2" style="margin-top:18px">
+    <div class="card"><div class="ico"><svg><use href="#i-map"/></svg></div><h3>Canlı harita</h3>
+      <p>İşaretçi rengi görev durumu, olay rengi öncelik. Renkler TypeScript sabitlerinde tutulur — canvas
+        bağlamı CSS değişkeni çözemez.</p></div>
+    <div class="card"><div class="ico"><svg><use href="#i-chart"/></svg></div><h3>İstatistik kartları</h3>
+      <p>Ağır toplama sorguları Redis üzerinde 30 saniye önbelleklenir.</p></div>
+    <div class="card"><div class="ico"><svg><use href="#i-users"/></svg></div><h3>Personel ekranı</h3>
+      <p>240+ kayıt sayfalı listede. Arama girişi geciktirilir, her tuş vuruşunda istek gitmez.</p></div>
+    <div class="card"><div class="ico"><svg><use href="#i-bell"/></svg></div><h3>Canlı bildirim</h3>
+      <p>Başka bir operatörün işlemi bu ekrana da düşer. Sayfa yenilemesi yoktur.</p></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 9 · AŞAMA 2 ══════════════════════════ -->
+<section class="slide stage" id="stage-2" data-lv="2" data-title="Aşama 2 · Mimari">
+  <div class="stage-grid">
+    <div class="stage-num reveal">02</div>
+    <div>
+      <div class="reveal"><span class="lvbadge lv2"><span class="lvdot"></span>Aşama 2</span></div>
+      <h2 class="reveal" style="margin-top:14px">Mimari: sistemi ne taşıyor?</h2>
+      <p class="lead reveal" style="margin-top:12px">Ekranın arkasında hangi kararlar var? Bu aşamada paket
+        düzeninden indeks seçimine kadar her karar gerekçesiyle birlikte.</p>
+      <div class="stage-list r2">
+        <div class="sl"><svg><use href="#i-stack"/></svg><span>Teknoloji yığını ve neden bu bileşenler</span></div>
+        <div class="sl"><svg><use href="#i-box"/></svg><span>İş alanına göre paketleme</span></div>
+        <div class="sl"><svg><use href="#i-db"/></svg><span>Günde 7 milyon satırı taşıyan veri modeli</span></div>
+        <div class="sl"><svg><use href="#i-search"/></svg><span>Doğru indeks olmadan çalışmayan sorgular</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 10 · YIĞIN ══════════════════════════ -->
+<section class="slide" id="slide-stack" data-lv="2" data-title="Teknoloji yığını">
+  <div class="slide-head reveal">
+    <span class="kicker"><svg><use href="#i-stack"/></svg> Bileşenler</span>
+    <h2>Her bileşen bir soruna karşılık geliyor</h2>
+    <p class="sub">Projede "ileride lazım olur" diye eklenip kapalı bırakılmış bileşen yok. Her biri çalışır
+      durumda ve neyi çözdüğü ölçülebilir.</p>
+  </div>
+
+  <div class="grid g3 r2">
+    <div class="card acc"><div class="ico"><svg><use href="#i-spring"/></svg></div>
+      <h3>Java 21 · Spring Boot 3.4</h3>
+      <p>Virtual thread, record ve sealed interface desteği. Güvenlik, veri erişimi ve izleme tek yapılandırma altında.</p></div>
+    <div class="card acc"><div class="ico"><svg><use href="#i-db"/></svg></div>
+      <h3>PostgreSQL 16</h3>
+      <p>Tablo bölümleme, <span class="chip-mono">pg_trgm</span> ve BRIN indeks çekirdekte. Ek ürün gerekmedi.</p></div>
+    <div class="card teal"><div class="ico"><svg><use href="#i-layers"/></svg></div>
+      <h3>Redis 7</h3>
+      <p>Tek thread'li yürütme atomik Lua script'e imkân verir. Dört ayrı iş için kullanılıyor.</p></div>
+    <div class="card teal"><div class="ico"><svg><use href="#i-stream"/></svg></div>
+      <h3>Apache Kafka</h3>
+      <p>Düzensiz ve yüksek hacimli konum akışını veritabanından ayıran tampon.</p></div>
+    <div class="card"><div class="ico"><svg><use href="#i-bolt"/></svg></div>
+      <h3>Server-Sent Events</h3>
+      <p>Tek yönlü akış için WebSocket'ten az parça: HTTP üzerinde çalışır, yeniden bağlanma protokolde tanımlı.</p></div>
+    <div class="card"><div class="ico"><svg><use href="#i-code"/></svg></div>
+      <h3>React 18 · MUI · RTK Query</h3>
+      <p>Sunucu durumu RTK Query önbelleğinde, istemci durumu Redux slice'ta. İki kaynak birbirine kopyalanmaz.</p></div>
+  </div>
+
+  <div class="two" style="margin-top:20px">
+    <div class="card bad reveal"><div class="ico"><svg><use href="#i-x"/></svg></div>
+      <h3>Değerlendirildi, kullanılmadı</h3>
+      <ul>
+        <li><b>PostGIS</b> — coğrafi ihtiyaç indeksli enlem/boylam aralık sorgusuyla karşılanıyor. Poligon içi arama gerekirse eklenmeli.</li>
+        <li><b>WebSocket</b> — akış tek yönlü. Çift yönlü iletişim gerekmediği için ek karmaşıklık.</li>
+        <li><b>Elasticsearch</b> — arama, ad ve sicil üzerinde alt dize araması. <span class="chip-mono">pg_trgm</span> ayrı küme işletmeden karşılıyor.</li>
+      </ul></div>
+    <div class="card teal reveal"><div class="ico"><svg><use href="#i-layers"/></svg></div>
+      <h3>Redis'in dört işi</h3>
+      <ul>
+        <li><b>Önbellek</b> — dashboard istatistikleri, 30 sn</li>
+        <li><b>Pub/Sub</b> — SSE yayınlarının örnekler arası dağıtımı</li>
+        <li><b>Hız sınırı</b> — token bucket sayaçları (Lua)</li>
+        <li><b>Idempotency</b> — tekrarlanan isteklerin tespiti</li>
+      </ul>
+      <p style="margin-top:10px">Dördünü tek bileşenle karşılamak, işletim yükünü dört ayrı ürüne dağıtmaktan düşük tutuyor.</p></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 11 · PAKET DÜZENİ ══════════════════════════ -->
+<section class="slide" id="slide-pkg" data-lv="2" data-title="Paket düzeni">
+  <div class="slide-head reveal">
+    <div class="hrow"><span class="lvbadge lv2"><span class="lvdot"></span>Mimari</span>
+      <span class="ihint"><svg><use href="#i-target"/></svg> katmanlara tıklayın</span></div>
+    <h2>Teknik katmana göre değil, iş alanına göre</h2>
+    <p class="sub">Katman bazlı paketlemede tek bir özellik değişikliği beş ayrı klasöre dokunmayı gerektirir.
+      Burada bir özelliğin tüm parçaları tek ağaç altında.</p>
+  </div>
+
+  <div class="two w60">
+    <div class="tree reveal" id="pkgTree">
+<span class="tk">com.trafficops</span>
+  <span class="tn" data-k="security">security/</span>      <span class="tc">kimlik doğrulama, JWT, yetkilendirme</span>
+  <span class="tn" data-k="police">police/</span>        <span class="tc">personel yönetimi</span>
+  <span class="tn" data-k="org">organization/</span>  <span class="tc">birim, takım, referans veri</span>
+  <span class="tn" data-k="event">event/</span>         <span class="tc">trafik olayları</span>
+  <span class="tn" data-k="assignment">assignment/</span>    <span class="tc">olay – personel görevlendirmesi</span>
+  <span class="tn" data-k="location">location/</span>      <span class="tc">konum bildirimi ve Kafka ingest'i</span>
+  <span class="tn" data-k="realtime">realtime/</span>      <span class="tc">SSE yayını ve Redis pub/sub</span>
+  <span class="tn" data-k="dashboard">dashboard/</span>     <span class="tc">istatistikler</span>
+  <span class="tn" data-k="common">common/</span>        <span class="tc">hata, idempotency, hız sınırı</span>
+
+<span class="tc">Her feature paketi aynı iskelete sahiptir:</span>
+  <span class="tn" data-k="client">client/</span>        <span class="tc">API sözleşmesi (arayüz)</span>
+  <span class="tn" data-k="controller">controller/</span>    <span class="tc">sözleşmenin gerçekleştirimi</span>
+  <span class="tn" data-k="service">service/</span>       <span class="tc">iş kuralı arayüzü</span>
+  <span class="tn" data-k="impl">service/impl/</span>  <span class="tc">iş kuralı gerçekleştirimi</span>
+  <span class="tn" data-k="repo">repository/</span>    <span class="tc">veri erişimi</span>
+  <span class="tn" data-k="entity">entity/</span>       <span class="tc">JPA varlıkları</span>
+  <span class="tn" data-k="dto">dto/</span>          <span class="tc">istek/yanıt nesneleri (record)</span>
+    </div>
+
+    <div>
+      <div class="tree-info reveal" id="pkgInfo">
+        <b>Bir pakete tıklayın.</b> Her paketin ne barındırdığı ve neden ayrı durduğu burada açılır.
+      </div>
+      <div class="note acc reveal" style="margin-top:14px"><svg><use href="#i-branch"/></svg>
+        <div><b>Bağımlılık yönü tek taraflı.</b> Controller servise, servis repository'ye bağlıdır; ters yön yoktur.
+          Bunun somut karşılığı konum ingest'i: <span class="chip-mono">LocationIngestChannel</span> arayüzünün
+          Kafka ve doğrudan-yazma olmak üzere iki gerçekleştirimi var. Hangisinin çalışacağı tek bir ortam
+          değişkeniyle belirleniyor, çağıran kod hiç değişmiyor.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 12 · VERİ MODELİ ══════════════════════════ -->
+<section class="slide" id="slide-model" data-lv="2" data-title="Veri modeli">
+  <div class="slide-head reveal">
+    <span class="kicker"><svg><use href="#i-db"/></svg> Veri modeli</span>
+    <h2>Dokuz tablo, tek kritik ilişki</h2>
+    <p class="sub">Model küçük. Zorluk tablo sayısında değil, <span class="chip-mono">event_assignments</span>
+      üzerindeki tek kuralda: bir personelin aynı anda yalnızca bir aktif görevlendirmesi olabilir.</p>
+  </div>
+
+  <div class="tbl-wrap reveal">
+    <table class="mtable">
+      <thead><tr><th>Tablo</th><th>İçerik</th><th>İlişki</th><th>Not</th></tr></thead>
+      <tbody>
+        <tr><td><span class="m">users</span></td><td>Kullanıcı, rol, şifre özeti</td><td><span class="m">refresh_tokens</span> 1–n</td><td>BCrypt cost 12</td></tr>
+        <tr><td><span class="m">units</span> / <span class="m">teams</span></td><td>Organizasyon hiyerarşisi</td><td>birim → takım → personel</td><td>Referans verisi migration'da</td></tr>
+        <tr><td><span class="m">police_officers</span></td><td>Sicil, ad, rütbe, görev durumu</td><td><span class="m">teams</span>, <span class="m">vehicles</span></td><td>Ada göre trigram indeks</td></tr>
+        <tr><td><span class="m">vehicles</span></td><td>Plaka, tip, zimmet</td><td><span class="m">police_officers</span> 1–1</td><td></td></tr>
+        <tr><td><span class="m">traffic_events</span></td><td>Kod, tür, öncelik, durum, konum</td><td><span class="m">event_assignments</span> 1–n</td><td>Sürüm alanı ile korunur</td></tr>
+        <tr><td><b><span class="m">event_assignments</span></b></td><td>Rol, durum, zaman damgaları</td><td>olay ⟷ personel</td><td class="par">Kısmi UNIQUE indeks burada</td></tr>
+        <tr><td><b><span class="m">police_locations</span></b></td><td>Enlem, boylam, hız, yön, zaman</td><td><span class="m">police_officers</span> n–1</td><td class="par">Aylık bölümlenmiş tablo</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid g3 r2" style="margin-top:18px">
+    <div class="stat b"><div class="s">Personel</div><div class="v num" data-count="240">0</div><div class="l">demo kurulumunda</div></div>
+    <div class="stat a"><div class="s">Konum aralığı</div><div class="v">3 sn</div><div class="l">bildirim sıklığı</div></div>
+    <div class="stat r"><div class="s">Günlük büyüme</div><div class="v num" data-count="6.9" data-dec="1" data-suffix=" M">0</div><div class="l">konum satırı</div></div>
+  </div>
+
+  <div class="note warn reveal" style="margin-top:18px"><svg><use href="#i-warn"/></svg>
+    <div><b>Bu hacim tek parça bir tabloda birkaç ay dayanır.</b> Sonra sorgular değil, önce
+      <b>bakım işlemleri</b> yavaşlar: VACUUM uzar, indeks belleğe sığmaz, eski veriyi silmek saatler sürer.
+      Sonraki slayt bunun çözümü.</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 13 · BÖLÜMLEME ══════════════════════════ -->
+<section class="slide" id="slide-part" data-lv="2" data-title="Tablo bölümleme">
+  <div class="slide-head reveal">
+    <div class="hrow"><span class="lvbadge lv2"><span class="lvdot"></span>Mimari</span>
+      <span class="ihint pulse"><svg><use href="#i-play"/></svg> sorguyu çalıştırın</span></div>
+    <h2>17 bölüm, sorgu yalnızca birine bakıyor</h2>
+    <p class="sub"><span class="chip-mono">police_locations</span> tablosu <span class="chip-mono">recorded_at</span>
+      sütununa göre aylık RANGE bölümlerine ayrılmış. Aşağıda iki sorguyu karşılaştırın.</p>
+  </div>
+
+  <div class="scene reveal">
+    <div class="scene-head"><svg><use href="#i-db"/></svg> Bölüm eleme (partition pruning) <span class="sp"></span>
+      <span class="sbadge a" id="partStat">hazır</span></div>
+    <canvas id="partCv" class="cv-flex" aria-label="Sorgunun yalnızca ilgili aylık bölümü okuduğunu gösteren animasyon"></canvas>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn pri" id="partGood"><svg><use href="#i-play"/></svg> Zaman filtreli sorgu</button>
+      <button class="btn" id="partBad"><svg><use href="#i-warn"/></svg> Filtresiz sorgu</button>
+      <button class="btn" id="partReset"><svg><use href="#i-repeat"/></svg> Sıfırla</button>
+    </div>
+    <div class="explain" id="partNote" style="margin-top:14px">
+      <b>Zaman filtreli sorgu</b>, planlama aşamasında ilgisiz bölümleri eler. Gerçek sistemde
+      <span class="chip-mono">EXPLAIN</span> çıktısı bunu doğruladı: 17 bölümün 16'sı elendi
+      (<span class="chip-mono">Subplans Removed: 16</span>).
+    </div>
+  </div>
+
+  <div class="grid g3 r2" style="margin-top:18px">
+    <div class="card good"><div class="ico"><svg><use href="#i-filter"/></svg></div><h3>Bölüm eleme</h3>
+      <p>"Son 24 saatin rotası" sorgusu yalnızca ilgili ayın bölümünü okur.</p></div>
+    <div class="card good"><div class="ico"><svg><use href="#i-bolt"/></svg></div><h3>Ucuz arşivleme</h3>
+      <p>Eski veriyi silmek milyonlarca satırlık <span class="chip-mono">DELETE</span> değil, tek bir
+        <span class="chip-mono">DROP TABLE</span>. Saniyeler sürer, tablo şişmez.</p></div>
+    <div class="card good"><div class="ico"><svg><use href="#i-cpu"/></svg></div><h3>Küçük indeks</h3>
+      <p>Her bölüm kendi indeksini taşır; indeksler bellekte tutulabilir boyutta kalır.</p></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 14 · İNDEKSLER ══════════════════════════ -->
+<section class="slide" id="slide-index" data-lv="2" data-title="İndeks tasarımı">
+  <div class="slide-head reveal">
+    <div class="hrow"><span class="lvbadge lv2"><span class="lvdot"></span>Mimari</span>
+      <span class="ihint pulse"><svg><use href="#i-play"/></svg> yarışı başlatın</span></div>
+    <h2>Aramanın çalışması indeks tipine bağlı</h2>
+    <p class="sub">Operatör personel adının ortasından arama yapar: <span class="chip-mono">LIKE '%yılmaz%'</span>.
+      Standart B-tree indeksi bu deseni <b>kullanamaz</b>. Aşağıda iki plan yan yana koşuyor.</p>
+  </div>
+
+  <div class="scene reveal">
+    <div class="scene-head"><svg><use href="#i-search"/></svg> Tam tarama vs trigram GIN <span class="sp"></span>
+      <span class="sbadge b" id="idxStat">hazır</span></div>
+    <canvas id="idxCv" class="cv-flex" aria-label="Tam tablo taraması ile trigram indeksinin karşılaştırıldığı yarış animasyonu"></canvas>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn pri" id="idxRun"><svg><use href="#i-play"/></svg> Yarışı başlat</button>
+      <button class="btn" id="idxReset"><svg><use href="#i-repeat"/></svg> Sıfırla</button>
+    </div>
+  </div>
+
+  <div class="tbl-wrap reveal" style="margin-top:18px">
+    <table class="mtable">
+      <thead><tr><th>İndeks</th><th>Alan</th><th>Neden bu tip</th></tr></thead>
+      <tbody>
+        <tr><td><b>B-tree (bileşik)</b></td><td class="m">(police_id, recorded_at DESC)</td>
+          <td>Hem "son konum" hem "rota geçmişi" sorgusunu tek indeksle karşılar.</td></tr>
+        <tr><td><b>GIN + pg_trgm</b></td><td class="m">ad, sicil no</td>
+          <td>Alt dize araması B-tree kullanamaz. Trigram indeksi olmadan her arama tam tablo taraması yapar.</td></tr>
+        <tr><td><b>BRIN</b></td><td class="m">police_locations.recorded_at</td>
+          <td>Veri zamana göre sıralı eklendiği için B-tree'nin çok küçük bir kesri boyutunda benzer fayda verir.</td></tr>
+        <tr><td><b>Kısmi UNIQUE</b></td><td class="m">(police_id) WHERE status='ACTIVE'</td>
+          <td>İş kuralını uygulamaya değil <b>veritabanına</b> yaptırır. Sonraki aşamanın konusu.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 15 · AŞAMA 3 ══════════════════════════ -->
+<section class="slide stage" id="stage-3" data-lv="3" data-title="Aşama 3 · Doğruluk">
+  <div class="stage-grid">
+    <div class="stage-num reveal">03</div>
+    <div>
+      <div class="reveal"><span class="lvbadge lv3"><span class="lvdot"></span>Aşama 3</span></div>
+      <h2 class="reveal" style="margin-top:14px">Doğruluk: iki operatör aynı anda</h2>
+      <p class="lead reveal" style="margin-top:12px">Buraya kadar her şey tek kullanıcı varsayımıyla çalışıyordu.
+        Şimdi ikinci operatör geliyor — ve aynı polisi farklı bir olaya atamaya çalışıyor.</p>
+      <div class="stage-list r2">
+        <div class="sl"><svg><use href="#i-split"/></svg><span>Kontrol-sonra-işlem yarışı ve ürettiği bozuk veri</span></div>
+        <div class="sl"><svg><use href="#i-lock"/></svg><span>Üç katmanlı savunma ve kilit sırası</span></div>
+        <div class="sl"><svg><use href="#i-repeat"/></svg><span>Aynı kaydı iki kişi düzenlerse</span></div>
+        <div class="sl"><svg><use href="#i-key"/></svg><span>Kimlik, token rotasyonu ve SSE bileti</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 16 · YARIŞ KOŞULU ══════════════════════════ -->
+<section class="slide" id="slide-race" data-lv="3" data-title="Yarış koşulu — çift görevlendirme">
+  <div class="slide-head reveal">
+    <div class="hrow"><span class="lvbadge lv3"><span class="lvdot"></span>Doğruluk</span>
+      <span class="ihint pulse"><svg><use href="#i-play"/></svg> kilidi açıp kapatın</span></div>
+    <h2>Aynı polis, aynı anda, iki olay</h2>
+    <p class="sub">İki operatör aynı saniyede "ata" düğmesine basıyor. Kilit kapalıyken iki transaction da
+      "personel müsait" cevabını okuyor ve ikisi de yazıyor.</p>
+  </div>
+
+  <div class="scene reveal">
+    <div class="scene-head"><svg><use href="#i-split"/></svg> Eş zamanlı görevlendirme <span class="sp"></span>
+      <span class="sbadge" id="raceStat">hazır</span></div>
+    <canvas id="raceCv" class="cv-flex" aria-label="İki transaction'ın aynı personeli aynı anda görevlendirmesini gösteren animasyon"></canvas>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn pri" id="raceRun"><svg><use href="#i-play"/></svg> İki operatör aynı anda atasın</button>
+      <button class="btn" id="raceLock"><svg><use href="#i-lock"/></svg> Satır kilidi: KAPALI</button>
+      <button class="btn" id="raceReset"><svg><use href="#i-repeat"/></svg> Sıfırla</button>
+    </div>
+    <div class="explain" id="raceNote" style="margin-top:14px">
+      <b>Kilit kapalıyken deneyin.</b> İki transaction da uygunluk kontrolünden geçer; ikisi de yazar.
+      Sonuç: bir polis iki olaya birden atanmış olur ve sahaya tek ekip gider.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 17 · ÜÇ KATMAN ══════════════════════════ -->
+<section class="slide" id="slide-defense" data-lv="3" data-title="Üç katmanlı savunma">
+  <div class="slide-head reveal">
+    <span class="kicker"><svg><use href="#i-shield"/></svg> Savunma</span>
+    <h2>Tek çözüm yeterli değil: üç katman</h2>
+    <p class="sub">Her katman bir öncekinin atlanabileceği varsayımıyla eklenmiş. Üçüncüsü uygulamaya değil
+      veritabanına dayanan nihai garanti.</p>
+  </div>
+
+  <div class="grid g3 r2">
+    <div class="card acc"><span class="cnum">01</span><div class="ico"><svg><use href="#i-lock"/></svg></div>
+      <h3>Satır kilidi</h3>
+      <p><span class="chip-mono">PESSIMISTIC_WRITE</span> ile işlem başlarken olay ve personel satırları
+        kilitlenir. İkinci transaction ilkinin bitmesini bekler ve <b>güncel</b> durumu okur.</p></div>
+    <div class="card vio"><span class="cnum">02</span><div class="ico"><svg><use href="#i-route"/></svg></div>
+      <h3>Sabit kilit sırası</h3>
+      <p>Kilitler daima aynı sırayla alınır: önce olay, sonra personeller <b>kimliğe göre artan</b> sırada.
+        Sıra sabit olmasaydı iki görevlendirme karşılıklı bekleyip kilitlenirdi.</p></div>
+    <div class="card good"><span class="cnum">03</span><div class="ico"><svg><use href="#i-db"/></svg></div>
+      <h3>Kısmi UNIQUE indeks</h3>
+      <p>Uygulama katmanındaki her kontrol bir hata sonucu atlansa bile veritabanı ikinci aktif
+        görevlendirmeyi <b>reddeder</b>.</p></div>
+  </div>
+
+  <div class="two" style="margin-top:20px">
+    <div class="code reveal">
+      <div class="hd"><svg><use href="#i-db"/></svg> V2__indexes_and_partitions.sql <span class="tag">nihai garanti</span></div>
+<pre><span class="c-c">-- Bir personelin ayni anda yalnizca bir AKTIF gorevlendirmesi olabilir.
+-- Kismi indeks: kural yalnizca aktif satirlar icin gecerli, kapanmis
+-- gorevlendirmeler ayni personel icin sinirsiz sayida birikebilir.</span>
+<span class="c-k">CREATE UNIQUE INDEX</span> ux_assignment_active_officer
+    <span class="c-k">ON</span> event_assignments (police_id)
+    <span class="c-k">WHERE</span> status = <span class="c-s">'ACTIVE'</span>;</pre>
+    </div>
+    <div>
+      <div class="scene reveal" style="padding:14px 16px">
+        <div class="scene-head" style="margin-bottom:10px"><svg><use href="#i-branch"/></svg> Kilit sırası ve kilitlenme
+          <span class="sp"></span><span class="sbadge" id="lockStat">sabit sıra</span></div>
+        <canvas id="lockCv" class="cv-flex" aria-label="Kilit sırası sabit ve rastgele olduğunda oluşan durumu gösteren animasyon"></canvas>
+        <div class="btn-row" style="margin-top:12px">
+          <button class="btn" id="lockToggle"><svg><use href="#i-repeat"/></svg> Sırayı bozup dene</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 18 · SÜRÜM KONTROLÜ ══════════════════════════ -->
+<section class="slide" id="slide-version" data-lv="3" data-title="Kayıt güncellemelerinde sürüm kontrolü">
+  <div class="slide-head reveal">
+    <span class="kicker"><svg><use href="#i-repeat"/></svg> İyimser kilitleme</span>
+    <h2>Aynı kaydı iki kişi düzenlerse</h2>
+    <p class="sub">Görevlendirmede kötümser kilit doğru; ama kayıt düzenlemede her açılan formda satır
+      kilitlemek sistemi kilitler. Burada iyimser kilitleme kullanılıyor.</p>
+  </div>
+
+  <div class="vs reveal">
+    <div class="vs-col bad">
+      <h4><svg><use href="#i-x"/></svg> Sürüm kontrolü olmadan</h4>
+      <ul>
+        <li>Operatör A olayı açar, açıklamayı düzenler.</li>
+        <li>Operatör B aynı olayı açar, önceliği kritik yapar.</li>
+        <li>A kaydeder. Ardından B kaydeder.</li>
+        <li><b>B'nin yazdığı, A'nın değişikliğini sessizce siler.</b> Kimse fark etmez.</li>
+      </ul>
+    </div>
+    <div class="vsx">vs</div>
+    <div class="vs-col good">
+      <h4><svg><use href="#i-check"/></svg> <span class="chip-mono">@Version</span> ile</h4>
+      <ul>
+        <li>Kayıt okunurken sürüm numarası da alınır.</li>
+        <li>A kaydeder, sürüm 4 → 5 olur.</li>
+        <li>B kaydetmeye çalışır; elindeki sürüm 4.</li>
+        <li><b>Çakışma hatası döner.</b> Arayüz güncel veriyi yükler, B kararını yeniden verir.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="note acc reveal" style="margin-top:20px"><svg><use href="#i-info"/></svg>
+    <div><b>İki kilit tipi, iki farklı soru.</b> Kötümser kilit "bu satıra kimse dokunmasın" der ve çakışmayı
+      <b>önler</b> — kısa, kritik işlemler için. İyimser kilit "dokunulduysa haberim olsun" der ve çakışmayı
+      <b>fark eder</b> — kullanıcının form doldurduğu uzun aralıklar için. Görevlendirmede birincisi,
+      düzenlemede ikincisi kullanılıyor.</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 19 · GÜVENLİK ══════════════════════════ -->
+<section class="slide" id="slide-security" data-lv="3" data-title="Kimlik ve token rotasyonu">
+  <div class="slide-head reveal">
+    <div class="hrow"><span class="lvbadge lv3"><span class="lvdot"></span>Doğruluk</span>
+      <span class="ihint"><svg><use href="#i-target"/></svg> parçalara tıklayın</span></div>
+    <h2>Kısa ömürlü erişim, dönen yenileme</h2>
+    <p class="sub">Access token 15 dakika geçerli. Süresi dolduğunda arayüz kullanıcıya hissettirmeden yeniler
+      ve başarısız isteği tekrarlar.</p>
+  </div>
+
+  <div class="anat reveal">
+    <div class="anat-line">
+      <span class="anat-seg" data-i="0" style="color:var(--accent)">eyJhbGciOiJIUzI1NiJ9</span><span style="color:var(--t3)">.</span><span class="anat-seg" data-i="1" style="color:var(--accent-2)">eyJzdWIiOiIyIiwicm9sZSI6Ik9QRVJBVE9SIn0</span><span style="color:var(--t3)">.</span><span class="anat-seg" data-i="2" style="color:var(--violet)">4Xk9_tQm2rLpZ8vN</span>
+    </div>
+    <div class="anat-cards" id="jwtCards">
+      <div class="anat-card" data-i="0"><div class="ak" style="color:var(--accent)">HEADER</div>
+        <div class="av">HS256</div><div class="ad">İmza algoritması. Sunucu bu alana güvenmez; beklediği algoritmayı kendisi dayatır.</div></div>
+      <div class="anat-card" data-i="1"><div class="ak" style="color:var(--accent-2)">PAYLOAD</div>
+        <div class="av">sub · role · exp</div><div class="ad">Kullanıcı kimliği, rolü ve geçerlilik sonu. Şifreli değil, yalnızca imzalı — sır taşımaz.</div></div>
+      <div class="anat-card" data-i="2"><div class="ak" style="color:var(--violet)">SIGNATURE</div>
+        <div class="av">HMAC-SHA256</div><div class="ad">Sunucu sırrıyla üretilir. Payload'daki tek bir karakter değişirse imza tutmaz.</div></div>
+    </div>
+  </div>
+
+  <div class="grid g3 r2" style="margin-top:20px">
+    <div class="card acc"><div class="ico"><svg><use href="#i-clock"/></svg></div><h3>15 dakika</h3>
+      <p>Token çalınsa bile kullanım penceresi dar. Sunucuda oturum tutulmadığı için backend yatay ölçeklenebilir.</p></div>
+    <div class="card vio"><div class="ico"><svg><use href="#i-repeat"/></svg></div><h3>Rotasyon</h3>
+      <p>Her yenilemede eski refresh token geçersiz kılınır. Bir token <b>ikinci kez</b> kullanılırsa bu bir
+        sızıntı işaretidir ve zincirin tamamı iptal edilir.</p></div>
+    <div class="card good"><div class="ico"><svg><use href="#i-finger"/></svg></div><h3>Özetle saklama</h3>
+      <p>Refresh token'lar veritabanında SHA-256 özetiyle durur. Veritabanı okunsa bile doğrudan kullanılamaz.</p></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 20 · SSE BİLETİ ══════════════════════════ -->
+<section class="slide" id="slide-ticket" data-lv="3" data-title="SSE bileti">
+  <div class="slide-head reveal">
+    <span class="kicker"><svg><use href="#i-key"/></svg> Küçük ama önemli karar</span>
+    <h2>Tarayıcı başlık gönderemiyorsa token nereye yazılır?</h2>
+    <p class="sub">Tarayıcının <span class="chip-mono">EventSource</span> API'si özel HTTP başlığı göndermeye
+      izin vermez. Akışı açarken kimlik nasıl taşınacak?</p>
+  </div>
+
+  <div class="vs reveal">
+    <div class="vs-col bad">
+      <h4><svg><use href="#i-x"/></svg> Token'ı URL'e koymak</h4>
+      <ul>
+        <li>Tarayıcı geçmişine yazılır.</li>
+        <li>Ters proxy ve sunucu erişim kayıtlarına düz metin olarak düşer.</li>
+        <li>Referrer başlığıyla üçüncü taraflara sızabilir.</li>
+        <li>Süresi 15 dakika — bu süre boyunca <b>tüm API</b> için geçerli bir anahtar ortada dolaşır.</li>
+      </ul>
+    </div>
+    <div class="vsx">seçim</div>
+    <div class="vs-col good">
+      <h4><svg><use href="#i-check"/></svg> Kısa ömürlü akış bileti</h4>
+      <ul>
+        <li><span class="chip-mono">POST /api/auth/stream-ticket</span> normal başlıkla çağrılır.</li>
+        <li>Dönen bilet <b>60 saniye</b> geçerli ve <b>tek kullanımlık</b>.</li>
+        <li>Yalnızca SSE uç noktası için geçerli; diğer API'lere kapı açmaz.</li>
+        <li>Loglara düşse bile kullanılabilir ömrü çoktan bitmiş olur.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="code reveal" style="margin-top:20px">
+    <div class="hd"><svg><use href="#i-terminal"/></svg> Akışın açılışı</div>
+<pre><span class="c-c"># 1) Normal, kimlikli istek — token Authorization basliginda</span>
+POST /api/auth/stream-ticket
+<span class="c-k">&rarr;</span> { <span class="c-s">"ticket"</span>: <span class="c-s">"9f2c...a7"</span>, <span class="c-s">"expiresInSeconds"</span>: <span class="c-n">60</span> }
+
+<span class="c-c"># 2) EventSource yalnizca URL alabilir — bilet burada kullanilir</span>
+GET /api/realtime/stream?ticket=9f2c...a7
+<span class="c-k">&rarr;</span> text/event-stream <span class="c-c">(acik kalir)</span></pre>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 21 · AŞAMA 4 ══════════════════════════ -->
+<section class="slide stage" id="stage-4" data-lv="4" data-title="Aşama 4 · Ölçek">
+  <div class="stage-grid">
+    <div class="stage-num reveal">04</div>
+    <div>
+      <div class="reveal"><span class="lvbadge lv4"><span class="lvdot"></span>Aşama 4</span></div>
+      <h2 class="reveal" style="margin-top:14px">Ölçek: bugünün on katı yük</h2>
+      <p class="lead reveal" style="margin-top:12px">Sistem çalışıyor. Peki tek sunucu yetmediğinde, saha
+        cihazları toplu veri gönderdiğinde ve aynı istek üç kez ulaştığında ne oluyor?</p>
+      <div class="stage-list r2">
+        <div class="sl"><svg><use href="#i-net"/></svg><span>İkinci sunucu geldiğinde SSE nasıl bozulur</span></div>
+        <div class="sl"><svg><use href="#i-stream"/></svg><span>Konum akışını veritabanından ayırmak</span></div>
+        <div class="sl"><svg><use href="#i-thread"/></svg><span>Thread başına bağlantı modelinin duvarı</span></div>
+        <div class="sl"><svg><use href="#i-finger"/></svg><span>Aynı isteğin ikinci kez gelmesi</span></div>
+        <div class="sl"><svg><use href="#i-gauge"/></svg><span>Ani yükte kimin geçeceğine karar vermek</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 22 · SSE + PUB/SUB ══════════════════════════ -->
+<section class="slide" id="slide-sse" data-lv="4" data-title="Çok örnekli SSE dağıtımı">
+  <div class="slide-head reveal">
+    <div class="hrow"><span class="lvbadge lv4"><span class="lvdot"></span>Ölçek</span>
+      <span class="ihint pulse"><svg><use href="#i-play"/></svg> ikinci sunucuyu açın</span></div>
+    <h2>İkinci sunucu, sessizce bozulan yayın</h2>
+    <p class="sub">Olay 1 numaralı örnekte oluşuyor. Ama operatörün SSE bağlantısı 2 numaralı örnekte —
+      ve haberi olmuyor. Yük dengeleyici eklendiği gün ortaya çıkan, test ortamında görünmeyen hata.</p>
+  </div>
+
+  <div class="scene reveal">
+    <div class="scene-head"><svg><use href="#i-net"/></svg> Yayının örnekler arası dağıtımı <span class="sp"></span>
+      <span class="sbadge" id="sseStat">tek örnek</span></div>
+    <canvas id="sseCv" class="cv-flex" aria-label="Redis pub/sub ile yayının tüm sunucu örneklerine dağıtılmasını gösteren animasyon"></canvas>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn" id="sseScale"><svg><use href="#i-server"/></svg> İkinci sunucuyu ekle</button>
+      <button class="btn pri" id="ssePub"><svg><use href="#i-bell"/></svg> Olay oluştur</button>
+      <button class="btn" id="sseRedis"><svg><use href="#i-layers"/></svg> Redis pub/sub: KAPALI</button>
+    </div>
+    <div class="explain" id="sseNote" style="margin-top:14px">
+      Tek sunucuda her şey çalışıyor gibi görünür. <b>İkinci sunucuyu ekleyin</b>, sonra Redis kapalıyken
+      olay oluşturun.
+    </div>
+  </div>
+
+  <div class="note acc reveal" style="margin-top:18px"><svg><use href="#i-info"/></svg>
+    <div><b>Yayını yapan örnek kendi mesajını da kanaldan geri alır — bu kasıtlı.</b> Böylece "yerel yayın" ve
+      "uzak yayın" diye iki ayrı kod yolu oluşmaz; tüm örnekler aynı yolu çalıştırır. Yerel geri dönüşün
+      gecikmesi milisaniyenin altında. Davranış, ikinci bir container ayağa kaldırılarak doğrulandı.</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 23 · KAFKA ══════════════════════════ -->
+<section class="slide" id="slide-kafka" data-lv="4" data-title="Konum ingest'i — Kafka">
+  <div class="slide-head reveal">
+    <div class="hrow"><span class="lvbadge lv4"><span class="lvdot"></span>Ölçek</span>
+      <span class="ihint pulse"><svg><use href="#i-play"/></svg> yükü artırın</span></div>
+    <h2>Saha cihazı 40 dakikalık veriyi bir anda gönderirse</h2>
+    <p class="sub">Konum bildirimi en yüksek hacimli uç nokta ve akışı düzensiz. Bağlantısı kopan bir cihaz
+      yeniden bağlandığında biriken kayıtları toplu gönderir.</p>
+  </div>
+
+  <div class="scene reveal">
+    <div class="scene-head"><svg><use href="#i-stream"/></svg> Doğrudan yazma vs Kafka tamponu <span class="sp"></span>
+      <span class="sbadge" id="kafkaStat">normal yük</span></div>
+    <canvas id="kafkaCv" class="cv-flex" aria-label="Konum bildirimlerinin doğrudan veritabanına yazılması ile Kafka üzerinden toplu yazılmasının karşılaştırması"></canvas>
+    <div class="sim-bd" style="padding:14px 0 0">
+      <div class="slider-row">
+        <label>Saniyedeki konum bildirimi <b id="kafkaRateL">120</b></label>
+        <input type="range" id="kafkaRate" min="40" max="4000" step="40" value="120">
+      </div>
+      <div class="meters">
+        <div class="meter r"><div class="mv" id="mDirect">—</div><div class="ml">doğrudan · yanıt (model)</div></div>
+        <div class="meter g"><div class="mv" id="mKafka">—</div><div class="ml">kafka · yanıt (model)</div></div>
+        <div class="meter w"><div class="mv" id="mPool">—</div><div class="ml">meşgul db bağlantısı</div></div>
+        <div class="meter b"><div class="mv" id="mLag">—</div><div class="ml">tüketici gecikmesi</div></div>
+      </div>
+      <div class="explain" id="kafkaNote"></div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--t3);letter-spacing:.06em">
+        Sayılar 20 bağlantılık havuz ve ~18 ms'lik tek yazım varsayımıyla kurulmuş bir modeldir; ölçüm değildir.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 24 · KAFKA KARARLARI ══════════════════════════ -->
+<section class="slide" id="slide-kafka2" data-lv="4" data-title="Kafka yapılandırma kararları">
+  <div class="slide-head reveal">
+    <span class="kicker"><svg><use href="#i-sliders"/></svg> Yapılandırma</span>
+    <h2>Dört karar, dört gerekçe</h2>
+    <p class="sub">Kafka'yı eklemek kolay; doğru yapılandırmak asıl iş. Aşağıdaki dört değer rastgele seçilmedi.</p>
+  </div>
+
+  <div class="tbl-wrap reveal">
+    <table class="mtable">
+      <thead><tr><th>Parametre</th><th>Değer</th><th>Gerekçe</th></tr></thead>
+      <tbody>
+        <tr><td><b>Bölüm anahtarı</b></td><td class="m">policeId</td>
+          <td>Kafka sıralamayı yalnızca <b>bölüm içinde</b> garanti eder. Aynı personelin kayıtları aynı bölüme
+            düşmezse rota sırası karışır ve harita geriye zıplar.</td></tr>
+        <tr><td><b>Bölüm sayısı</b></td><td class="m">6</td>
+          <td>Tüketici sayısının (3) üzerinde tutuldu; yatay büyüme için topic'i yeniden oluşturmak gerekmez.</td></tr>
+        <tr><td><b>Batch boyutu</b></td><td class="m">500</td>
+          <td>Tek tek yazım yerine toplu yazım. Veritabanına giden gidiş-dönüş sayısı iki mertebe azalır.</td></tr>
+        <tr><td><b>Onay modu</b></td><td class="m">AckMode.BATCH</td>
+          <td>Grup veritabanına yazılmadan offset ilerlemez. Tüketici çökerse grup yeniden okunur, veri kaybolmaz.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="two" style="margin-top:20px">
+    <div class="note good reveal"><svg><use href="#i-check"/></svg>
+      <div><b>Ölçülerek doğrulandı:</b> 6 bölümlü topic, 3 tüketici, gecikme 0. 8 saniyede 96 yeni satır;
+        elle gönderilen tek bir POST 202 dönüp verilen koordinatlarla veritabanında satır oluşturdu.
+        İzleme için Kafka UI kurulu.</div></div>
+    <div class="note warn reveal"><svg><use href="#i-warn"/></svg>
+      <div><b>Ve bir itiraf.</b> Kafka yapılandırması uzun süre <b>çalışmıyordu</b>: güvenilen paket listesi bir
+        paket taşımasından sonra eski adı gösteriyordu. Hata sessizdi — mesaj yazılıyor ama hiç işlenmiyordu.
+        Bu, "hazır ama kapalı" bileşenlerin neden tehlikeli olduğunun somut örneği.</div></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 25 · VIRTUAL THREAD ══════════════════════════ -->
+<section class="slide" id="slide-vt" data-lv="4" data-title="Virtual thread">
+  <div class="slide-head reveal">
+    <div class="hrow"><span class="lvbadge lv4"><span class="lvdot"></span>Ölçek</span>
+      <span class="ihint pulse"><svg><use href="#i-play"/></svg> operatör sayısını artırın</span></div>
+    <h2>Açık kalan her bağlantı bir thread tutuyor</h2>
+    <p class="sub">SSE bağlantıları saatlerce açık kalır. Klasik platform thread havuzunda her açık bağlantı
+      bir thread'i meşgul eder — ve o thread'in tek yaptığı beklemektir.</p>
+  </div>
+
+  <div class="scene reveal">
+    <div class="scene-head"><svg><use href="#i-thread"/></svg> Platform thread havuzu vs virtual thread <span class="sp"></span>
+      <span class="sbadge" id="vtStat">platform</span></div>
+    <canvas id="vtCv" class="cv-flex" aria-label="Platform thread havuzu ile virtual thread modelinin açık bağlantılar altındaki davranışı"></canvas>
+    <div class="sim-bd" style="padding:14px 0 0">
+      <div class="slider-row">
+        <label>Eş zamanlı açık SSE bağlantısı <b id="vtNL">40</b></label>
+        <input type="range" id="vtN" min="10" max="600" step="10" value="40">
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="vtMode"><svg><use href="#i-repeat"/></svg> Model: PLATFORM THREAD</button>
+      </div>
+      <div class="explain" id="vtNote"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 26 · VT NEREDE DEĞİL ══════════════════════════ -->
+<section class="slide" id="slide-vt2" data-lv="4" data-title="Virtual thread nerede kullanılmadı">
+  <div class="slide-head reveal">
+    <span class="kicker"><svg><use href="#i-x"/></svg> Sınırlar</span>
+    <h2>Nerede bilinçli olarak kullanılmadı</h2>
+    <p class="sub">Virtual thread her yere serpiştirilecek bir hızlandırıcı değil. Dört yerde bilerek
+      kullanılmadı; gerekçeleri kodda yorum olarak da yazılı.</p>
+  </div>
+
+  <div class="grid g2 r2">
+    <div class="card bad"><div class="ico"><svg><use href="#i-db"/></svg></div>
+      <h3>JPA transaction içinde paralellik</h3>
+      <p><span class="chip-mono">EntityManager</span> thread'e bağlıdır. Transaction içindeki sorguları farklı
+        thread'lere dağıtmak <b>sessiz veri bozulması</b> riski doğurur. Dashboard'un üç sorgusu tek
+        transaction'da sırayla kalır.</p></div>
+    <div class="card bad"><div class="ico"><svg><use href="#i-cpu"/></svg></div>
+      <h3>CPU yoğun işler</h3>
+      <p>Virtual thread yalnızca <b>bloke eden G/Ç</b> sırasında taşıyıcı thread'i serbest bırakır. Hesaplama
+        süresini kısaltmaz; çekirdek sayısı neyse odur.</p></div>
+    <div class="card bad"><div class="ico"><svg><use href="#i-route"/></svg></div>
+      <h3>Konum simülatörü</h3>
+      <p>60 eş zamanlı yazma çağrısı bağlantı havuzunu doldurup <b>gerçek operatör isteklerini</b> geciktirirdi.
+        Simülatör bilerek sıralı bırakıldı.</p></div>
+    <div class="card bad"><div class="ico"><svg><use href="#i-lock"/></svg></div>
+      <h3><span class="chip-mono">synchronized</span> blokları</h3>
+      <p>Java 21'de <span class="chip-mono">synchronized</span> içindeki virtual thread taşıyıcıya
+        <b>sabitlenir</b> (pinning) ve kazanç kaybolur. Bu yüzden eş zamanlı koleksiyonlar tercih edildi.</p></div>
+  </div>
+
+  <div class="note warn reveal" style="margin-top:20px"><svg><use href="#i-warn"/></svg>
+    <div><b>Ve sert bir sınır:</b> veritabanı bağlantı havuzu üst sınır olmaya devam eder. Binlerce virtual thread
+      bağlantı isterse aynı anda yalnızca havuz boyutu kadarı gerçek bağlantı alır. Virtual thread veritabanı
+      işlem kapasitesini <b>artırmaz</b>; yalnızca bekleyen isteğin maliyetini düşürür.</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 27 · IDEMPOTENCY ══════════════════════════ -->
+<section class="slide" id="slide-idem" data-lv="4" data-title="Idempotency">
+  <div class="slide-head reveal">
+    <div class="hrow"><span class="lvbadge lv4"><span class="lvdot"></span>Ölçek</span>
+      <span class="ihint pulse"><svg><use href="#i-play"/></svg> düğmeye hızlıca iki kez basın</span></div>
+    <h2>Operatör çift tıklarsa sahaya iki ekip gider</h2>
+    <p class="sub">HTTP'de POST doğası gereği tekrarlanabilir değildir. Ağ zaman aşımı sonrası istemci tekrarı
+      da aynı sonucu doğurur: iki olay kaydı, iki görevlendirme.</p>
+  </div>
+
+  <div class="two w60">
+    <div class="scene reveal">
+      <div class="scene-head"><svg><use href="#i-finger"/></svg> Olay oluşturma denemesi <span class="sp"></span>
+        <span class="sbadge" id="idemStat">Idempotency-Key: KAPALI</span></div>
+      <canvas id="idemCv" class="cv-flex" aria-label="Aynı isteğin tekrarlandığında oluşan kayıt sayısını gösteren animasyon"></canvas>
+      <div class="btn-row" style="margin-top:14px">
+        <button class="btn amb" id="idemFire"><svg><use href="#i-siren"/></svg> Olay oluştur</button>
+        <button class="btn" id="idemToggle"><svg><use href="#i-key"/></svg> Anahtarı aç</button>
+        <button class="btn" id="idemReset"><svg><use href="#i-repeat"/></svg> Sıfırla</button>
+      </div>
+    </div>
+    <div>
+      <div class="explain reveal" id="idemNote" style="min-height:96px">
+        <b>Anahtar kapalıyken düğmeye üst üste basın.</b> Her basış yeni bir olay kaydı üretir.
+      </div>
+      <div class="tbl-wrap reveal" style="margin-top:14px">
+        <table class="mtable" style="min-width:0">
+          <thead><tr><th>Durum</th><th>Davranış</th></tr></thead>
+          <tbody>
+            <tr><td><b>İlk istek</b></td><td>Anahtar rezerve edilir, istek işlenir, yanıt saklanır.</td></tr>
+            <tr><td><b>Aynı anahtar, tamamlanmış</b></td><td>Saklanan yanıt döner + <span class="m">Idempotent-Replay: true</span></td></tr>
+            <tr><td><b>Aynı anahtar, işleniyor</b></td><td><span class="no">409</span> — istemci kısa süre sonra tekrar dener.</td></tr>
+            <tr><td><b>Aynı anahtar, farklı gövde</b></td><td><span class="no">409</span> — gövdenin SHA-256 özeti tutmuyor.</td></tr>
+            <tr><td><b>Redis erişilemiyor</b></td><td class="par">İstek işlenir (fail-open).</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid g3 r2" style="margin-top:18px">
+    <div class="card acc"><div class="ico"><svg><use href="#i-finger"/></svg></div><h3>Gövdenin özeti saklanır</h3>
+      <p>Aynı anahtar farklı gövdeyle gelirse sessizce yanlış yanıt dönmek yerine hata verilir.
+        <b>Yanlış yanıt, yanıt vermemekten tehlikelidir.</b></p></div>
+    <div class="card acc"><div class="ico"><svg><use href="#i-clock"/></svg></div><h3>İki ayrı TTL</h3>
+      <p>Rezervasyon kilidi kısa, saklanan yanıt uzun ömürlü. Sunucu işin ortasında durursa anahtar 24 saat
+        asılı kalmaz.</p></div>
+    <div class="card good"><div class="ico"><svg><use href="#i-code"/></svg></div><h3>Anahtar arayüzde sabit</h3>
+      <p>Anahtar form açıldığında üretilir ve <b>başarıya kadar değişmez</b>. Her tıklamada yenilenseydi çift
+        tıklama iki farklı anahtar üretir, koruma hiç çalışmazdı. Bir testle korunuyor.</p></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 28 · HIZ SINIRI ══════════════════════════ -->
+<section class="slide" id="slide-rl" data-lv="4" data-title="Hız sınırı — token bucket">
+  <div class="slide-head reveal">
+    <div class="hrow"><span class="lvbadge lv4"><span class="lvdot"></span>Ölçek</span>
+      <span class="ihint pulse"><svg><use href="#i-play"/></svg> ani yük gönderin</span></div>
+    <h2>Kova dolu başlar, saniyede damlar</h2>
+    <p class="sub">Her istek kovadan bir token alır. Kova boşsa istek <span class="chip-mono">429</span> ile
+      reddedilir. Kova sabit hızda yeniden dolar.</p>
+  </div>
+
+  <div class="scene reveal">
+    <div class="scene-head"><svg><use href="#i-gauge"/></svg> Token bucket · kural: <span class="mono" id="rlRule">login</span>
+      <span class="sp"></span><span class="sbadge" id="rlStat">hazır</span></div>
+    <canvas id="bucketCv" class="cv-flex" aria-label="Token bucket algoritmasının canlı çalışması"></canvas>
+    <div class="sim-bd" style="padding:14px 0 0">
+      <div class="btn-row">
+        <button class="btn pri" id="rlOne"><svg><use href="#i-play"/></svg> 1 istek</button>
+        <button class="btn amb" id="rlBurst"><svg><use href="#i-bolt"/></svg> 14 istek birden</button>
+        <button class="btn" id="rlRuleBtn"><svg><use href="#i-sliders"/></svg> Kural: LOGIN</button>
+        <button class="btn" id="rlReset"><svg><use href="#i-repeat"/></svg> Sıfırla</button>
+      </div>
+      <div class="tallies" id="rlTallies"></div>
+      <div class="explain" id="rlNote"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 29 · LUA ══════════════════════════ -->
+<section class="slide" id="slide-lua" data-lv="4" data-title="Neden Lua">
+  <div class="slide-head reveal">
+    <span class="kicker"><svg><use href="#i-layers"/></svg> Atomiklik</span>
+    <h2>Sayaç neden Lua script'i içinde?</h2>
+    <p class="sub">Token bucket "oku → hesapla → yaz" adımlarından oluşur. Bu üç adım ayrı Redis komutlarıyla
+      yapılırsa iki eş zamanlı istek aynı eski değeri okur ve <b>ikisi de geçer</b>.</p>
+  </div>
+
+  <div class="two">
+    <div class="code reveal">
+      <div class="hd"><svg><use href="#i-code"/></svg> rate-limit-token-bucket.lua <span class="tag">atomik</span></div>
+<pre><span class="c-c">-- Redis komutlari tek thread'de calisir: bu script basladiginda
+-- araya baska hicbir komut giremez. Dagitik kilide gerek yoktur.</span>
+<span class="c-k">local</span> now = redis.call(<span class="c-s">'TIME'</span>)   <span class="c-c">-- sunucu saati: ornekler
+                                 -- arasi saat sapmasi etkilemesin</span>
+<span class="c-k">local</span> tokens = tonumber(bucket[<span class="c-n">1</span>]) <span class="c-k">or</span> capacity
+<span class="c-k">local</span> delta  = (now - last) * refill_per_second
+tokens = math.min(capacity, tokens + delta)
+
+<span class="c-k">if</span> tokens &gt;= requested <span class="c-k">then</span>
+  tokens = tokens - requested
+  redis.call(<span class="c-s">'HSET'</span>, KEYS[<span class="c-n">1</span>], <span class="c-s">'t'</span>, tokens, <span class="c-s">'ts'</span>, now)
+  <span class="c-k">return</span> { <span class="c-n">1</span>, tokens, capacity, <span class="c-n">0</span> }   <span class="c-c">-- gecti</span>
+<span class="c-k">else</span>
+  <span class="c-k">return</span> { <span class="c-n">0</span>, tokens, capacity, retry_after }
+<span class="c-k">end</span></pre>
+    </div>
+    <div>
+      <div class="grid" style="gap:12px">
+        <div class="card acc reveal"><div class="ico"><svg><use href="#i-split"/></svg></div>
+          <h3>Neden token bucket, kayan pencere değil?</h3>
+          <p>Bağlantısı kopan saha cihazı biriken konumları toplu gönderir. Kayan pencere bu <b>meşru</b> ani
+            yükü reddederdi. Token bucket kapasite kadar burst'ü kabul edip yalnızca sürdürülebilir ortalamayı
+            sınırlar.</p></div>
+        <div class="card good reveal"><div class="ico"><svg><use href="#i-shield"/></svg></div>
+          <h3>Redis düşerse ne olur?</h3>
+          <p>İstek <b>geçirilir</b> (fail-open). Hız sınırı uygulamanın kendisi değil bir koruma katmanıdır;
+            acil durum merkezinde tüm trafiği reddetmek korumasız çalışmaktan ağır bir sonuçtur.</p></div>
+        <div class="card warn reveal"><div class="ico"><svg><use href="#i-warn"/></svg></div>
+          <h3>Sıfır dolum hızı yazılırsa</h3>
+          <p>Uygulama açılışta hata verir. Aksi hâlde sıfıra bölme sonsuz değer üretir ve sistem
+            <b>sessizce</b> limitsiz çalışır — en tehlikeli hata tipi budur.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 30 · YAPILANDIRMA ══════════════════════════ -->
+<section class="slide" id="slide-config" data-lv="4" data-title="Yapılandırma ve ölçüm">
+  <div class="slide-head reveal">
+    <span class="kicker"><svg><use href="#i-sliders"/></svg> İşletim</span>
+    <h2>Limitler koddan değil, ortam dosyasından</h2>
+    <p class="sub">Üç kuralın tamamı yeniden derleme gerektirmeden değiştirilebilir. Aynı değişkenler Docker
+      kurulumunda da geçerli.</p>
+  </div>
+
+  <div class="two w60">
+    <div class="code reveal">
+      <div class="hd"><svg><use href="#i-terminal"/></svg> backend/dev.env</div>
+<pre><span class="c-c"># capacity          -> tolere edilen ANI YUK (burst)
+# refill_per_second -> SURDURULEBILIR ortalama hiz</span>
+RATE_LIMIT_ENABLED=<span class="c-n">true</span>
+
+<span class="c-c"># Genel kural: tum /api/** istekleri</span>
+RATE_LIMIT_DEFAULT_CAPACITY=<span class="c-n">300</span>
+RATE_LIMIT_DEFAULT_REFILL_PER_SECOND=<span class="c-n">100</span>
+
+<span class="c-c"># Giris — kaba kuvvet korumasi, IP bazli ve bilincli olarak siki</span>
+RATE_LIMIT_LOGIN_CAPACITY=<span class="c-n">10</span>
+RATE_LIMIT_LOGIN_REFILL_PER_SECOND=<span class="c-n">0.1667</span>   <span class="c-c"># ~10/dk</span>
+
+<span class="c-c"># Konum bildirimi — en yuksek hacimli uc nokta</span>
+RATE_LIMIT_LOCATION_CAPACITY=<span class="c-n">600</span>
+RATE_LIMIT_LOCATION_REFILL_PER_SECOND=<span class="c-n">50</span>
+
+IDEMPOTENCY_ENABLED=<span class="c-n">true</span>
+IDEMPOTENCY_TTL=<span class="c-n">24h</span>
+SCHEDULER_CONCURRENCY_LIMIT=<span class="c-n">-1</span>       <span class="c-c"># -1 = sinirsiz</span></pre>
+    </div>
+    <div>
+      <div class="term reveal">
+<span class="dim"># capacity=10 iken 14 giris denemesi</span>
+<span class="hl">$ for i in $(seq 14); do curl -s -o /dev/null \
+    -w "%{http_code} " -X POST .../api/auth/login; done</span>
+
+<span class="er">401 401 401 401 401 401 401 401 401 401</span> <span class="ok">429 429 429 429</span>
+
+<span class="dim"># 11. istegin yaniti</span>
+X-RateLimit-Limit: <span class="hl">10</span>
+X-RateLimit-Remaining: <span class="hl">0</span>
+X-RateLimit-Reset: <span class="hl">1786393693</span>
+Retry-After: <span class="hl">4</span>
+
+{ <span class="ok">"status"</span>: 429,
+  <span class="ok">"code"</span>: "RATE_LIMIT_EXCEEDED",
+  <span class="ok">"message"</span>: "Istek hizi siniri asildi..." }
+      </div>
+      <div class="note good reveal" style="margin-top:14px"><svg><use href="#i-check"/></svg>
+        <div>Arayüz bu yanıtı tanır ve kullanıcıya teknik kod yerine anlaşılır bir mesaj gösterir.
+          İlk 10 isteğin <span class="chip-mono">401</span> dönmesi beklenen davranış — kasıtlı olarak
+          yanlış şifre gönderildi.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 31 · SINIRLAR ══════════════════════════ -->
+<section class="slide" id="slide-limits" data-lv="4" data-title="Bilinen sınırlar">
+  <div class="slide-head reveal">
+    <span class="kicker"><svg><use href="#i-scale"/></svg> Dürüstlük bölümü</span>
+    <h2>Yapılmayanlar ve nedenleri</h2>
+    <p class="sub">Bir mimari sunumunun en değerli kısmı, kapsam dışında bırakılanları da söylemesidir.
+      Aşağıdakiler eksik değil, bilinçli sınır.</p>
+  </div>
+
+  <div class="tbl-wrap reveal">
+    <table class="mtable">
+      <thead><tr><th>Konu</th><th>Mevcut durum</th><th>Önerilen adım</th></tr></thead>
+      <tbody>
+        <tr><td><b>Yük testi</b></td>
+          <td>Darboğazlar analizle bulunup giderildi, çözümlerin çalıştığı ölçüldü. Hedef ölçekte yük testi
+            koşulmadı.</td>
+          <td class="par">Üretim öncesi konum uç noktası için yük testi</td></tr>
+        <tr><td><b>Kafka topolojisi</b></td><td>KRaft modunda tek broker.</td>
+          <td class="par">En az üç broker, replikasyon faktörü 3</td></tr>
+        <tr><td><b>Hatalı mesajlar</b></td><td>Sürekli başarısız mesaj yeniden deneme sonrası atlanır.</td>
+          <td class="par">Ayrı hata topic'i (dead letter) ve inceleme akışı</td></tr>
+        <tr><td><b>Hız sınırı kuralları</b></td><td>Üç kural koda tanımlı; değerleri ortam değişkeninden.</td>
+          <td class="par">Kural tanımının veritabanından yönetilmesi, rol bazlı kota</td></tr>
+        <tr><td><b>Bölüm yönetimi</b></td><td>Aylık bölümler migration ile oluşturulur.</td>
+          <td class="par">Zamanlanmış görev veya <span class="m">pg_partman</span></td></tr>
+        <tr><td><b>İzleme</b></td><td>Actuator metrikleri açık.</td>
+          <td class="par">Merkezî metrik toplama ve alarm</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note warn reveal" style="margin-top:20px"><svg><use href="#i-info"/></svg>
+    <div><b>Performans iddiası yok.</b> Bu sunumda "şu kadar hızlandı" biçiminde bir cümle geçmiyor. Söylenen
+      şu: darboğazlar doğru tespit edildi, çözümler uygulandı ve <b>çalıştıkları ölçülerek gösterildi.</b>
+      Sayısal iyileşme iddiası için yük testi gerekir; o yapılmadı.</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 32 · KAPANIŞ ══════════════════════════ -->
+<section class="slide" id="slide-recap" data-lv="4" data-title="Özet">
+  <div class="slide-head reveal">
+    <span class="kicker"><svg><use href="#i-flag"/></svg> Özet</span>
+    <h2>Dört aşamada ne kurduk?</h2>
+  </div>
+
+  <div class="lvrail reveal" style="margin-bottom:26px">
+    <div class="lvrail-track"><div class="lvrail-fill" id="rFill"></div></div>
+  </div>
+
+  <div class="grid g4 r2">
+    <div class="card" style="border-color:rgba(255,181,69,.3)"><div class="ico"><svg><use href="#i-siren"/></svg></div>
+      <h3 style="color:var(--lv1)">1 · Operasyon</h3>
+      <p>Görünürlük problemi. Üç soru tek ekranda, canlı olarak cevaplanıyor.</p></div>
+    <div class="card" style="border-color:rgba(79,141,255,.3)"><div class="ico"><svg><use href="#i-box"/></svg></div>
+      <h3 style="color:var(--lv2)">2 · Mimari</h3>
+      <p>İş alanına göre paketleme, sözleşme arayüzleri, bölümlenmiş konum tablosu, doğru indeks tipi.</p></div>
+    <div class="card" style="border-color:rgba(167,139,250,.3)"><div class="ico"><svg><use href="#i-lock"/></svg></div>
+      <h3 style="color:var(--lv3)">3 · Doğruluk</h3>
+      <p>Yarış koşuluna karşı üç katman, sabit kilit sırası, iyimser kilitleme, kısa ömürlü kimlik.</p></div>
+    <div class="card" style="border-color:rgba(46,211,183,.3)"><div class="ico"><svg><use href="#i-rocket"/></svg></div>
+      <h3 style="color:var(--lv4)">4 · Ölçek</h3>
+      <p>Redis pub/sub, Kafka tamponu, virtual thread, idempotency ve Lua ile atomik hız sınırı.</p></div>
+  </div>
+
+  <div class="note good reveal" style="margin-top:22px"><svg><use href="#i-bolt"/></svg>
+    <div><b>Tek cümlede:</b> Sahayı canlı gösteren, görevlendirmeyi veritabanı seviyesinde tutarlı tutan ve
+      yükü uygulamanın kritik yolundan çıkaran bir operasyon merkezi kurmayı; her bileşeni <b>çalıştığını
+      ölçerek</b> eklemeyi ve yapılmayanları da açıkça yazmayı.</div>
+  </div>
+
+  <div class="pills reveal" style="margin-top:20px">
+    <span class="pill a"><svg><use href="#i-check"/></svg>91 otomatik test</span>
+    <span class="pill b"><svg><use href="#i-db"/></svg>17 bölüm · 4 indeks tipi</span>
+    <span class="pill c"><svg><use href="#i-lock"/></svg>3 katmanlı eşzamanlılık savunması</span>
+    <span class="pill d"><svg><use href="#i-layers"/></svg>Redis'in 4 işi</span>
+    <span class="pill g"><svg><use href="#i-stream"/></svg>6 bölümlü topic · 3 tüketici</span>
+  </div>
+</section>
+
+</div>
+
+<!-- genel bakış: tüm slaytlar -->
+<div class="overview" id="overviewPanel" hidden>
+  <div class="ov-head">
+    <div class="ov-title"><svg><use href="#i-grid"/></svg><b>Tüm slaytlar</b><span id="ovCount"></span></div>
+    <button class="ov-close" id="ovClose" aria-label="Kapat"><svg><use href="#i-x"/></svg> Kapat</button>
+  </div>
+  <div class="ov-grid" id="ovGrid"></div>
+</div>
+
+<!-- chrome -->
+<div class="dots" id="dots"></div>
+<div class="chrome">
+  <span class="counter"><b id="cur">1</b> / <span id="tot">32</span></span>
+  <button class="nav-btn" id="home" aria-label="Başa dön" title="Başa dön (Home)"><svg><use href="#i-home"/></svg></button>
+  <button class="nav-btn" id="overview" aria-label="Tüm slaytlar" title="Tüm slaytlar (O)"><svg><use href="#i-grid"/></svg></button>
+  <button class="nav-btn" id="prev" aria-label="Önceki"><svg><use href="#i-left"/></svg></button>
+  <button class="nav-btn" id="next" aria-label="Sonraki"><svg><use href="#i-right"/></svg></button>
+  <span id="langHost" data-no-i18n></span>
+</div>
+<div class="hint"><kbd>←</kbd><kbd>→</kbd> gezin · <kbd>O</kbd> tüm slaytlar · <kbd>Home</kbd> başa · <kbd>F</kbd> tam ekran · <kbd>R</kbd> tekrar</div>
+
+<script src="/deck-i18n.js"></script>
+<script src="i18n.en.js"></script>
+<script>DeckI18n.init({ dict: window.DECK_EN || {} });
+DeckI18n.mountToggle(document.getElementById("langHost"), "nav-btn deck-lang-btn");</script>
+<script src="deck.js"></script>
+</body>
+</html>

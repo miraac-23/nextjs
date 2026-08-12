@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import BlogCard from '@/components/BlogCard'
-import Reveal from '@/components/Reveal'
 import WorksSection from '@/components/WorksSection'
-import { blogPosts } from '@/lib/data'
+import BlogListView from '@/components/blog/BlogListView'
+import { works } from '@/lib/works'
+import { worksEn } from '@/lib/works.en'
 
 export const metadata: Metadata = {
   title: 'Blog — Miraç Güntoğar',
@@ -20,29 +20,9 @@ export default function BlogPage() {
         <div className="pointer-events-none absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-accent/15 blur-[120px]" />
 
         <div className="container-x relative">
-          <Reveal className="mx-auto max-w-2xl text-center">
-            <span className="section-label justify-center">
-              <span className="h-px w-6 bg-accent/60" />
-              Blog
-            </span>
-            <h1 className="font-display text-4xl font-bold tracking-tight text-fg sm:text-5xl">
-              Yazılar & <span className="gradient-text">Notlar</span>
-            </h1>
-            <p className="mt-4 text-[15px] leading-relaxed text-fg3">
-              Mühendislik pratiğinden öğrendiklerim. Spring Boot mikroservislerinden Next.js
-              performansına, güvenlikten DevOps’a uzanan notlar.
-            </p>
-          </Reveal>
+          <BlogListView />
 
-          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {blogPosts.map((post, i) => (
-              <Reveal key={post.slug} delay={i * 70}>
-                <BlogCard post={post} />
-              </Reveal>
-            ))}
-          </div>
-
-          <WorksSection />
+          <WorksSection items={{ tr: works, en: worksEn }} />
         </div>
       </main>
       <Footer />

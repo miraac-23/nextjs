@@ -5,6 +5,7 @@
 
 import type { ChangedFile } from './types'
 import { extractAddedLines } from './diff'
+import { err } from './i18n'
 
 export type GitProvider = 'gitlab' | 'github' | 'bitbucket'
 
@@ -66,17 +67,17 @@ export function parsePrUrl(provider: GitProvider, url: string): GitTarget {
   const u = (url || '').trim()
   if (provider === 'gitlab') {
     const m = /^(https?:\/\/[^/]+)\/(.+?)\/-\/merge_requests\/(\d+)/.exec(u)
-    if (!m) throw new Error('Geçersiz GitLab MR linki. Örn: https://gitlab.ornek.com/grup/proje/-/merge_requests/7')
+    if (!m) throw new Error(err().badGitlabUrl)
     return { provider, webBase: m[1], apiBase: m[1], projectPath: m[2], id: m[3] }
   }
   if (provider === 'github') {
     const m = /^(https?:\/\/[^/]+)\/([^/]+)\/([^/]+)\/pull\/(\d+)/.exec(u)
-    if (!m) throw new Error('Geçersiz GitHub PR linki. Örn: https://github.com/kullanici/proje/pull/42')
+    if (!m) throw new Error(err().badGithubUrl)
     return { provider, webBase: m[1], apiBase: githubApiBase(m[1]), owner: m[2], repo: m[3], id: m[4] }
   }
   // bitbucket
   const m = /^(https?:\/\/[^/]+)\/([^/]+)\/([^/]+)\/pull-requests\/(\d+)/.exec(u)
-  if (!m) throw new Error('Geçersiz Bitbucket PR linki. Örn: https://bitbucket.org/workspace/proje/pull-requests/12')
+  if (!m) throw new Error(err().badBitbucketUrl)
   return { provider, webBase: m[1], apiBase: 'https://api.bitbucket.org', workspace: m[2], repo: m[3], id: m[4] }
 }
 
@@ -130,7 +131,7 @@ export async function fetchChanges(target: GitTarget, auth: GitAuth): Promise<Ch
   try {
     res = await fetch(url, { headers })
   } catch (e) {
-    throw new Error(`${providerName(target.provider)}’a erişilemedi (tarayıcı CORS engeli olabilir). ` + (e instanceof Error ? e.message : ''))
+    throw new Error(err().unreachableCors(providerName(target.provider)) + (e instanceof Error ? e.message : ''))
   }
   if (!res.ok) {
     const hint = res.status === 401 || res.status === 404 ? ' — private depo olabilir; geçerli bir token/erişim girin.' : ''
@@ -194,7 +195,7 @@ export async function postComment(target: GitTarget, auth: GitAuth, body: string
   try {
     res = await fetch(url, { method: 'POST', headers, body: payload })
   } catch (e) {
-    throw new Error(`${providerName(target.provider)}’a erişilemedi (CORS/erişim engeli olabilir). ` + (e instanceof Error ? e.message : ''))
+    throw new Error(err().unreachableAccess(providerName(target.provider)) + (e instanceof Error ? e.message : ''))
   }
   if (!res.ok) {
     const txt = await res.text().catch(() => '')
@@ -229,14 +230,14 @@ export async function passwordLogin(provider: GitProvider, host: string, usernam
   try {
     res = await fetch(url, { headers })
   } catch (e) {
-    throw new Error(`${providerName(provider)}’a erişilemedi (tarayıcı CORS engeli olabilir). ` + (e instanceof Error ? e.message : ''))
+    throw new Error(err().unreachableCors(providerName(provider)) + (e instanceof Error ? e.message : ''))
   }
   if (res.status === 401 || res.status === 403) {
     throw new Error(provider === 'github'
       ? 'GitHub artık düz parola ile girişi desteklemiyor. "Parola" alanına, hesabınla eşleşen bir Personal Access Token (repo izinli) girin.'
       : 'Bitbucket girişi reddedildi. "Parola" alanına, kullanıcı adınla eşleşen bir App Password girin (Pull requests: read/write).')
   }
-  if (!res.ok) throw new Error(`${providerName(provider)} ${res.status} ${res.statusText} — giriş doğrulanamadı.`)
+  if (!res.ok) throw new Error(err().loginFailed(providerName(provider), res.status, res.statusText))
   return password // Basic auth’ta saklanacak "token" = parola/app-password/PAT
 }
 
@@ -249,14 +250,14 @@ export async function gitlabPasswordLogin(base: string, username: string, passwo
       method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body,
     })
   } catch (e) {
-    throw new Error('GitLab’a erişilemedi (tarayıcı CORS engeli olabilir). Access Token ile girmeyi deneyin. ' + (e instanceof Error ? e.message : ''))
+    throw new Error(err().gitlabCors + (e instanceof Error ? e.message : ''))
   }
   const data = await res.json().catch(() => ({} as any))
   if (!res.ok) {
-    if (data?.error === 'invalid_grant') throw new Error('Kullanıcı adı veya parola hatalı (ya da 2FA açık — Access Token kullanın).')
+    if (data?.error === 'invalid_grant') throw new Error(err().invalidGrant)
     const desc = data?.error_description || data?.error || `${res.status} ${res.statusText}`
-    throw new Error('Giriş reddedildi: ' + desc + ' (password-grant kapalıysa Access Token kullanın).')
+    throw new Error(err().loginRejected(desc))
   }
-  if (!data?.access_token) throw new Error('Token alınamadı.')
+  if (!data?.access_token) throw new Error(err().noToken)
   return data.access_token as string
 }

@@ -1,17 +1,22 @@
-import { skillGroups } from '@/lib/data'
+'use client'
+
+import { useContent, useT } from '@/lib/i18n/LanguageProvider'
 import SectionHeading from './SectionHeading'
 import Reveal from './Reveal'
 import { iconMap } from './Icons'
 
 export default function Skills() {
+  const t = useT()
+  const { skillGroups } = useContent()
+
   return (
     <section id="yetenekler" className="relative py-24 sm:py-32">
       <div className="pointer-events-none absolute left-1/2 top-1/3 h-80 w-80 -translate-x-1/2 rounded-full bg-violet-glow/10 blur-[130px]" />
       <div className="container-x relative">
         <SectionHeading
-          label="Yetenekler"
-          title="Teknik Cephanelik"
-          description="Uçtan uca ürün geliştirmek için kullandığım teknolojiler ve mühendislik yaklaşımları."
+          label={t.skills.label}
+          title={t.skills.title}
+          description={t.skills.description}
         />
 
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -41,9 +46,7 @@ export default function Skills() {
           <Reveal delay={400}>
             <div className="relative flex h-full flex-col justify-center overflow-hidden rounded-3xl border border-accent/20 bg-gradient-to-br from-accent/10 via-ink-800 to-violet-glow/10 p-6">
               <div className="font-display text-3xl font-bold gradient-text">SOLID</div>
-              <p className="mt-2 text-sm leading-relaxed text-fg2">
-                Clean Code ve SOLID prensipleriyle sürdürülebilir, test edilebilir ve okunabilir kod.
-              </p>
+              <p className="mt-2 text-sm leading-relaxed text-fg2">{t.skills.solid}</p>
             </div>
           </Reveal>
         </div>

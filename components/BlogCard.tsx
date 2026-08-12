@@ -1,9 +1,12 @@
+'use client'
+
 import Link from 'next/link'
 import type { BlogPost } from '@/lib/data'
+import { useT } from '@/lib/i18n/LanguageProvider'
 import { ClockIcon, ArrowRightIcon } from './Icons'
 
-function formatDate(date: string) {
-  return new Date(date).toLocaleDateString('tr-TR', {
+function formatDate(date: string, locale: string) {
+  return new Date(date).toLocaleDateString(locale, {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -11,6 +14,8 @@ function formatDate(date: string) {
 }
 
 export default function BlogCard({ post }: { post: BlogPost }) {
+  const t = useT()
+
   return (
     <Link
       href={`/blog/${post.slug}`}
@@ -29,7 +34,7 @@ export default function BlogCard({ post }: { post: BlogPost }) {
 
       <div className="flex flex-1 flex-col p-6">
         <div className="mb-3 flex items-center gap-3 text-[11px] text-fg4">
-          <span>{formatDate(post.date)}</span>
+          <span>{formatDate(post.date, t.locale)}</span>
           <span className="flex items-center gap-1">
             <ClockIcon width={12} height={12} />
             {post.readingTime}
@@ -42,7 +47,7 @@ export default function BlogCard({ post }: { post: BlogPost }) {
         <p className="mt-2 flex-1 text-[13.5px] leading-relaxed text-fg3">{post.excerpt}</p>
 
         <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-accent transition-all duration-300 group-hover:gap-3">
-          Devamını oku
+          {t.blog.readMore}
           <ArrowRightIcon width={16} height={16} />
         </span>
       </div>

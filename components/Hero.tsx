@@ -1,8 +1,13 @@
+'use client'
+
 import Link from 'next/link'
-import { profile, socials, stats } from '@/lib/data'
+import { useContent, useT } from '@/lib/i18n/LanguageProvider'
 import { iconMap, ArrowRightIcon, DownloadIcon, SparkleIcon } from './Icons'
 
 export default function Hero() {
+  const t = useT()
+  const { profile, socials, stats } = useContent()
+
   return (
     <section id="anasayfa" className="relative overflow-hidden pt-36 pb-20 sm:pt-44 sm:pb-28">
       {/* Background layers */}
@@ -23,7 +28,7 @@ export default function Hero() {
             </div>
 
             <h1 className="font-display text-4xl font-bold leading-[1.05] tracking-tight text-fg sm:text-5xl lg:text-6xl">
-              Merhaba, ben <br className="hidden sm:block" />
+              {t.hero.greeting} <br className="hidden sm:block" />
               <span className="gradient-text bg-[length:200%_auto] animate-gradient-x">
                 {profile.name}
               </span>
@@ -40,12 +45,12 @@ export default function Hero() {
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link href="/#projeler" className="btn-primary">
-                Projelerimi Gör
+                {t.hero.viewProjects}
                 <ArrowRightIcon width={18} height={18} />
               </Link>
               <a href="/MiracGuntogarCv.pdf" className="btn-ghost" target="_blank" rel="noreferrer">
                 <DownloadIcon width={18} height={18} />
-                CV İndir
+                {t.hero.downloadCv}
               </a>
             </div>
 
@@ -91,7 +96,7 @@ export default function Hero() {
                     <span className="text-emerald-300">{`'Spring'`}</span>, {''}
                     <span className="text-emerald-300">{`'React'`}</span>,
                     {'\n'}    <span className="text-emerald-300">{`'Next.js'`}</span>],
-                    {'\n'} focus: <span className="text-emerald-300">{`'ölçeklenebilirlik'`}</span>,
+                    {'\n'} focus: <span className="text-emerald-300">{`'${t.hero.codeFocus}'`}</span>,
                     {'\n'} learning: <span className="text-amber-300">true</span>,
                     {'\n'}
                     {'}'}
@@ -115,7 +120,7 @@ export default function Hero() {
 
               <div className="absolute -right-4 -top-4 flex items-center gap-2 rounded-2xl border border-line/10 bg-page/90 px-3 py-2 shadow-xl backdrop-blur">
                 <SparkleIcon width={16} height={16} className="text-accent" />
-                <span className="text-xs font-medium text-fg2">TAKBİS · Ulusal Ölçek</span>
+                <span className="text-xs font-medium text-fg2">{t.hero.badge}</span>
               </div>
             </div>
           </div>

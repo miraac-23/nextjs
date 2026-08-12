@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
+import { useT } from '@/lib/i18n/LanguageProvider'
 
 export type IndexItem = {
   id: string
@@ -26,6 +27,9 @@ export default function PortalIndex({
 }) {
   const [query, setQuery] = useState('')
   const [active, setActive] = useState<string>('all')
+  const t = useT()
+  /** Kategori etiketi arayüz diline göre; sözlükte yoksa veri kaynağındaki etiket kullanılır. */
+  const catLabel = (id: string, fallback?: string) => t.portal.categories[id]?.label ?? fallback ?? id
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -52,7 +56,7 @@ export default function PortalIndex({
                 : 'border border-line/10 text-fg3 hover:text-fg2'
             }`}
           >
-            Tümü ({items.length})
+            {t.portal.all} ({items.length})
           </button>
           {categories.map((c) => {
             const n = items.filter((i) => i.category === c.id).length
@@ -67,7 +71,7 @@ export default function PortalIndex({
                     : 'border border-line/10 text-fg3 hover:text-fg2'
                 }`}
               >
-                {c.label} ({n})
+                {catLabel(c.id, c.label)} ({n})
               </button>
             )
           })}
@@ -75,51 +79,51 @@ export default function PortalIndex({
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Konu ara…"
+          placeholder={t.portal.searchPh}
           className="w-full rounded-xl border border-line/10 bg-page/60 px-3.5 py-2 text-sm text-fg2 outline-none placeholder:text-fg4 focus:border-accent/50 sm:w-64"
         />
       </div>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((t) => {
-          const cat = categories.find((c) => c.id === t.category)
+        {filtered.map((item) => {
+          const cat = categories.find((c) => c.id === item.category)
           return (
             <Link
-              key={t.id}
-              href={`${BASE}/${t.category}/${t.slug}`}
+              key={item.id}
+              href={`${BASE}/${item.category}/${item.slug}`}
               className={`glass card-hover group flex flex-col rounded-2xl p-5 ${
-                t.comingSoon ? 'border-dashed' : ''
+                item.comingSoon ? 'border-dashed' : ''
               }`}
             >
               <div className="mb-2 flex items-center gap-2">
                 <span className={`h-2 w-2 rounded-full bg-gradient-to-r ${cat?.accent}`} />
                 <span className="text-[10.5px] font-semibold uppercase tracking-wider text-fg4">
-                  {cat?.label}
+                  {catLabel(item.category, cat?.label)}
                 </span>
-                {t.comingSoon && (
+                {item.comingSoon && (
                   <span className="ml-auto inline-flex items-center gap-1 rounded-full border border-fuchsia-400/30 bg-fuchsia-400/10 px-2 py-0.5 text-[9.5px] font-semibold uppercase tracking-wider text-fuchsia-300">
                     <span className="h-1 w-1 animate-pulse rounded-full bg-fuchsia-400" />
-                    Yakında
+                    {t.portal.comingSoon}
                   </span>
                 )}
               </div>
               <h3 className="font-display text-[15px] font-semibold leading-snug text-fg transition-colors group-hover:text-accent-soft">
-                {t.title}
+                {item.title}
               </h3>
               <p className="mt-2 line-clamp-3 flex-1 text-[12.5px] leading-relaxed text-fg3">
-                {t.summary}
+                {item.summary}
               </p>
               <div className="mt-4 flex items-center gap-2 text-[11px] text-fg4">
-                {t.comingSoon ? (
+                {item.comingSoon ? (
                   <span className="rounded-md bg-fuchsia-400/10 px-2 py-0.5 text-fuchsia-300/90">
-                    🚧 Çalışma devam ediyor
+                    {t.portal.inProgress}
                   </span>
                 ) : (
                   <>
-                    <span className="rounded-md bg-surface/5 px-2 py-0.5">{t.count} örnek</span>
-                    {t.runnable > 0 && (
+                    <span className="rounded-md bg-surface/5 px-2 py-0.5">{t.portal.examplesCount(item.count)}</span>
+                    {item.runnable > 0 && (
                       <span className="rounded-md bg-emerald-400/10 px-2 py-0.5 text-emerald-300/80">
-                        {t.runnable} çalıştırılabilir
+                        {t.portal.runnableCount(item.runnable)}
                       </span>
                     )}
                   </>
@@ -131,7 +135,7 @@ export default function PortalIndex({
       </div>
 
       {filtered.length === 0 && (
-        <p className="mt-12 text-center text-sm text-fg4">Sonuç bulunamadı.</p>
+        <p className="mt-12 text-center text-sm text-fg4">{t.portal.noResults}</p>
       )}
     </div>
   )

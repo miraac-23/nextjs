@@ -1,16 +1,18 @@
-import { profile, education } from '@/lib/data'
+'use client'
+
+import { useContent, useT } from '@/lib/i18n/LanguageProvider'
 import SectionHeading from './SectionHeading'
 import Reveal from './Reveal'
 import { GraduationIcon } from './Icons'
 
 export default function About() {
+  const t = useT()
+  const { profile, education } = useContent()
+
   return (
     <section id="hakkimda" className="relative py-24 sm:py-32">
       <div className="container-x">
-        <SectionHeading
-          label="Hakkımda"
-          title="Kullanıcı odaklı sistemler inşa ediyorum"
-        />
+        <SectionHeading label={t.about.label} title={t.about.title} />
 
         <div className="grid gap-10 lg:grid-cols-[1.3fr_1fr]">
           <Reveal className="space-y-5">
@@ -22,10 +24,10 @@ export default function About() {
 
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
               {[
-                { k: 'Konum', v: profile.location },
-                { k: 'Deneyim', v: '4+ Yıl' },
-                { k: 'Odak', v: 'Backend & Frontend' },
-                { k: 'Yabancı Dil', v: 'İngilizce (A2)' },
+                { k: t.about.factLocation, v: profile.location },
+                { k: t.about.factExperience, v: t.about.factExperienceValue },
+                { k: t.about.factFocus, v: t.about.factFocusValue },
+                { k: t.about.factLanguage, v: t.about.factLanguageValue },
               ].map((item) => (
                 <div
                   key={item.k}
@@ -44,7 +46,7 @@ export default function About() {
                 <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-accent/20 to-violet-glow/20 text-accent">
                   <GraduationIcon width={20} height={20} />
                 </span>
-                <h3 className="font-display text-lg font-semibold text-fg">Eğitim</h3>
+                <h3 className="font-display text-lg font-semibold text-fg">{t.about.education}</h3>
               </div>
 
               <div className="relative space-y-6 pl-6">

@@ -1720,9 +1720,14 @@
   <button class="nav-btn" id="overview" aria-label="Tüm slaytlar" title="Tüm slaytlar (O)"><svg><use href="#i-grid"/></svg></button>
   <button class="nav-btn" id="prev" aria-label="Önceki"><svg><use href="#i-left"/></svg></button>
   <button class="nav-btn" id="next" aria-label="Sonraki"><svg><use href="#i-right"/></svg></button>
+  <span id="langHost" data-no-i18n></span>
 </div>
 <div class="hint"><kbd>←</kbd><kbd>→</kbd> gezin · <kbd>O</kbd> tüm slaytlar · <kbd>Home</kbd> başa dön · <kbd>F</kbd> tam ekran · <kbd>R</kbd> tekrar</div>
 
+<script src="/deck-i18n.js"></script>
+<script src="i18n.en.js"></script>
+<script>DeckI18n.init({ dict: window.DECK_EN || {} });
+DeckI18n.mountToggle(document.getElementById("langHost"), "nav-btn deck-lang-btn");</script>
 <script src="deck.js"></script>
 </body>
 </html>

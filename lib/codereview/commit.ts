@@ -6,6 +6,7 @@
 import type { Finding } from './types'
 import type { GitAuth, GitTarget } from './git'
 import { GIT_PROVIDERS } from './git'
+import { err } from './i18n'
 
 /** Commit'in yazılacağı hedef: kaynak dal + (fork olabileceği için) kaynak depo bilgisi. */
 export interface CommitTarget {
@@ -61,7 +62,7 @@ async function req(target: GitTarget, url: string, init: RequestInit & { headers
   try {
     res = await fetch(url, { ...init, headers: { ...authHeaders(target, auth), ...(init.headers ?? {}) } })
   } catch (e) {
-    throw new Error(`${providerName(target.provider)}’a erişilemedi (CORS/erişim engeli olabilir). ` + (e instanceof Error ? e.message : ''))
+    throw new Error(err().unreachableAccess(providerName(target.provider)) + (e instanceof Error ? e.message : ''))
   }
   return res
 }
@@ -186,7 +187,7 @@ export async function resolveCommitTarget(target: GitTarget, auth: GitAuth): Pro
     const url = `${target.apiBase}/api/v4/projects/${encodeURIComponent(target.projectPath!)}/merge_requests/${target.id}`
     const res = await ensureOk(target, await req(target, url, {}, auth), 'MR bilgisi okunamadı')
     const d = await res.json()
-    if (!d?.source_branch) throw new Error('MR kaynak dalı bulunamadı.')
+    if (!d?.source_branch) throw new Error(err().noMrBranch)
     return { branch: d.source_branch, projectId: d.source_project_id ?? d.project_id }
   }
   if (target.provider === 'github') {
@@ -194,14 +195,14 @@ export async function resolveCommitTarget(target: GitTarget, auth: GitAuth): Pro
     const res = await ensureOk(target, await req(target, url, {}, auth), 'PR bilgisi okunamadı')
     const d = await res.json()
     const head = d?.head
-    if (!head?.ref) throw new Error('PR kaynak dalı bulunamadı.')
+    if (!head?.ref) throw new Error(err().noPrBranch)
     return { branch: head.ref, owner: head.repo?.owner?.login ?? target.owner, repo: head.repo?.name ?? target.repo }
   }
   const url = `${target.apiBase}/2.0/repositories/${target.workspace}/${target.repo}/pullrequests/${target.id}`
   const res = await ensureOk(target, await req(target, url, {}, auth), 'PR bilgisi okunamadı')
   const d = await res.json()
   const branch = d?.source?.branch?.name
-  if (!branch) throw new Error('PR kaynak dalı bulunamadı.')
+  if (!branch) throw new Error(err().noPrBranch)
   return { branch, fullName: d?.source?.repository?.full_name ?? `${target.workspace}/${target.repo}` }
 }
 
@@ -235,7 +236,7 @@ export async function pushCommit(
   target: GitTarget, auth: GitAuth, ct: CommitTarget, edits: FileEdit[], message: string,
 ): Promise<string | null> {
   const changed = edits.filter((e) => e.inserted > 0)
-  if (changed.length === 0) throw new Error('Eklenecek TODO bulunamadı (hepsi zaten mevcut olabilir).')
+  if (changed.length === 0) throw new Error(err().noTodoToAdd)
 
   if (target.provider === 'gitlab') {
     const url = `${target.apiBase}/api/v4/projects/${ct.projectId}/repository/commits`

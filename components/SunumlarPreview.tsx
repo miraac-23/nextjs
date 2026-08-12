@@ -1,18 +1,23 @@
+'use client'
+
 import Link from 'next/link'
-import { presentations } from '@/lib/presentations'
+import { useContent, useT } from '@/lib/i18n/LanguageProvider'
 import SectionHeading from './SectionHeading'
 import Reveal from './Reveal'
 import { ArrowRightIcon } from './Icons'
 
 export default function SunumlarPreview() {
+  const t = useT()
+  const { presentations } = useContent()
   const items = presentations.slice(0, 3)
+
   return (
     <section id="sunumlar" className="relative py-24 sm:py-32">
       <div className="container-x">
         <SectionHeading
-          label="Sunumlar"
-          title="İnteraktif Eğitim Sunumları"
-          description="Tarayıcıda gezilebilen, kavramları benzetmelerle anlatan ve tıkla-göster Soru–Cevap ile pekiştiren sunumlar."
+          label={t.presentations.label}
+          title={t.presentations.title}
+          description={t.presentations.description}
         />
 
         <div className="grid gap-6">
@@ -43,7 +48,7 @@ export default function SunumlarPreview() {
                   </div>
 
                   <span className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-accent transition-all duration-300 group-hover:gap-3">
-                    Sunumu aç
+                    {t.presentations.open}
                     <ArrowRightIcon width={16} height={16} />
                   </span>
                 </div>
@@ -63,9 +68,9 @@ export default function SunumlarPreview() {
                     ))}
                   </div>
                   <div className="relative rounded-xl border border-line/10 bg-page/70 p-3 font-mono text-[11px] leading-relaxed text-emerald-300/90 backdrop-blur">
-                    <span className="text-fg4">← → ile gez · S–C tıkla-göster</span>
+                    <span className="text-fg4">{t.presentations.hintNav}</span>
                     <br />
-                    <span className="text-accent-soft">▶ Slaytları aç → kavramları keşfet</span>
+                    <span className="text-accent-soft">{t.presentations.hintDiscover}</span>
                   </div>
                 </div>
               </Link>
@@ -75,7 +80,7 @@ export default function SunumlarPreview() {
 
         <Reveal className="mt-10 text-center">
           <Link href="/sunumlar" className="btn-ghost">
-            Tüm sunumları gör
+            {t.presentations.openAll}
             <ArrowRightIcon width={18} height={18} />
           </Link>
         </Reveal>

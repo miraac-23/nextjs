@@ -1,7 +1,10 @@
+// SUNUCU bileşeni olarak kalmalı: react-syntax-highlighter sunucuda çalışır, istemciye
+// yalnızca hazır HTML gider. Dile bağlı parçalar ayrı istemci bileşenlerindedir.
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import type { LabExample } from '@/lib/lab'
 import CopyButton from './CopyButton'
+import RunnableBadge from './RunnableBadge'
 import Runner from './Runner'
 
 export default function ExampleBlock({
@@ -15,15 +18,7 @@ export default function ExampleBlock({
     <div className="rounded-3xl border border-line/10 bg-surface/[0.02] p-4 sm:p-5">
       <div className="mb-3 flex items-center justify-between gap-3">
         <h4 className="font-display text-base font-semibold text-accent-soft">{example.name}</h4>
-        <span
-          className={`rounded-full border px-2.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-wider ${
-            example.runnable
-              ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-300'
-              : 'border-amber-400/30 bg-amber-400/10 text-amber-200'
-          }`}
-        >
-          {example.runnable ? 'çalıştırılabilir' : 'ortam gerekir'}
-        </span>
+        <RunnableBadge runnable={example.runnable} />
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-line/10 bg-[#0b0f1c]">

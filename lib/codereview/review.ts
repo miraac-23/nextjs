@@ -12,6 +12,7 @@ import {
   detectorsForText, fileKind, parseInlineChecks, hasInlineChecks, parseMaxLineLimit,
   provableLineCount, sampleForPattern, cleanSampleFor,
 } from './detectors'
+import { e, detText } from './i18n'
 
 /** Basit glob eşleştirici: "**" hepsi, "*.java" uzantı, "src/**" önek, tam eşleşme. */
 export function globMatch(pattern: string, path: string): boolean {
@@ -118,40 +119,43 @@ export function ruleExamples(rule: Rule): RuleExample[] {
   const coverage = ruleCoverage(rule)
   const out: RuleExample[] = []
 
+  const t = e()
+
   const addPair = (code: string | null, test: (l: string) => boolean, hitNote: string) => {
-    if (code) out.push({ code, fires: true, label: 'Bulguya girer', note: hitNote })
+    if (code) out.push({ code, fires: true, label: t.exFires, note: hitNote })
     const clean = cleanSampleFor(test)
-    if (clean) out.push({ code: clean, fires: false, label: 'Bulguya girmez', note: 'Desene uymuyor; bu satır için bulgu üretilmez.' })
+    if (clean) out.push({ code: clean, fires: false, label: t.exClean, note: t.exNoMatch })
   }
 
   if (coverage === 'REGEX') {
     let re: RegExp | null = null
     try { re = new RegExp(rule.body) } catch { return out }
-    addPair(sampleForPattern(rule.body), (l) => re!.test(l), 'Satır kuralın desenine uyuyor → bu satır için bulgu açılır.')
+    addPair(sampleForPattern(rule.body), (l) => re!.test(l), t.exRegexHit)
     return out
   }
 
   if (coverage === 'PATTERN') {
     const inline = parseInlineChecks(rule.body)
     for (const f of inline.forbidden) {
-      addPair(sampleForPattern(f.src), (l) => f.re.test(l), 'Yasak desene uyuyor → bu satır için bulgu açılır.')
+      addPair(sampleForPattern(f.src), (l) => f.re.test(l), t.exForbiddenHit)
     }
     for (const r of inline.required) {
       const ok = sampleForPattern(r.src)
-      if (ok) out.push({ code: ok, fires: false, label: 'Bulguya girmez', note: 'Zorunlu desen bu satırda görüldü → dosya kuraldan geçer.' })
+      if (ok) out.push({ code: ok, fires: false, label: t.exClean, note: t.exRequiredOk })
       const missing = cleanSampleFor((l) => r.re.test(l))
-      if (missing) out.push({ code: missing, fires: true, label: 'Tek başına yeterli değil', note: 'Zorunlu desen bu satırda yok. Dosyanın HİÇBİR eklenen satırında yoksa dosya için bulgu açılır.' })
+      if (missing) out.push({ code: missing, fires: true, label: t.exNotEnough, note: t.exRequiredMissing })
     }
     return out
   }
 
   if (coverage === 'DETECTOR') {
     for (const d of detectorsForText(ruleText(rule))) {
+      const dt = detText(d)
       if (d.test(d.sample)) {
-        out.push({ code: d.sample, fires: true, label: 'Bulguya girer', note: `“${d.label}” dedektörü tetiklenir → ${d.message}` })
+        out.push({ code: d.sample, fires: true, label: t.exFires, note: t.exDetectorHit(dt.label, dt.message) })
       }
       const clean = cleanSampleFor(d.test)
-      if (clean) out.push({ code: clean, fires: false, label: 'Bulguya girmez', note: 'Dedektör tetiklenmez; bu satır için bulgu üretilmez.' })
+      if (clean) out.push({ code: clean, fires: false, label: t.exClean, note: t.exDetectorClean })
     }
     return out.slice(0, 6)
   }
@@ -159,12 +163,12 @@ export function ruleExamples(rule: Rule): RuleExample[] {
   if (coverage === 'LIMIT') {
     const limit = parseMaxLineLimit(ruleText(rule))
     out.push({
-      code: `// ${limit! + 40}. satırı olan bir dosya`, fires: true, label: 'Bulguya girer',
-      note: `Dosyanın ${limit} satırı aştığı diff’ten kanıtlanırsa dosya için tek bir bulgu açılır (satır numarası verilmez).`,
+      code: t.exLimitOverCode(limit! + 40), fires: true, label: t.exFires,
+      note: t.exLimitOverNote(limit!),
     })
     out.push({
-      code: `// ${Math.max(limit! - 40, 10)} satırlık bir dosya`, fires: false, label: 'Bulguya girmez',
-      note: 'Sınır aşılmadığı sürece bulgu üretilmez.',
+      code: t.exLimitUnderCode(Math.max(limit! - 40, 10)), fires: false, label: t.exClean,
+      note: t.exLimitUnderNote,
     })
     return out
   }
@@ -186,44 +190,45 @@ export interface RuleProbe {
  */
 export function probeRule(rule: Rule, line: string): RuleProbe {
   const coverage = ruleCoverage(rule)
-  if (!line.trim()) return { applicable: true, fires: false, detail: 'Denemek için bir kod satırı yazın.' }
+  const t = e()
+  if (!line.trim()) return { applicable: true, fires: false, detail: t.probeEmpty }
 
   if (coverage === 'REGEX') {
     let re: RegExp | null = null
     try { re = new RegExp(rule.body) } catch { /* geçersiz */ }
-    if (!re) return { applicable: false, fires: false, detail: 'Kuralın deseni geçersiz.' }
+    if (!re) return { applicable: false, fires: false, detail: t.probeInvalidRegex }
     return re.test(line)
-      ? { applicable: true, fires: true, detail: `Satır /${rule.body}/ desenine uyuyor → bulgu üretilir.` }
-      : { applicable: true, fires: false, detail: 'Satır desene uymuyor → bulgu üretilmez.' }
+      ? { applicable: true, fires: true, detail: t.probeRegexHit(rule.body) }
+      : { applicable: true, fires: false, detail: t.probeRegexMiss }
   }
 
   if (coverage === 'PATTERN') {
     const inline = parseInlineChecks(rule.body)
     for (const f of inline.forbidden) {
-      if (f.re.test(line)) return { applicable: true, fires: true, detail: `Yasak desene uyuyor (/${f.src}/) → bulgu üretilir.` }
+      if (f.re.test(line)) return { applicable: true, fires: true, detail: t.probeForbiddenHit(f.src) }
     }
     const req = inline.required
     if (req.length > 0) {
       const hit = req.find((r) => r.re.test(line))
       return hit
-        ? { applicable: true, fires: false, detail: `Zorunlu desen (/${hit.src}/) bu satırda görüldü → dosya bu kuraldan geçer.` }
-        : { applicable: true, fires: false, detail: 'Zorunlu desen bu satırda yok. Dosyanın HİÇBİR eklenen satırında yoksa bulgu üretilir — tek satırdan kesin sonuç çıkmaz.' }
+        ? { applicable: true, fires: false, detail: t.probeRequiredHit(hit.src) }
+        : { applicable: true, fires: false, detail: t.probeRequiredMiss }
     }
-    return { applicable: true, fires: false, detail: 'Hiçbir yasak desene uymuyor → bulgu üretilmez.' }
+    return { applicable: true, fires: false, detail: t.probeNoForbidden }
   }
 
   if (coverage === 'DETECTOR') {
     const dets = detectorsForText(ruleText(rule))
     const hit = dets.find((d) => d.test(line))
     return hit
-      ? { applicable: true, fires: true, detail: `“${hit.label}” dedektörü tetiklendi → bulgu üretilir.` }
-      : { applicable: true, fires: false, detail: 'Hiçbir dedektör tetiklenmedi → bulgu üretilmez.' }
+      ? { applicable: true, fires: true, detail: t.probeDetectorHit(detText(hit).label) }
+      : { applicable: true, fires: false, detail: t.probeDetectorMiss }
   }
 
   if (coverage === 'LIMIT') {
-    return { applicable: false, fires: false, detail: 'Bu kural dosya uzunluğunu ölçer; tek bir satırla denenemez.' }
+    return { applicable: false, fires: false, detail: t.probeLimit }
   }
-  return { applicable: false, fires: false, detail: 'Bu kural makine ile denetlenmiyor; denenebilir bir deseni yok.' }
+  return { applicable: false, fires: false, detail: t.probeManual }
 }
 
 /**
@@ -236,15 +241,16 @@ export function explainRule(rule: Rule): RuleExplain {
   const coverage = ruleCoverage(rule)
   const message = ruleMessage(rule)
   const text = ruleText(rule)
+  const t = e()
 
   if (coverage === 'REGEX') {
     return {
       coverage, message,
-      headline: 'Kuralın kendi düzenli ifadesiyle denetleniyor',
-      why: 'Bu bir REGEX kuralı: gövdesindeki desen doğrudan çalıştırılır.',
+      headline: t.exRegexHeadline,
+      why: t.exRegexWhy,
       checks: [{
-        kind: 'regex', label: 'Eşleşen satır ihlaldir', code: rule.body,
-        meaning: 'Diff’te eklenen satırlardan biri bu desene uyarsa bulgu üretilir.',
+        kind: 'regex', label: t.exRegexCheckLabel, code: rule.body,
+        meaning: t.exRegexCheckMeaning,
       }],
     }
   }
@@ -253,16 +259,16 @@ export function explainRule(rule: Rule): RuleExplain {
     const inline = parseInlineChecks(rule.body)
     return {
       coverage, message,
-      headline: 'Kural metnine yazılmış açık desenle denetleniyor',
-      why: 'Kuralın metni serbest yazılmış, ama sonuna açık bir desen eklenmiş. Tahmin yapılmaz; yalnızca yazılan desen çalışır.',
+      headline: t.exPatternHeadline,
+      why: t.exPatternWhy,
       checks: [
         ...inline.forbidden.map((f): RuleCheck => ({
-          kind: 'forbidden', label: 'Yasak desen', code: f.src,
-          meaning: 'Eklenen satırlardan biri bu desene uyarsa bulgu üretilir.',
+          kind: 'forbidden', label: t.exForbiddenLabel, code: f.src,
+          meaning: t.exForbiddenMeaning,
         })),
         ...inline.required.map((f): RuleCheck => ({
-          kind: 'required', label: 'Zorunlu desen', code: f.src,
-          meaning: 'Dosyanın eklenen satırlarının hiçbiri bu desene uymuyorsa bulgu üretilir.',
+          kind: 'required', label: t.exRequiredLabel, code: f.src,
+          meaning: t.exRequiredMeaning,
         })),
       ],
     }
@@ -272,13 +278,19 @@ export function explainRule(rule: Rule): RuleExplain {
     const dets = detectorsForText(text)
     return {
       coverage, message,
-      headline: 'Yerleşik dedektörle denetleniyor',
-      why: `Kural metni yerleşik bir dedektörün anahtar kelimesini içeriyor (${dets.map((d) => d.keywords[0]).join(', ')}), bu yüzden o dedektöre bağlandı.`,
-      checks: dets.map((d): RuleCheck => ({
-        kind: 'detector',
-        label: d.label + (d.scope === 'any' ? '' : ` · yalnız ${d.scope === 'frontend' ? 'ön uç' : 'arka uç'} dosyaları`),
-        meaning: d.message + ' → ' + d.suggestion,
-      })),
+      headline: t.exDetectorHeadline,
+      why: t.exDetectorWhy(dets.map((d) => d.keywords[0]).join(', ')),
+      checks: dets.map((d): RuleCheck => {
+        const dt = detText(d)
+        const scope = d.scope === 'any'
+          ? ''
+          : ` · ${d.scope === 'frontend' ? t.exScopeFrontend : t.exScopeBackend}`
+        return {
+          kind: 'detector',
+          label: dt.label + scope,
+          meaning: dt.message + ' → ' + dt.suggestion,
+        }
+      }),
     }
   }
 
@@ -286,21 +298,21 @@ export function explainRule(rule: Rule): RuleExplain {
     const limit = parseMaxLineLimit(text)
     return {
       coverage, message,
-      headline: 'Ölçülebilir üst sınır olarak denetleniyor',
-      why: `Kural metninde bir üst sınır ifadesi ve sayı geçiyor; en yüksek değer (${limit}) eşik olarak alındı.`,
+      headline: t.exLimitHeadline,
+      why: t.exLimitWhy(limit),
       checks: [{
-        kind: 'limit', label: `En fazla ${limit} satır`,
-        meaning: 'Dosya uzunluğu diff’teki hunk başlıklarından ölçülür. Bu bir ALT SINIR olduğu için yalnızca sınırın aşıldığı kanıtlanabildiğinde bulgu üretilir — yanlış pozitif vermez.',
+        kind: 'limit', label: t.exLimitCheckLabel(limit),
+        meaning: t.exLimitCheckMeaning,
       }],
     }
   }
 
   return {
     coverage, message,
-    headline: 'Makine ile denetlenemiyor — insan incelemesi gerekir',
-    why: 'Kural soyut: doğruluğu tek bir eklenen satıra bakarak anlaşılamıyor (dosya konumu, katmanlar arası tutarlılık, kod tekrarı, çalışma anı davranışı gibi). Ne açık bir desen yazılmış, ne de yerleşik bir dedektörün anahtar kelimesi geçiyor.',
+    headline: t.exManualHeadline,
+    why: t.exManualWhy,
     checks: [],
-    fix: 'Denetlenebilir yapmak için kural metninin sonuna açık bir desen ekleyin: "Yasak: /desen/" (eşleşen satır ihlaldir) ya da "Zorunlu: /desen/" (dosyada hiç eşleşme yoksa ihlaldir). Kuralı somut bir kod izine indirgeyemiyorsanız elle kalması doğrudur — uydurma desen yanlış pozitif üretir.',
+    fix: t.exManualFix,
   }
 }
 
@@ -325,6 +337,7 @@ export async function runReview(
   cfg: LlmConfig | null,
   onProgress?: (p: ReviewProgress) => void,
 ): Promise<{ findings: Finding[]; notice: string | null }> {
+  const t = e()
   const report = (label: string, done = 0, total = 0) => onProgress?.({ label, done, total })
   const findings: Finding[] = []
   let nextId = 1
@@ -346,7 +359,7 @@ export async function runReview(
   const manualRules: Rule[] = []
 
   if (modeUsesRules(mode)) {
-    report(`${enabledRules.length} kural uygulanıyor…`)
+    report(t.progRules(enabledRules.length))
     for (const rule of enabledRules) {
       const text = ruleText(rule)
       const violate = (filePath: string, line: number | null, message: string, suggestion: string) =>
@@ -361,8 +374,7 @@ export async function runReview(
         for (const file of matching) {
           for (const added of file.addedLines) {
             if (re.test(added.content)) {
-              violate(file.path, added.newLineNumber, ruleMessage(rule),
-                `'${rule.name}' kuralını ihlal ediyor; düzeltin veya kaldırın.`)
+              violate(file.path, added.newLineNumber, ruleMessage(rule), t.violateRegex(rule.name))
             }
           }
         }
@@ -376,16 +388,14 @@ export async function runReview(
           for (const { re, src } of inline.forbidden) {
             for (const added of file.addedLines) {
               if (re.test(added.content)) {
-                violate(file.path, added.newLineNumber, ruleMessage(rule),
-                  `Bu satır kuralın yasak desenine uyuyor (/${src}/); kurala göre düzeltin.`)
+                violate(file.path, added.newLineNumber, ruleMessage(rule), t.violateForbidden(src))
               }
             }
           }
           for (const { re, src } of inline.required) {
             if (file.addedLines.length === 0) continue
             if (file.addedLines.some((a) => re.test(a.content))) continue
-            violate(file.path, file.addedLines[0].newLineNumber, ruleMessage(rule),
-              `Kuralın zorunlu kıldığı desen (/${src}/) bu dosyanın eklenen satırlarında hiç görülmedi.`)
+            violate(file.path, file.addedLines[0].newLineNumber, ruleMessage(rule), t.violateRequired(src))
           }
         }
         continue
@@ -398,8 +408,9 @@ export async function runReview(
           const kind = fileKind(file.path)
           for (const det of dets) {
             if (det.scope !== 'any' && det.scope !== kind) continue
+            const dt = detText(det)
             for (const added of file.addedLines) {
-              if (det.test(added.content)) violate(file.path, added.newLineNumber, det.message, det.suggestion)
+              if (det.test(added.content)) violate(file.path, added.newLineNumber, dt.message, dt.suggestion)
             }
           }
         }
@@ -413,8 +424,7 @@ export async function runReview(
           const maxAdded = file.addedLines.reduce((m, a) => Math.max(m, a.newLineNumber), 0)
           const lines = provableLineCount(file.rawDiff, maxAdded)
           if (lines > limit) {
-            violate(file.path, null, `Dosya en az ${lines} satır; kuraldaki ${limit} satır üst sınırı aşılmış.`,
-              'Dosyayı daha küçük parçalara/bileşenlere bölün.')
+            violate(file.path, null, t.violateLimit(lines, limit), t.violateLimitFix)
           }
         }
         continue
@@ -426,10 +436,7 @@ export async function runReview(
 
     if (manualRules.length > 0) {
       notices.push(
-        `${enabledRules.length - manualRules.length}/${enabledRules.length} kural makine ile denetlendi. ` +
-        `Kalan ${manualRules.length} kural soyut olduğu için (dosya konumu, katmanlar arası tutarlılık, ` +
-        `kod tekrarı gibi) tek satırdan denetlenemez; insan incelemesi gerekir. ` +
-        `Listelerini "Kurallar" sekmesindeki "Denetim: ✋ Elle" filtresinden görebilirsiniz.`,
+        t.noticeManual(enabledRules.length - manualRules.length, enabledRules.length, manualRules.length),
       )
     }
   }
@@ -439,15 +446,15 @@ export async function runReview(
   // ---------------------------------------------------------------------------
   if (modeUsesAi(mode)) {
     if (!cfg) {
-      notices.push('Yapay zeka seçildi ancak AI bağlı değil. Üstteki "AI Bağlantısı"ndan bir sağlayıcı bağlayın.')
+      notices.push(t.noticeNoAi)
     } else {
       const aiFiles = files.filter((f) => f.addedLines.length > 0)
       let doneFiles = 0
       for (const file of aiFiles) {
-        report(`Yapay zeka inceliyor: ${file.path.split('/').pop()}`, doneFiles, aiFiles.length)
+        report(t.progAi(file.path.split('/').pop() ?? file.path), doneFiles, aiFiles.length)
         const { text, error } = await complete(buildAiPrompt(), buildUserPrompt(file), cfg)
         doneFiles++
-        if (error) { notices.push('AI çağrısı başarısız: ' + error); continue }
+        if (error) { notices.push(t.noticeAiFail(error)); continue }
         const addedNums = file.addedLines.map((a) => a.newLineNumber).sort((a, b) => a - b)
         for (const f of parseFindings(text, file.path)) {
           const snapped = snapToAdded(f.line, addedNums)
@@ -455,7 +462,7 @@ export async function runReview(
           pushFinding({ ...f, line: snapped })
         }
       }
-      report('Bulgular derleniyor…', aiFiles.length, aiFiles.length)
+      report(t.progCompile, aiFiles.length, aiFiles.length)
     }
   }
 
@@ -468,25 +475,15 @@ export async function runReview(
  */
 function buildUserPrompt(file: ChangedFile): string {
   const lines = file.addedLines.map((a) => `${a.newLineNumber}: ${a.content}`).join('\n')
-  return `Dosya: ${file.path}\n\nİncelenecek EKLENEN satırlar (yalnızca bunlar; biçim <satırNo>: <kod>):\n${lines}`
+  return e().aiUserPrompt(file.path, lines)
 }
 
-/** Serbest AI incelemesi promptu — kurallardan bağımsız; kod kalitesine odaklanır. */
+/**
+ * Serbest AI incelemesi promptu — kurallardan bağımsız; kod kalitesine odaklanır.
+ * Bulguların dili arayüz diliyle aynıdır (prompt içinde açıkça belirtilir).
+ */
 function buildAiPrompt(): string {
-  return (
-    "Sen kıdemli bir code reviewer'sın. Sana YALNIZCA bir dosyanın yeni EKLENEN satırları verilecek " +
-    '(biçim: <satırNo>: <kod>). Bu satırlarda DERİNLEMESİNE code review yap. Özellikle şunlara odaklan ' +
-    've her biri için somut çözüm/öneri ver:\n' +
-    '- MANTIK HATALARI: yanlış koşul, off-by-one, null/undefined erişimi, yanlış operatör, kaçırılan durumlar.\n' +
-    '- PERFORMANS: gereksiz döngü/kopyalama, N+1 sorgu, ağır/tekrar eden işlem, gereksiz yeniden hesaplama/render.\n' +
-    '- OPTİMİZASYON: daha sade ve verimli yazım, erken dönüş, uygun veri yapısı/algoritma, tekrarların giderilmesi.\n' +
-    '- GÜVENLİK: gömülü parola/anahtar/token, SQL/komut enjeksiyonu, doğrulanmamış girdi.\n' +
-    '- KÖTÜ PRATİK: boş catch, yutulan istisna, ölü kod, sihirli sabit.\n' +
-    "Yalnızca verilen eklenen satırları değerlendir; 'line' alanında verilen satır numarasını kullan; " +
-    "her bulgu için somut bir 'suggestion' yaz; sorun yoksa boş dizi [] döndür.\n" +
-    'Yanıtı SADECE şu JSON dizisi biçiminde ver (markdown ekleme):\n' +
-    '[{"ruleName":"...","line":<no>,"severity":"MINOR|MAJOR|CRITICAL","message":"...","suggestion":"..."}]'
-  )
+  return e().aiSystemPrompt
 }
 
 /**

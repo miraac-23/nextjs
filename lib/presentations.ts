@@ -88,6 +88,33 @@ export const presentations: Presentation[] = [
       'Custom gateway, anti-pattern’ler ve PoC planı',
     ],
   },
+  {
+    slug: 'trafik-polisi-operasyon-takip-sistemi',
+    title: 'Trafik Polisi Operasyon ve Takip Sistemi — Mimari Sunumu',
+    subtitle: 'Sahayı canlı gören, görevlendirmeyi tutarlı tutan operasyon merkezi',
+    description:
+      "Trafik polislerinin konumunun saniyeler içinde değiştiği bir operasyon merkezinin sıfırdan anlatımı. Telsizle yürüyen görevlendirmenin ürettiği hatalardan başlayıp; aylık bölümlenmiş konum tablosuna, trigram indeksinin olmadığı yerde çöken aramaya, iki operatörün aynı polisi aynı anda atadığı yarış koşuluna ve onu üç katmanda çözen kilitleme stratejisine uzanıyor. Kafka tamponu, Redis pub/sub ile çok örnekli SSE, virtual thread, idempotency ve Redis + Lua token bucket canlı canvas sahneleriyle; bölüm eleme, indeks yarışı, çift görevlendirme ve hız sınırı ise elle denenebilir demolarla gösteriliyor.",
+    tags: ['Java 21', 'Spring Boot', 'PostgreSQL', 'Redis + Lua', 'Apache Kafka', 'SSE', 'React + MUI'],
+    cover: 'from-amber-500/30 via-blue-500/20 to-emerald-600/30',
+    badge: 'İnteraktif Sunum',
+    embedUrl: '/sunum-traffic-ops/index.html',
+    stats: [
+      { value: '32', label: 'Slayt' },
+      { value: '4', label: 'Aşama' },
+      { value: '10', label: 'Canlı Sahne' },
+    ],
+    topics: [
+      'Vaka & problem — görünürlük olmadan görevlendirme',
+      'Roller, uçtan uca akış ve operasyon panosu',
+      'İş alanına göre paketleme ve client sözleşmeleri',
+      'Aylık bölümlenmiş konum tablosu & bölüm eleme',
+      'İndeks tipleri: B-tree, trigram GIN, BRIN, kısmi UNIQUE',
+      'Yarış koşulu, satır kilidi, kilit sırası ve kilitlenme',
+      'JWT rotasyonu, SSE bileti ve yetkilendirme',
+      'Redis pub/sub ile çok örnekli SSE, Kafka ingest tamponu',
+      'Virtual thread, idempotency ve Lua token bucket',
+    ],
+  },
 ]
 
 export function getPresentation(slug: string): Presentation | undefined {

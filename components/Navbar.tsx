@@ -2,23 +2,26 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useT } from '@/lib/i18n/LanguageProvider'
 import ThemeToggle from './ThemeToggle'
-
-const links = [
-  { href: '/#hakkimda', label: 'Hakkımda' },
-  { href: '/#yetenekler', label: 'Yetenekler' },
-  { href: '/#deneyim', label: 'Deneyim' },
-  { href: '/#projeler', label: 'Projeler' },
-  { href: '/#sunumlar', label: 'Sunumlar' },
-  { href: '/#blog', label: 'Blog' },
-  { href: '/blog#calismalar', label: 'Çalışmalarım' },
-  { href: '/code-review', label: 'Code Review' },
-  { href: '/#iletisim', label: 'İletişim' },
-]
+import LanguageToggle from './LanguageToggle'
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
+  const t = useT()
+
+  const links = [
+    { href: '/#hakkimda', label: t.nav.about },
+    { href: '/#yetenekler', label: t.nav.skills },
+    { href: '/#deneyim', label: t.nav.experience },
+    { href: '/#projeler', label: t.nav.projects },
+    { href: '/#sunumlar', label: t.nav.presentations },
+    { href: '/#blog', label: t.nav.blog },
+    { href: '/blog#calismalar', label: t.nav.works },
+    { href: '/code-review', label: t.nav.codeReview },
+    { href: '/#iletisim', label: t.nav.contact },
+  ]
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24)
@@ -70,15 +73,17 @@ export default function Navbar() {
 
           <div className="hidden items-center gap-2 md:flex">
             <ThemeToggle />
+            <LanguageToggle />
             <Link href="/#iletisim" className="btn-primary px-5 py-2.5 text-[13px]">
-              İletişime Geç
+              {t.nav.cta}
             </Link>
           </div>
 
           <div className="flex items-center gap-2 md:hidden">
             <ThemeToggle />
+            <LanguageToggle />
             <button
-              aria-label="Menüyü aç/kapat"
+              aria-label={t.nav.menu}
               onClick={() => setOpen((v) => !v)}
               className="grid h-10 w-10 place-items-center rounded-xl border border-line/10 bg-surface/5"
             >
@@ -137,7 +142,7 @@ export default function Navbar() {
             onClick={() => setOpen(false)}
             className="btn-primary mt-4 w-full"
           >
-            İletişime Geç
+            {t.nav.cta}
           </Link>
         </div>
       </div>

@@ -1,13 +1,23 @@
-import { profile, socials } from '@/lib/data'
+'use client'
+
+import { useContent, useT } from '@/lib/i18n/LanguageProvider'
 import SectionHeading from './SectionHeading'
 import Reveal from './Reveal'
 import { iconMap, MailIcon, PhoneIcon, MapPinIcon, ArrowUpRightIcon } from './Icons'
 
 export default function Contact() {
+  const t = useT()
+  const { profile, socials } = useContent()
+
   const contactItems = [
-    { icon: MailIcon, label: 'E-posta', value: profile.email, href: `mailto:${profile.email}` },
-    { icon: PhoneIcon, label: 'Telefon', value: profile.phone, href: `tel:${profile.phone.replace(/\s/g, '')}` },
-    { icon: MapPinIcon, label: 'Konum', value: profile.location, href: undefined },
+    { icon: MailIcon, label: t.contact.email, value: profile.email, href: `mailto:${profile.email}` },
+    {
+      icon: PhoneIcon,
+      label: t.contact.phone,
+      value: profile.phone,
+      href: `tel:${profile.phone.replace(/\s/g, '')}`,
+    },
+    { icon: MapPinIcon, label: t.contact.location, value: profile.location, href: undefined },
   ]
 
   return (
@@ -22,13 +32,13 @@ export default function Contact() {
               <div>
                 <span className="section-label">
                   <span className="h-px w-6 bg-accent/60" />
-                  İletişim
+                  {t.contact.label}
                 </span>
                 <h2 className="font-display text-3xl font-bold tracking-tight text-fg sm:text-4xl">
-                  Birlikte değer <span className="gradient-text">üretelim</span>
+                  {t.contact.titlePre} <span className="gradient-text">{t.contact.titleAccent}</span>
                 </h2>
                 <p className="mt-4 max-w-md text-[15px] leading-relaxed text-fg2">
-                  Yeni projeler, iş birlikleri veya sadece bir merhaba için bana ulaşabilirsiniz. En kısa sürede dönüş yapıyorum.
+                  {t.contact.description}
                 </p>
 
                 <div className="mt-8 flex flex-wrap gap-2.5">
@@ -85,7 +95,7 @@ export default function Contact() {
 
                 <a href={`mailto:${profile.email}`} className="btn-primary mt-2 w-full">
                   <MailIcon width={18} height={18} />
-                  Mesaj Gönder
+                  {t.contact.send}
                 </a>
               </div>
             </div>

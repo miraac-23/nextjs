@@ -1,8 +1,13 @@
+'use client'
+
 import Link from 'next/link'
-import { profile, socials } from '@/lib/data'
+import { useContent, useT } from '@/lib/i18n/LanguageProvider'
 import { iconMap } from './Icons'
 
 export default function Footer() {
+  const t = useT()
+  const { profile, socials } = useContent()
+
   return (
     <footer className="border-t border-line/5 py-12">
       <div className="container-x">
@@ -37,10 +42,12 @@ export default function Footer() {
         </div>
 
         <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-line/5 pt-6 text-xs text-fg4 sm:flex-row">
-          <p>© {2026} {profile.name}. Tüm hakları saklıdır.</p>
+          <p>© {2026} {profile.name}. {t.footer.rights}</p>
           <p className="flex items-center gap-1.5">
-            <span className="font-mono">Next.js</span> · <span className="font-mono">Tailwind CSS</span> ile
-            tasarlandı
+            {t.footer.builtWithPrefix && <span>{t.footer.builtWithPrefix}</span>}
+            <span className="font-mono">Next.js</span> ·{' '}
+            <span className="font-mono">Tailwind CSS</span>
+            {t.footer.builtWithSuffix && <span>{t.footer.builtWithSuffix}</span>}
           </p>
         </div>
       </div>

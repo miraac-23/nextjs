@@ -1,15 +1,20 @@
-import { experiences } from '@/lib/data'
+'use client'
+
+import { useContent, useT } from '@/lib/i18n/LanguageProvider'
 import SectionHeading from './SectionHeading'
 import Reveal from './Reveal'
 
 export default function Experience() {
+  const t = useT()
+  const { experiences } = useContent()
+
   return (
     <section id="deneyim" className="relative py-24 sm:py-32">
       <div className="container-x">
         <SectionHeading
-          label="Deneyim"
-          title="Profesyonel Yolculuk"
-          description="Staj döneminden ulusal ölçekli sistemlere uzanan, sorumluluğu giderek artan bir kariyer çizgisi."
+          label={t.experience.label}
+          title={t.experience.title}
+          description={t.experience.description}
         />
 
         <div className="relative mx-auto max-w-3xl">
@@ -46,7 +51,7 @@ export default function Experience() {
                       </span>
                       {exp.current && (
                         <span className="rounded-full bg-emerald-400/15 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-300">
-                          Aktif
+                          {t.experience.current}
                         </span>
                       )}
                     </div>

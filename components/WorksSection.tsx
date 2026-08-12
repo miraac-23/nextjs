@@ -1,22 +1,31 @@
+'use client'
+
 import Link from 'next/link'
 import Reveal from './Reveal'
-import { works } from '@/lib/works'
+import type { Work } from '@/lib/works'
+import { useLanguage, useT } from '@/lib/i18n/LanguageProvider'
 import { ArrowRightIcon } from './Icons'
 
-export default function WorksSection() {
+/**
+ * `works` verisi lib/lab.ts'e bağlı olduğu için istemci paketine taşınmamalı;
+ * bu yüzden iki dildeki liste sunucu bileşeninden prop olarak geçirilir.
+ */
+export default function WorksSection({ items }: { items: { tr: Work[]; en: Work[] } }) {
+  const t = useT()
+  const { lang } = useLanguage()
+  const works = items[lang]
+
   return (
     <section id="calismalar" className="container-x relative mt-24">
       <Reveal className="mx-auto mb-12 max-w-2xl text-center">
         <span className="section-label justify-center">
           <span className="h-px w-6 bg-accent/60" />
-          Çalışmalarım
+          {t.works.label}
         </span>
         <h2 className="font-display text-3xl font-bold tracking-tight text-fg sm:text-4xl">
-          İnteraktif <span className="gradient-text">Çalışmalar</span>
+          {t.works.titlePre} <span className="gradient-text">{t.works.titleAccent}</span>
         </h2>
-        <p className="mt-4 text-[15px] leading-relaxed text-fg3">
-          Yazıların ötesinde; tarayıcıda gezilebilen, çalıştırılabilir mühendislik çalışmaları.
-        </p>
+        <p className="mt-4 text-[15px] leading-relaxed text-fg3">{t.works.description}</p>
       </Reveal>
 
       <div className="grid gap-6">
@@ -49,7 +58,7 @@ export default function WorksSection() {
                 </div>
 
                 <span className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-accent transition-all duration-300 group-hover:gap-3">
-                  Çalışmayı aç
+                  {t.works.open}
                   <ArrowRightIcon width={16} height={16} />
                 </span>
               </div>
@@ -71,9 +80,9 @@ export default function WorksSection() {
                 <div className="relative rounded-xl border border-line/10 bg-page/70 p-3 font-mono text-[11px] leading-relaxed text-emerald-300/90 backdrop-blur">
                   <span className="text-fg4">$ java Ornek1.java</span>
                   <br />
-                  Merhaba! Java dünyasına hoş geldin.
+                  {t.works.terminalOut}
                   <br />
-                  <span className="text-accent-soft">▶ Çalıştır → çıktı hazır</span>
+                  <span className="text-accent-soft">{t.works.terminalHint}</span>
                 </div>
               </div>
             </Link>

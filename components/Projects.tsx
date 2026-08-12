@@ -1,17 +1,22 @@
-import { projects } from '@/lib/data'
+'use client'
+
+import { useContent, useT } from '@/lib/i18n/LanguageProvider'
 import SectionHeading from './SectionHeading'
 import Reveal from './Reveal'
 import { ArrowUpRightIcon } from './Icons'
 
 export default function Projects() {
+  const t = useT()
+  const { projects } = useContent()
+
   return (
     <section id="projeler" className="relative py-24 sm:py-32">
       <div className="pointer-events-none absolute right-0 top-1/4 h-72 w-72 rounded-full bg-accent/10 blur-[130px]" />
       <div className="container-x relative">
         <SectionHeading
-          label="Projeler"
-          title="Öne Çıkan Çalışmalar"
-          description="Ulusal ölçekli sistemlerden kurumsal iç araçlara; uçtan uca geliştirdiğim çözümlerden bir seçki."
+          label={t.projects.label}
+          title={t.projects.title}
+          description={t.projects.description}
         />
 
         <div className="grid gap-5 md:grid-cols-2">
@@ -33,7 +38,7 @@ export default function Projects() {
                     <div>
                       {project.highlight && (
                         <span className="mb-2 inline-block rounded-full border border-accent/30 bg-accent/10 px-3 py-0.5 text-[11px] font-semibold text-accent-soft">
-                          ⭐ Amiral Gemisi Proje
+                          {t.projects.flagship}
                         </span>
                       )}
                       <h3 className="font-display text-xl font-bold text-fg transition-colors group-hover:text-accent-soft">
