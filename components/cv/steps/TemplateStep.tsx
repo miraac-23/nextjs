@@ -5,10 +5,17 @@
  * Kartlardaki önizlemeler sahte görseller değil, gerçek `CvDocument`in kart
  * genişliğine göre küçültülmüş halidir; seçilen tasarım birebir odur.
  * Ölçek tek bir ResizeObserver ile ölçülüp tüm kartlara uygulanır (tüm kartlar
- * aynı genişlikte olduğu için 20 ayrı gözlemciye gerek yoktur).
+ * aynı genişlikte olduğu için 40 ayrı gözlemciye gerek yoktur).
+ *
+ * BOŞ KART UYARISI — gözlemci bir KARTA bağlanmamalıdır. Filtre değişince
+ * "ilk kart" başka bir şablon olur ve eski düğüm DOM'dan kalkar: gözlemci o
+ * ölü düğümde asılı kalır, üstelik sökülen/gizlenen düğüm için 0 genişlik
+ * bildirilir. Ölçek 0'a düşünce kartlar bembeyaz kalır ve bir daha toparlamaz.
+ * Bu yüzden gözlemci hiç sökülmeyen ızgara kapsayıcısına bağlanır ve geçersiz
+ * (0 / NaN) ölçümler yok sayılır — son geçerli genişlik korunur.
  */
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { MM, PAPER } from '@/lib/cv/browser'
 import { settingsForTemplate } from '@/lib/cv/state'
 import { TEMPLATES, TPL_CATEGORIES, type CvTemplate, type TplCategory } from '@/lib/cv/templates'
@@ -35,16 +42,31 @@ export default function TemplateStep({ t, lang, preview, settings, onSelect, onC
   const [cat, setCat] = useState<TplCategory | 'all'>('all')
   const [zoomed, setZoomed] = useState<CvTemplate | null>(null)
   const [thumbW, setThumbW] = useState(0)
-  const thumbRef = useRef<HTMLDivElement>(null)
+  const galleryRef = useRef<HTMLDivElement>(null)
+
+  /**
+   * Kart genişliği önce gerçek bir `.cvs-thumb`ten, o yoksa (liste boşken)
+   * ızgaranın çözülmüş ilk sütun izinden okunur. Geçersiz ölçüm — kapsayıcı o
+   * an `display: none` ise gelir — yutulur; eski değer korunur.
+   */
+  const measureThumb = useCallback(() => {
+    const grid = galleryRef.current
+    if (!grid) return
+    const thumb = grid.querySelector<HTMLElement>('.cvs-thumb')
+    const raw = thumb ? thumb.clientWidth : parseFloat(getComputedStyle(grid).gridTemplateColumns)
+    const next = Math.floor(raw)
+    if (!Number.isFinite(next) || next <= 0) return
+    setThumbW((prev) => (prev === next ? prev : next))
+  }, [])
 
   useEffect(() => {
-    const el = thumbRef.current
+    const el = galleryRef.current
     if (!el) return
-    const ro = new ResizeObserver((entries) => setThumbW(entries[0].contentRect.width))
+    const ro = new ResizeObserver(measureThumb)
     ro.observe(el)
-    setThumbW(el.clientWidth)
+    measureThumb()
     return () => ro.disconnect()
-  }, [])
+  }, [measureThumb])
 
   // Kart boyutunda tam veri okunmuyor; kırpılmış kopya hem daha hızlı hem daha dengeli görünüyor.
   const thumbData = useMemo(() => trimForThumb(preview), [preview])
@@ -59,7 +81,23 @@ export default function TemplateStep({ t, lang, preview, settings, onSelect, onC
     })
   }, [query, cat, lang, t])
 
+  // Boş ↔ dolu geçişinde ölçüm kaynağı (ızgara izi ↔ gerçek kart) değişir.
+  useEffect(measureThumb, [measureThumb, list])
+
   const scale = thumbW > 0 ? thumbW / (PAPER.a4.w * MM) : 0
+
+  /**
+   * Kart ayarları şablon başına bir kez kurulur. Render sırasında üretilseydi
+   * üst bileşenin her render'ında 40 yeni nesne doğar ve `CvDocument` ağacının
+   * 40 kopyası birden yeniden render edilirdi.
+   */
+  const cardSettings = useMemo(() => {
+    const map: Record<string, CvSettings> = {}
+    for (const tpl of TEMPLATES) map[tpl.id] = previewSettings(tpl.id, settings)
+    return map
+    // Devralınan alanlar previewSettings ile birebir aynı; settings'in tamamı değil.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings.order, settings.hidden, settings.labels, settings.paper, settings.showIcons])
 
   return (
     <>
@@ -86,79 +124,78 @@ export default function TemplateStep({ t, lang, preview, settings, onSelect, onC
         </div>
       </div>
 
-      {list.length === 0 ? (
-        <p className="cvs-empty">{t.gallery.empty}</p>
-      ) : (
-        <div className="cvs-gallery">
-          {list.map((tpl, i) => {
-            const tplSettings = previewSettings(tpl.id, settings)
-            return (
-              <div
-                key={tpl.id}
-                className="cvs-tplcard"
-                data-active={settings.templateId === tpl.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => onSelect(tpl.id)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    onSelect(tpl.id)
-                  }
-                }}
-                aria-pressed={settings.templateId === tpl.id}
-                aria-label={`${tpl.name} — ${t.categories[tpl.category]}`}
-              >
-                <div className="cvs-thumb" ref={i === 0 ? thumbRef : undefined}>
-                  {scale > 0 && (
-                    <div className="cvs-thumb-inner" style={{ transform: `scale(${scale})`, width: PAPER.a4.w * MM }}>
-                      <CvDocument data={thumbData} settings={tplSettings} t={t} static />
-                    </div>
-                  )}
-                  <span className="cvs-tplcat">{t.categories[tpl.category]}</span>
-                  <span className="cvs-thumb-veil" />
-                  <div className="cvs-thumb-actions">
+      {list.length === 0 && <p className="cvs-empty">{t.gallery.empty}</p>}
+
+      {/* Izgara liste boşken de DOM'da kalır: ölçüm gözlemcisinin hedefi odur. */}
+      <div className="cvs-gallery" ref={galleryRef}>
+        {list.map((tpl) => {
+          const tplSettings = cardSettings[tpl.id]
+          return (
+            <div
+              key={tpl.id}
+              className="cvs-tplcard"
+              data-active={settings.templateId === tpl.id}
+              role="button"
+              tabIndex={0}
+              onClick={() => onSelect(tpl.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  onSelect(tpl.id)
+                }
+              }}
+              aria-pressed={settings.templateId === tpl.id}
+              aria-label={`${tpl.name} — ${t.categories[tpl.category]}`}
+            >
+              <div className="cvs-thumb">
+                {scale > 0 && (
+                  <div className="cvs-thumb-inner" style={{ transform: `scale(${scale})`, width: PAPER.a4.w * MM }}>
+                    <CvDocument data={thumbData} settings={tplSettings} t={t} static />
+                  </div>
+                )}
+                <span className="cvs-tplcat">{t.categories[tpl.category]}</span>
+                <span className="cvs-thumb-veil" />
+                <div className="cvs-thumb-actions">
+                  <button
+                    type="button"
+                    className="cvs-thumb-btn"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setZoomed(tpl)
+                    }}
+                  >
+                    <UiIcon name="expand" />
+                    {t.gallery.preview}
+                  </button>
+                  {onContinue && (
                     <button
                       type="button"
-                      className="cvs-thumb-btn"
+                      className="cvs-thumb-btn go"
                       onClick={(e) => {
                         e.stopPropagation()
-                        setZoomed(tpl)
+                        onContinue(tpl.id)
                       }}
                     >
-                      <UiIcon name="expand" />
-                      {t.gallery.preview}
+                      <UiIcon name="pencil" />
+                      {t.gallery.continue}
                     </button>
-                    {onContinue && (
-                      <button
-                        type="button"
-                        className="cvs-thumb-btn go"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onContinue(tpl.id)
-                        }}
-                      >
-                        <UiIcon name="pencil" />
-                        {t.gallery.continue}
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                <div className="cvs-tplfoot">
-                  <span className="cvs-tplname">
-                    <b>{tpl.name}</b>
-                    <small>{lang === 'en' ? tpl.noteEn : tpl.noteTr}</small>
-                  </span>
-                  <span className="cvs-tick" aria-hidden="true">
-                    <UiIcon name="check" />
-                  </span>
+                  )}
                 </div>
               </div>
-            )
-          })}
-        </div>
-      )}
+
+              <div className="cvs-tplfoot">
+                <span className="cvs-tplname">
+                  <b>{tpl.name}</b>
+                  <small>{lang === 'en' ? tpl.noteEn : tpl.noteTr}</small>
+                </span>
+                <span className="cvs-tick" aria-hidden="true">
+                  <UiIcon name="check" />
+                </span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
 
       <p className="cvs-hint" style={{ marginTop: '1rem' }}>
         {t.gallery.liveNote} · {t.gallery.count(TEMPLATES.length)}

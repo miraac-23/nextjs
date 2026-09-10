@@ -1139,8 +1139,21 @@
      sığmalı; aksi halde yapışkan önizlemenin altı görünmez. */
   max-height: min(calc(100vh - 11rem), 1100px);
   overflow: auto;
+  /* Dikey kaydırma çubuğu için yer HER ZAMAN ayrılır. Aksi halde önizleme
+     titrer: çubuk çıkınca kapsayıcı daralır → belge küçülür → belge sığar →
+     çubuk kaybolur → kapsayıcı genişler → çubuk yine çıkar... (bkz.
+     components/cv/CvPaper.tsx içindeki "TİTREME UYARISI"). */
+  scrollbar-gutter: stable;
   border-radius: 10px;
   overscroll-behavior: contain;
+}
+
+/* `scrollbar-gutter` desteklenmiyorsa (eski Safari) çubuk sürekli görünsün —
+   amaç aynı: kapsayıcı genişliği kaydırma çubuğundan bağımsız kalsın. */
+@supports not (scrollbar-gutter: stable) {
+  .cvs-scroll {
+    overflow-y: scroll;
+  }
 }
 
 .cvs-scroll::-webkit-scrollbar {

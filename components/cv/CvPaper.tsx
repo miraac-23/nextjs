@@ -7,6 +7,16 @@
  * Transform yerleşimi etkilemediği için dış kutunun yüksekliği elle hesaplanır;
  * aksi halde kaydırma alanı yanlış olur. Sayfa sınırları kesik çizgiyle
  * gösterilir, böylece kullanıcı PDF'in kaç sayfa olacağını yazdırmadan görür.
+ *
+ * TİTREME UYARISI — burada iki geri besleme döngüsü tuzağı vardır:
+ *   1) Ölçek kapsayıcı genişliğinden, kutu yüksekliği ölçekten, dikey kaydırma
+ *      çubuğunun varlığı yükseklikten, kapsayıcı genişliği de kaydırma
+ *      çubuğundan türer. Çubuk gidip geldikçe sonsuz salınım olur. Çözüm CSS
+ *      tarafındadır: `.cvs-scroll` için `scrollbar-gutter: stable` (destek
+ *      yoksa `overflow-y: scroll`) genişliği çubuktan bağımsız kılar.
+ *   2) `paperW * (avail / paperW)` kayan nokta yüzünden `avail`i bir tık
+ *      aşabilir; bu da yatay çubuğu tetikleyip aynı salınımı başlatır. Bu
+ *      yüzden hem ölçüm hem de kutu genişliği tam piksele aşağı yuvarlanır.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -52,6 +62,10 @@ function pageBoundaries(total: number, pageH: number, forced: number[]): number[
   return out
 }
 
+function sameNumbers(a: number[], b: number[]): boolean {
+  return a.length === b.length && a.every((v, i) => v === b[i])
+}
+
 export default function CvPaper({ paper, zoom = 'fit', guides = true, shadow = true, children, onPages, pageLabel }: Props) {
   const hostRef = useRef<HTMLDivElement>(null)
   const docRef = useRef<HTMLDivElement>(null)
@@ -68,9 +82,17 @@ export default function CvPaper({ paper, zoom = 'fit', guides = true, shadow = t
   useEffect(() => {
     const el = hostRef.current
     if (!el) return
-    const ro = new ResizeObserver((entries) => setAvail(entries[0].contentRect.width))
+    // Tam piksele yuvarla: yarım piksellik ölçüm gürültüsü yeni bir render
+    // tetiklemesin. Sıfır ise kapsayıcı o an gizli demektir (sekme değişimi,
+    // `display: none`); son geçerli genişliği koru ki belge kaybolmasın.
+    const read = (w: number) => {
+      const next = Math.floor(w)
+      if (next <= 0) return
+      setAvail((prev) => (prev === next ? prev : next))
+    }
+    const ro = new ResizeObserver((entries) => read(entries[0].contentRect.width))
     ro.observe(el)
-    setAvail(el.clientWidth)
+    read(el.clientWidth)
     return () => ro.disconnect()
   }, [])
 
@@ -79,45 +101,65 @@ export default function CvPaper({ paper, zoom = 'fit', guides = true, shadow = t
   const measure = useCallback(() => {
     const el = docRef.current
     if (!el) return
-    setDocH(el.offsetHeight)
+    const h = el.offsetHeight
+    if (h > 0) setDocH((prev) => (prev === h ? prev : h))
     // `.cv-doc` position: relative olduğu için bölümlerin offsetParent'ı odur;
     // offsetTop dönüşümden etkilenmez, ölçek uygulanmamış gerçek konumu verir.
     const marks = Array.from(el.querySelectorAll<HTMLElement>('.cv-sec[data-break="page"]'))
       .map((n) => n.offsetTop)
       .filter((v) => v > 0)
       .sort((a, b) => a - b)
-    setForced((prev) => (prev.length === marks.length && prev.every((v, i) => v === marks[i]) ? prev : marks))
+    setForced((prev) => (sameNumbers(prev, marks) ? prev : marks))
   }, [])
 
+  // Gözlemci bir kez kurulur. Daha önce burada `children` bağımlılığı vardı;
+  // üst bileşen her render'da yeni bir element ürettiği için gözlemci sürekli
+  // sökülüp takılıyor ve her seferinde yeni bir zamanlayıcı kuruluyordu.
   useEffect(() => {
     const el = docRef.current
     if (!el) return
     const ro = new ResizeObserver(measure)
     ro.observe(el)
-    // İçerik (yazı tipi yüklenmesi, görsel) sonradan değişebilir.
-    const t = window.setTimeout(measure, 350)
     measure()
-    return () => {
-      ro.disconnect()
-      window.clearTimeout(t)
-    }
+    return () => ro.disconnect()
+  }, [measure])
+
+  // İçerik (yazı tipi yüklenmesi, görsel) sonradan yerleşebilir — bir kez daha bak.
+  useEffect(() => {
+    const t = window.setTimeout(measure, 350)
+    const fonts = (document as Document & { fonts?: FontFaceSet }).fonts
+    fonts?.ready.then(measure).catch(() => {})
+    return () => window.clearTimeout(t)
+  }, [measure])
+
+  // Sayfa başı işaretleri belgenin boyu değişmeden de kayabilir (bölüm sırası,
+  // görünürlük); ResizeObserver bunu görmez, bu yüzden içerik değişince ölçülür.
+  useEffect(() => {
+    measure()
   }, [measure, children])
 
   const scale = zoom === 'fit' ? Math.min(1, avail > 0 ? avail / paperW : 1) : zoom
-  const height = docH > 0 ? docH * scale : pageH * scale
+  // Aşağı yuvarlama, kutunun kapsayıcıyı yarım piksel aşıp yatay kaydırma
+  // çubuğu doğurmasını (ve oradan salınımı) engeller.
+  const boxW = Math.floor(paperW * scale)
+  const height = Math.round((docH > 0 ? docH : pageH) * scale)
   const boundaries = pageBoundaries(docH || pageH, pageH, forced)
   const pages = boundaries.length + 1
 
+  // `onPages` çoğu zaman satır içi bir okla geçilir; kimliği her render'da
+  // değişir. Ref'te tutulursa efekt yalnızca sayfa sayısı değişince çalışır.
+  // (Atama render sırasında değil efekt içinde yapılır: render saf kalmalı.)
+  const onPagesRef = useRef(onPages)
   useEffect(() => {
-    onPages?.(pages)
-  }, [pages, onPages])
+    onPagesRef.current = onPages
+  }, [onPages])
+  useEffect(() => {
+    onPagesRef.current?.(pages)
+  }, [pages])
 
   return (
     <div ref={hostRef} style={{ width: '100%' }}>
-      <div
-        className="cvs-paper-fit"
-        style={{ width: paperW * scale, height }}
-      >
+      <div className="cvs-paper-fit" style={{ width: boxW, height }}>
         <div
           ref={docRef}
           className={`cvs-paper-scale${shadow ? ' cvs-paper-shadow' : ''}`}
@@ -128,7 +170,7 @@ export default function CvPaper({ paper, zoom = 'fit', guides = true, shadow = t
 
         {guides &&
           boundaries.map((offset, i) => (
-            <div key={i} className="cvs-pagebreak" style={{ top: offset * scale }}>
+            <div key={i} className="cvs-pagebreak" style={{ top: Math.round(offset * scale) }}>
               <span>{pageLabel ? pageLabel(i + 2) : i + 2}</span>
             </div>
           ))}

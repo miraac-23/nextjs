@@ -11,6 +11,7 @@
  * Böylece 20 şablon için 20 ayrı bileşen ağacı taşımak gerekmez.
  */
 
+import { memo } from 'react'
 import { getTemplate } from '@/lib/cv/templates'
 import { PAPER } from '@/lib/cv/browser'
 import { sectionHasContent } from '@/lib/cv/state'
@@ -64,7 +65,7 @@ type Props = {
   static?: boolean
 }
 
-export default function CvDocument({ data, settings, t, static: isStatic }: Props) {
+function CvDocument({ data, settings, t, static: isStatic }: Props) {
   const tpl = getTemplate(settings.templateId)
   const accent = settings.accent || tpl.accent
   const paper = PAPER[settings.paper] ?? PAPER.a4
@@ -479,6 +480,13 @@ export default function CvDocument({ data, settings, t, static: isStatic }: Prop
     </div>
   )
 }
+
+/**
+ * Belge ağacı büyüktür (galeride 20 kopyası birden durur) ve tamamen props'un
+ * fonksiyonudur — iç durumu yoktur. Üst bileşenler aynı `data`/`settings`
+ * nesnelerini geçtiği sürece yeniden render edilmesine gerek yoktur.
+ */
+export default memo(CvDocument)
 
 /* ================================ yardımcılar ================================ */
 

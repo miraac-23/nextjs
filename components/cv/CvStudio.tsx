@@ -181,6 +181,10 @@ export default function CvStudio() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  /** Örnek veri her render'da yeniden üretilirse galerideki 20 önizleme de
+   *  boşuna yeniden render edilir; dile göre bir kez kurulur. */
+  const sample = useMemo(() => sampleCv(lang), [lang])
+
   const autoName = useMemo(() => {
     const person = data.profile.fullName.trim()
     return safeFileName(person ? `${person} - CV` : 'CV')
@@ -278,7 +282,7 @@ export default function CvStudio() {
           <TemplateStep
             t={t}
             lang={lang}
-            preview={pct > 0 ? data : sampleCv(lang)}
+            preview={pct > 0 ? data : sample}
             settings={settings}
             onSelect={pickTemplate}
             onContinue={(id) => {
