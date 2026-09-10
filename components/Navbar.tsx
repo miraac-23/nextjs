@@ -20,6 +20,7 @@ export default function Navbar() {
     { href: '/#blog', label: t.nav.blog },
     { href: '/blog#calismalar', label: t.nav.works },
     { href: '/code-review', label: t.nav.codeReview },
+    { href: '/cv-olustur', label: t.nav.cvBuilder },
     { href: '/#iletisim', label: t.nav.contact },
   ]
 
@@ -53,17 +54,17 @@ export default function Navbar() {
             <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-accent to-violet-glow font-display text-sm font-bold text-ink-950">
               MG
             </span>
-            <span className="font-display text-sm font-semibold tracking-wide text-fg">
+            <span className="whitespace-nowrap font-display text-sm font-semibold tracking-wide text-fg">
               Miraç Güntoğar<span className="text-accent">.</span>
             </span>
           </Link>
 
-          <ul className="hidden items-center gap-1 md:flex">
+          <ul className="hidden items-center gap-0.5 lg:flex">
             {links.map((l) => (
               <li key={l.href}>
                 <Link
                   href={l.href}
-                  className="rounded-lg px-3 py-2 text-sm font-medium text-fg2 transition-colors hover:bg-surface/5 hover:text-accent-soft"
+                  className="whitespace-nowrap rounded-lg px-2 py-2 text-[13px] font-medium text-fg2 transition-colors hover:bg-surface/5 hover:text-accent-soft xl:px-3 xl:text-sm"
                 >
                   {l.label}
                 </Link>
@@ -71,15 +72,15 @@ export default function Navbar() {
             ))}
           </ul>
 
-          <div className="hidden items-center gap-2 md:flex">
+          <div className="hidden items-center gap-2 lg:flex">
             <ThemeToggle />
             <LanguageToggle />
-            <Link href="/#iletisim" className="btn-primary px-5 py-2.5 text-[13px]">
+            <Link href="/#iletisim" className="btn-primary whitespace-nowrap px-4 py-2.5 text-[13px] xl:px-5">
               {t.nav.cta}
             </Link>
           </div>
 
-          <div className="flex items-center gap-2 md:hidden">
+          <div className="flex items-center gap-2 lg:hidden">
             <ThemeToggle />
             <LanguageToggle />
             <button
@@ -111,7 +112,7 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       <div
-        className={`fixed inset-0 top-0 z-40 transition-all duration-500 md:hidden ${
+        className={`fixed inset-0 top-0 z-40 transition-all duration-500 lg:hidden ${
           open ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
         }`}
       >

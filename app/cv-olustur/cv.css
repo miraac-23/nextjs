@@ -1,0 +1,3137 @@
+/* ==========================================================================
+   CV Stüdyosu — araç arayüzü + belge şablonları.
+   Tüm kurallar `.cvs-app` (araç kabuğu) ve `.cv-doc` (belge) altında izole edilmiştir;
+   sitenin geri kalanı etkilenmez. Palet sitenin genel temasıyla (html[data-theme]) döner.
+   ========================================================================== */
+
+:root {
+  --cvs-panel: rgba(20, 26, 44, 0.62);
+  --cvs-panel-2: rgba(26, 33, 54, 0.5);
+  --cvs-raise: rgba(31, 39, 63, 0.9);
+  --cvs-input: rgba(9, 13, 24, 0.55);
+  --cvs-border: rgba(148, 163, 184, 0.18);
+  --cvs-border-2: rgba(148, 163, 184, 0.1);
+  --cvs-text: #e8ecf6;
+  --cvs-text-2: #b9c2d6;
+  --cvs-dim: #8b95ad;
+  --cvs-accent: #22d3ee;
+  --cvs-accent-2: #818cf8;
+  --cvs-on-accent: #06131a;
+  --cvs-shadow: 0 24px 60px -32px rgba(0, 0, 0, 0.9);
+  --cvs-stage: rgba(6, 9, 18, 0.5);
+}
+
+:root[data-theme='light'] {
+  --cvs-panel: rgba(255, 255, 255, 0.82);
+  --cvs-panel-2: rgba(241, 245, 251, 0.78);
+  --cvs-raise: #ffffff;
+  --cvs-input: rgba(255, 255, 255, 0.95);
+  --cvs-border: rgba(15, 23, 42, 0.12);
+  --cvs-border-2: rgba(15, 23, 42, 0.07);
+  --cvs-text: #101a2e;
+  --cvs-text-2: #33405a;
+  --cvs-dim: #5d6a83;
+  --cvs-accent: #0891b2;
+  --cvs-accent-2: #6366f1;
+  --cvs-on-accent: #ffffff;
+  --cvs-shadow: 0 20px 50px -30px rgba(15, 23, 42, 0.45);
+  --cvs-stage: rgba(226, 232, 240, 0.6);
+}
+
+.cvs-app,
+.cvs-app *,
+.cvs-portal,
+.cvs-portal * {
+  box-sizing: border-box;
+}
+
+.cvs-app {
+  color: var(--cvs-text);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* ------------------------------- tipografi -------------------------------- */
+
+/* Belge (.cv-doc) araç kabuğunun içinde render edilir; araç tipografisi oraya
+   sızarsa CV başlıkları koyu temada beyaz kâğıt üzerinde beyaz kalır. Bu yüzden
+   kural açıkça belgenin dışındaki başlıklarla sınırlandırılmıştır. */
+.cvs-app :is(h1, h2, h3):not(.cv-doc *) {
+  margin: 0;
+  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  color: var(--cvs-text);
+  letter-spacing: -0.01em;
+}
+
+.cvs-title {
+  font-size: clamp(1.55rem, 1.1rem + 1.8vw, 2.3rem);
+  font-weight: 700;
+  line-height: 1.12;
+}
+
+.cvs-sub {
+  margin: 0.5rem 0 0;
+  max-width: 62ch;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--cvs-dim);
+}
+
+.cvs-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--cvs-accent);
+}
+
+/* ------------------------------- üst başlık ------------------------------- */
+
+.cvs-eyebrow-ic {
+  width: 13px;
+  height: 13px;
+}
+
+.cvs-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.cvs-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--cvs-border);
+  border-radius: 999px;
+  background: var(--cvs-panel-2);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--cvs-text-2);
+  white-space: nowrap;
+}
+
+.cvs-badge .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #34d399;
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.18);
+}
+
+/* --------------------------------- adımlar -------------------------------- */
+
+.cvs-steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  padding: 0.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--cvs-border);
+  border-radius: 18px;
+  background: var(--cvs-panel-2);
+  backdrop-filter: blur(14px) saturate(1.1);
+}
+
+.cvs-step {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid transparent;
+  border-radius: 13px;
+  background: transparent;
+  color: var(--cvs-dim);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+  min-width: 0;
+}
+
+.cvs-step:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.cvs-step:not(:disabled):hover {
+  background: var(--cvs-input);
+  color: var(--cvs-text);
+}
+
+.cvs-step-num {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--cvs-border);
+  border-radius: 10px;
+  background: var(--cvs-panel);
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  transition: all 0.18s ease;
+}
+
+.cvs-step-txt {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.cvs-step-txt b {
+  font-size: 0.86rem;
+  font-weight: 650;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cvs-step-txt small {
+  font-size: 0.7rem;
+  color: var(--cvs-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cvs-step[data-state='done'] {
+  color: var(--cvs-text-2);
+}
+
+.cvs-step[data-state='done'] .cvs-step-num {
+  color: var(--cvs-accent);
+  border-color: color-mix(in srgb, var(--cvs-accent) 45%, transparent);
+  background: color-mix(in srgb, var(--cvs-accent) 12%, transparent);
+}
+
+.cvs-step[data-state='active'] {
+  color: var(--cvs-text);
+  border-color: color-mix(in srgb, var(--cvs-accent) 50%, transparent);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--cvs-accent) 14%, transparent), color-mix(in srgb, var(--cvs-accent-2) 12%, transparent));
+  box-shadow: 0 6px 20px -12px color-mix(in srgb, var(--cvs-accent) 80%, transparent);
+}
+
+.cvs-step[data-state='active'] .cvs-step-num {
+  color: var(--cvs-on-accent);
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--cvs-accent), var(--cvs-accent-2));
+}
+
+.cvs-step[data-state='active'] .cvs-step-txt small {
+  color: var(--cvs-text-2);
+}
+
+@media (max-width: 860px) {
+  .cvs-steps {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.25rem;
+    padding: 0.35rem;
+  }
+  .cvs-step {
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.55rem 0.3rem;
+    text-align: center;
+  }
+  .cvs-step-num {
+    width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
+  }
+  .cvs-step-txt {
+    align-items: center;
+  }
+  .cvs-step-txt b {
+    font-size: 0.72rem;
+  }
+  .cvs-step-txt small {
+    display: none;
+  }
+}
+
+/* -------------------------------- paneller -------------------------------- */
+
+.cvs-panel {
+  border: 1px solid var(--cvs-border);
+  border-radius: 18px;
+  background: var(--cvs-panel);
+  box-shadow: var(--cvs-shadow);
+  backdrop-filter: blur(14px) saturate(1.1);
+}
+
+.cvs-panel-pad {
+  padding: clamp(1rem, 0.6rem + 1.4vw, 1.6rem);
+}
+
+.cvs-panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.9rem clamp(0.9rem, 0.5rem + 1.2vw, 1.4rem);
+  border-bottom: 1px solid var(--cvs-border-2);
+}
+
+.cvs-panel-head h2 {
+  font-size: 1rem;
+  font-weight: 650;
+}
+
+.cvs-hr {
+  height: 1px;
+  margin: 1.15rem 0;
+  background: var(--cvs-border-2);
+  border: 0;
+}
+
+/* -------------------------------- butonlar -------------------------------- */
+
+.cvs-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.05rem;
+  border: 1px solid var(--cvs-border);
+  border-radius: 11px;
+  background: var(--cvs-panel-2);
+  color: var(--cvs-text-2);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cvs-btn:hover:not(:disabled) {
+  color: var(--cvs-text);
+  border-color: color-mix(in srgb, var(--cvs-accent) 45%, transparent);
+}
+
+.cvs-btn:active:not(:disabled) {
+  transform: scale(0.975);
+}
+
+.cvs-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cvs-btn.primary {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--cvs-accent), var(--cvs-accent-2));
+  color: var(--cvs-on-accent);
+  box-shadow: 0 12px 28px -14px color-mix(in srgb, var(--cvs-accent) 90%, transparent);
+}
+
+.cvs-btn.primary:hover:not(:disabled) {
+  color: var(--cvs-on-accent);
+  filter: brightness(1.06);
+}
+
+.cvs-btn.lg {
+  padding: 0.85rem 1.6rem;
+  font-size: 0.95rem;
+  border-radius: 13px;
+}
+
+.cvs-btn.sm {
+  padding: 0.4rem 0.7rem;
+  font-size: 0.76rem;
+  border-radius: 9px;
+}
+
+.cvs-btn.icon {
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  flex: none;
+}
+
+.cvs-btn.danger:hover:not(:disabled) {
+  color: #fb7185;
+  border-color: rgba(251, 113, 133, 0.5);
+}
+
+.cvs-btn svg {
+  width: 1.05em;
+  height: 1.05em;
+  flex: none;
+}
+
+.cvs-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.cvs-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 520px) {
+  .cvs-nav .cvs-btn {
+    flex: 1;
+  }
+}
+
+/* --------------------------------- formlar -------------------------------- */
+
+.cvs-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.32rem;
+  min-width: 0;
+}
+
+.cvs-field > span {
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--cvs-dim);
+}
+
+.cvs-field input,
+.cvs-field textarea,
+.cvs-field select {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--cvs-border);
+  border-radius: 10px;
+  background: var(--cvs-input);
+  color: var(--cvs-text);
+  font: inherit;
+  font-size: 0.87rem;
+  line-height: 1.45;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cvs-field textarea {
+  resize: vertical;
+  min-height: 5.5rem;
+}
+
+.cvs-field input:focus,
+.cvs-field textarea:focus,
+.cvs-field select:focus {
+  outline: none;
+  border-color: var(--cvs-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cvs-accent) 22%, transparent);
+}
+
+.cvs-field input:disabled,
+.cvs-field textarea:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.cvs-field[data-disabled] > span {
+  opacity: 0.6;
+}
+
+.cvs-field input::placeholder,
+.cvs-field textarea::placeholder {
+  color: color-mix(in srgb, var(--cvs-dim) 70%, transparent);
+}
+
+.cvs-hint {
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--cvs-dim);
+}
+
+.cvs-rows {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.cvs-row-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.cvs-row-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+@media (max-width: 620px) {
+  .cvs-row-2,
+  .cvs-row-3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.cvs-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--cvs-text-2);
+  cursor: pointer;
+  user-select: none;
+}
+
+.cvs-check input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--cvs-accent);
+  cursor: pointer;
+}
+
+/* anahtar (switch) */
+.cvs-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--cvs-border-2);
+  border-radius: 11px;
+  background: var(--cvs-panel-2);
+  font-size: 0.83rem;
+  color: var(--cvs-text-2);
+  cursor: pointer;
+}
+
+.cvs-switch input {
+  appearance: none;
+  flex: none;
+  position: relative;
+  width: 38px;
+  height: 21px;
+  border-radius: 999px;
+  border: 1px solid var(--cvs-border);
+  background: var(--cvs-input);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.cvs-switch input::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 15px;
+  height: 15px;
+  border-radius: 999px;
+  background: var(--cvs-dim);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.cvs-switch input:checked {
+  background: linear-gradient(135deg, var(--cvs-accent), var(--cvs-accent-2));
+  border-color: transparent;
+}
+
+.cvs-switch input:checked::after {
+  transform: translateX(17px);
+  background: #fff;
+}
+
+/* kaydırıcı */
+.cvs-range {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.cvs-range-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--cvs-dim);
+}
+
+.cvs-range-top b {
+  color: var(--cvs-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.cvs-range input {
+  width: 100%;
+  height: 20px;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.cvs-range input::-webkit-slider-runnable-track {
+  height: 5px;
+  border-radius: 999px;
+  background: var(--cvs-input);
+  border: 1px solid var(--cvs-border-2);
+}
+
+.cvs-range input::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--cvs-accent), var(--cvs-accent-2));
+  border: 2px solid var(--cvs-raise);
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.5);
+}
+
+.cvs-range input::-moz-range-track {
+  height: 5px;
+  border-radius: 999px;
+  background: var(--cvs-input);
+  border: 1px solid var(--cvs-border-2);
+}
+
+.cvs-range input::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--cvs-accent);
+  border: 2px solid var(--cvs-raise);
+}
+
+/* --------------------------- tekrarlanan kayıtlar -------------------------- */
+
+.cvs-repeat {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.cvs-entry {
+  border: 1px solid var(--cvs-border-2);
+  border-radius: 14px;
+  background: var(--cvs-panel-2);
+  overflow: hidden;
+}
+
+.cvs-entry-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.6rem 0.55rem 0.85rem;
+  border-bottom: 1px solid var(--cvs-border-2);
+  background: color-mix(in srgb, var(--cvs-panel) 60%, transparent);
+}
+
+.cvs-entry-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.83rem;
+  font-weight: 650;
+  color: var(--cvs-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cvs-entry-title span {
+  color: var(--cvs-dim);
+  font-weight: 500;
+}
+
+.cvs-entry-body {
+  display: grid;
+  gap: 0.85rem;
+  padding: 0.85rem;
+}
+
+.cvs-empty {
+  padding: 1.5rem;
+  border: 1px dashed var(--cvs-border);
+  border-radius: 14px;
+  text-align: center;
+  font-size: 0.83rem;
+  color: var(--cvs-dim);
+}
+
+/* --------------------------------- akordeon -------------------------------- */
+
+.cvs-acc {
+  border: 1px solid var(--cvs-border-2);
+  border-radius: 15px;
+  background: var(--cvs-panel-2);
+  overflow: hidden;
+}
+
+.cvs-acc + .cvs-acc {
+  margin-top: 0.7rem;
+}
+
+.cvs-acc-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: 0;
+  background: transparent;
+  color: var(--cvs-text);
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cvs-acc-btn:hover {
+  background: var(--cvs-input);
+}
+
+.cvs-acc-ic {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  border: 1px solid var(--cvs-border);
+  background: var(--cvs-panel);
+  color: var(--cvs-accent);
+}
+
+.cvs-acc-ic svg {
+  width: 16px;
+  height: 16px;
+}
+
+.cvs-acc-count {
+  margin-left: auto;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: var(--cvs-input);
+  border: 1px solid var(--cvs-border-2);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--cvs-dim);
+}
+
+.cvs-acc-chev {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--cvs-dim);
+  transition: transform 0.22s ease;
+}
+
+.cvs-acc[data-open='true'] .cvs-acc-chev {
+  transform: rotate(180deg);
+}
+
+.cvs-acc-body {
+  padding: 0 1rem 1rem;
+  border-top: 1px solid var(--cvs-border-2);
+}
+
+.cvs-acc-body > * + * {
+  margin-top: 0.85rem;
+}
+
+/* ------------------------------ şablon galerisi ---------------------------- */
+
+.cvs-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.2rem;
+}
+
+.cvs-search {
+  position: relative;
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.cvs-search input {
+  width: 100%;
+  padding: 0.55rem 0.8rem 0.55rem 2.2rem;
+  border: 1px solid var(--cvs-border);
+  border-radius: 999px;
+  background: var(--cvs-input);
+  color: var(--cvs-text);
+  font: inherit;
+  font-size: 0.84rem;
+}
+
+.cvs-search input:focus {
+  outline: none;
+  border-color: var(--cvs-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cvs-accent) 20%, transparent);
+}
+
+.cvs-search svg {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  width: 15px;
+  height: 15px;
+  transform: translateY(-50%);
+  color: var(--cvs-dim);
+  pointer-events: none;
+}
+
+.cvs-chipbar {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  padding-bottom: 0.15rem;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cvs-chipbar::-webkit-scrollbar {
+  display: none;
+}
+
+.cvs-tab {
+  flex: none;
+  padding: 0.42rem 0.85rem;
+  border: 1px solid var(--cvs-border);
+  border-radius: 999px;
+  background: var(--cvs-panel-2);
+  color: var(--cvs-dim);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cvs-tab:hover {
+  color: var(--cvs-text);
+}
+
+.cvs-tab[aria-pressed='true'] {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--cvs-accent), var(--cvs-accent-2));
+  color: var(--cvs-on-accent);
+}
+
+.cvs-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: clamp(0.7rem, 0.4rem + 1vw, 1.15rem);
+}
+
+@media (max-width: 400px) {
+  .cvs-gallery {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.cvs-tplcard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  border: 1px solid var(--cvs-border-2);
+  border-radius: 16px;
+  background: var(--cvs-panel-2);
+  overflow: hidden;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s ease, box-shadow 0.25s ease;
+}
+
+.cvs-tplcard:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--cvs-accent) 50%, transparent);
+  box-shadow: 0 22px 45px -28px color-mix(in srgb, var(--cvs-accent) 90%, transparent);
+}
+
+.cvs-tplcard[data-active='true'] {
+  border-color: var(--cvs-accent);
+  box-shadow: 0 0 0 1px var(--cvs-accent), 0 22px 45px -28px color-mix(in srgb, var(--cvs-accent) 90%, transparent);
+}
+
+.cvs-thumb {
+  position: relative;
+  aspect-ratio: 210 / 297;
+  overflow: hidden;
+  background: #fff;
+  border-bottom: 1px solid var(--cvs-border-2);
+}
+
+/* Gerçek şablon, kart genişliğine göre küçültülerek gömülür. */
+.cvs-thumb-inner {
+  position: absolute;
+  inset: 0;
+  transform-origin: top left;
+  pointer-events: none;
+  user-select: none;
+}
+
+.cvs-thumb-veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 55%, rgba(2, 6, 16, 0.45));
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.cvs-tplcard:hover .cvs-thumb-veil,
+.cvs-tplcard[data-active='true'] .cvs-thumb-veil {
+  opacity: 1;
+}
+
+/* Karta gelindiğinde beliren eylemler: "devam et" ve "büyüt".
+   Böylece kullanıcı şablonu seçtikten sonra sayfanın en altındaki "Devam"
+   düğmesine inmek zorunda kalmaz. */
+.cvs-thumb-actions {
+  position: absolute;
+  inset: auto 0.45rem 0.45rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.cvs-tplcard:hover .cvs-thumb-actions,
+.cvs-tplcard:focus-within .cvs-thumb-actions,
+.cvs-tplcard[data-active='true'] .cvs-thumb-actions {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.cvs-thumb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.34rem 0.6rem;
+  border: 0;
+  border-radius: 9px;
+  background: rgba(2, 6, 16, 0.8);
+  color: #fff;
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 650;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+.cvs-thumb-btn:hover { filter: brightness(1.15); }
+.cvs-thumb-btn:active { transform: scale(0.96); }
+
+.cvs-thumb-btn.go {
+  background: linear-gradient(135deg, var(--cvs-accent), var(--cvs-accent-2));
+  color: var(--cvs-on-accent);
+  box-shadow: 0 6px 18px -8px rgba(2, 6, 16, 0.9);
+}
+
+.cvs-thumb-btn svg {
+  width: 12px;
+  height: 12px;
+  flex: none;
+}
+
+/* Dokunmatik cihazlarda "üzerine gelme" yok: eylemler her zaman görünür. */
+@media (hover: none) {
+  .cvs-thumb-actions {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.cvs-tplfoot {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+}
+
+.cvs-tplname {
+  min-width: 0;
+  flex: 1;
+}
+
+.cvs-tplname b {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 650;
+  color: var(--cvs-text);
+}
+
+.cvs-tplname small {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--cvs-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cvs-tick {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 1px solid var(--cvs-border);
+  color: transparent;
+  transition: all 0.2s ease;
+}
+
+.cvs-tplcard[data-active='true'] .cvs-tick {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--cvs-accent), var(--cvs-accent-2));
+  color: var(--cvs-on-accent);
+}
+
+.cvs-tick svg {
+  width: 13px;
+  height: 13px;
+}
+
+.cvs-tplcat {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(2, 6, 16, 0.7);
+  color: #e6ecf7;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  backdrop-filter: blur(4px);
+}
+
+.cvs-tplcard:hover .cvs-tplcat,
+.cvs-tplcard[data-active='true'] .cvs-tplcat {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---------------------------- form + önizleme ----------------------------- */
+
+.cvs-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.15rem;
+  /* `start` olsaydı sağ sütun içeriği kadar kısalır ve `position: sticky`
+     önizlemenin kayacak alanı kalmazdı; sütunlar satır boyunca esnetilir. */
+  align-items: stretch;
+}
+
+@media (min-width: 1100px) {
+  .cvs-split {
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.92fr);
+  }
+  .cvs-split.editor {
+    grid-template-columns: minmax(300px, 0.72fr) minmax(0, 1fr);
+  }
+}
+
+@media (min-width: 1500px) {
+  .cvs-split {
+    grid-template-columns: minmax(0, 1fr) minmax(420px, 0.85fr);
+  }
+}
+
+.cvs-sticky {
+  position: sticky;
+  top: 6.5rem;
+  /* Sticky öğe, esnetilen sütunun tepesinde kalır. */
+  align-self: start;
+}
+
+/* Mobil/tablette form ile önizleme sekmeyle değişir. */
+.cvs-panetabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.3rem;
+  padding: 0.3rem;
+  margin-bottom: 0.9rem;
+  border: 1px solid var(--cvs-border);
+  border-radius: 13px;
+  background: var(--cvs-panel-2);
+}
+
+@media (min-width: 1100px) {
+  .cvs-panetabs {
+    display: none;
+  }
+  .cvs-pane {
+    display: block !important;
+  }
+}
+
+.cvs-panetabs button {
+  padding: 0.5rem;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--cvs-dim);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 650;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.cvs-panetabs button[aria-pressed='true'] {
+  background: linear-gradient(135deg, var(--cvs-accent), var(--cvs-accent-2));
+  color: var(--cvs-on-accent);
+}
+
+/* -------------------------------- sahne ----------------------------------- */
+
+.cvs-stage {
+  padding: clamp(0.6rem, 0.3rem + 1vw, 1.1rem);
+  border: 1px solid var(--cvs-border);
+  border-radius: 18px;
+  background: var(--cvs-stage);
+  box-shadow: var(--cvs-shadow);
+}
+
+.cvs-stage-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-bottom: 0.65rem;
+  padding: 0 0.15rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--cvs-dim);
+}
+
+.cvs-stage-bar .cvs-actions {
+  gap: 0.35rem;
+}
+
+.cvs-scroll {
+  /* Panelin tamamı (üst boşluk + başlık çubuğu + kenarlıklar dahil) ekrana
+     sığmalı; aksi halde yapışkan önizlemenin altı görünmez. */
+  max-height: min(calc(100vh - 11rem), 1100px);
+  overflow: auto;
+  border-radius: 10px;
+  overscroll-behavior: contain;
+}
+
+.cvs-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.cvs-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--cvs-border);
+}
+
+/* Ölçekleme sarmalayıcısı: belge transform ile küçültülür, dış kutu gerçek
+   yüksekliği taşır ki kaydırma doğru çalışsın. */
+.cvs-paper-fit {
+  position: relative;
+  margin: 0 auto;
+}
+
+.cvs-paper-scale {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
+}
+
+.cvs-paper-shadow {
+  box-shadow: 0 18px 45px -20px rgba(2, 6, 16, 0.7), 0 0 0 1px rgba(15, 23, 42, 0.12);
+}
+
+/* Sayfa sınırı kılavuzu: A4 yüksekliğinde kesik çizgi. */
+.cvs-pagebreak {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+.cvs-pagebreak::before,
+.cvs-pagebreak::after {
+  content: '';
+  flex: 1;
+  border-top: 1px dashed rgba(239, 68, 68, 0.55);
+}
+
+.cvs-pagebreak span {
+  padding: 0.05rem 0.35rem;
+  border-radius: 4px;
+  background: rgba(239, 68, 68, 0.9);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+/* ------------------------------- düzenleyici ------------------------------ */
+
+.cvs-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.cvs-swatch {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.cvs-swatch:hover {
+  transform: scale(1.1);
+}
+
+.cvs-swatch[aria-pressed='true'] {
+  border-color: var(--cvs-text);
+}
+
+.cvs-swatches .cvs-colorpick {
+  width: 34px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--cvs-border);
+  border-radius: 8px;
+  background: var(--cvs-input);
+  cursor: pointer;
+}
+
+.cvs-seg {
+  display: grid;
+  grid-auto-flow: column;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: 1px solid var(--cvs-border);
+  border-radius: 11px;
+  background: var(--cvs-input);
+}
+
+.cvs-seg.wrap {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.cvs-seg.wrap button {
+  flex: 1 1 auto;
+  min-width: 4.2rem;
+}
+
+/* Tasarım sekmesindeki ayar grupları */
+.cvs-group-label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.2rem 0 0.1rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--cvs-accent);
+}
+
+.cvs-group-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--cvs-border-2);
+}
+
+.cvs-seg button {
+  padding: 0.42rem 0.6rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--cvs-dim);
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 650;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.cvs-seg button[aria-pressed='true'] {
+  background: var(--cvs-raise);
+  color: var(--cvs-text);
+  box-shadow: 0 2px 8px -4px rgba(0, 0, 0, 0.6);
+}
+
+.cvs-order {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.cvs-order-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.55rem;
+  border: 1px solid var(--cvs-border-2);
+  border-radius: 11px;
+  background: var(--cvs-panel-2);
+  cursor: grab;
+  transition: border-color 0.15s ease, opacity 0.15s ease, background 0.15s ease;
+}
+
+.cvs-order-item[data-dragging='true'] {
+  opacity: 0.45;
+  border-style: dashed;
+}
+
+.cvs-order-item[data-over='true'] {
+  border-color: var(--cvs-accent);
+  background: color-mix(in srgb, var(--cvs-accent) 10%, transparent);
+}
+
+.cvs-order-item[data-hidden='true'] .cvs-order-name {
+  color: var(--cvs-dim);
+  text-decoration: line-through;
+}
+
+/* Yeni sayfada başlayan bölümün üstünde kesik çizgi belirir. */
+.cvs-order-item[data-break] {
+  border-top: 2px dashed color-mix(in srgb, var(--cvs-accent) 55%, transparent);
+}
+
+.cvs-order-item[data-break] .cvs-btn[aria-pressed='true'] {
+  color: var(--cvs-accent);
+  border-color: color-mix(in srgb, var(--cvs-accent) 55%, transparent);
+  background: color-mix(in srgb, var(--cvs-accent) 12%, transparent);
+}
+
+.cvs-grip {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--cvs-dim);
+}
+
+.cvs-order-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: var(--cvs-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cvs-order-tag {
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  background: var(--cvs-input);
+  font-size: 0.63rem;
+  font-weight: 700;
+  color: var(--cvs-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* --------------------------------- indirme -------------------------------- */
+
+.cvs-done {
+  display: grid;
+  gap: 1.2rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 900px) {
+  .cvs-done {
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 0.75fr);
+  }
+}
+
+.cvs-tips {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cvs-tips li {
+  display: flex;
+  gap: 0.6rem;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--cvs-text-2);
+}
+
+.cvs-tips li::before {
+  content: '';
+  flex: none;
+  width: 6px;
+  height: 6px;
+  margin-top: 0.5rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--cvs-accent), var(--cvs-accent-2));
+}
+
+.cvs-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--cvs-border-2);
+  border-radius: 12px;
+  background: var(--cvs-panel-2);
+}
+
+.cvs-stat-ic {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--cvs-accent);
+}
+
+.cvs-stat-k {
+  font-size: 0.72rem;
+  color: var(--cvs-dim);
+}
+
+.cvs-stat-v {
+  margin-left: auto;
+  font-size: 0.84rem;
+  font-weight: 650;
+  color: var(--cvs-text);
+}
+
+/* ------------------------------ ilerleme halkası --------------------------- */
+
+.cvs-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.cvs-progress svg {
+  width: 34px;
+  height: 34px;
+  transform: rotate(-90deg);
+}
+
+.cvs-progress circle {
+  fill: none;
+  stroke-width: 3.4;
+  stroke-linecap: round;
+}
+
+.cvs-progress .bg {
+  stroke: var(--cvs-border);
+}
+
+.cvs-progress .fg {
+  stroke: url(#cvsGrad);
+  transition: stroke-dasharray 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cvs-progress-txt {
+  line-height: 1.15;
+}
+
+.cvs-progress-txt b {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--cvs-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.cvs-progress-txt small {
+  font-size: 0.68rem;
+  color: var(--cvs-dim);
+}
+
+/* ---------------------------------- modal --------------------------------- */
+
+.cvs-modal-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: clamp(0.75rem, 2vw, 2rem);
+  background: rgba(3, 6, 15, 0.72);
+  backdrop-filter: blur(6px);
+  animation: cvs-fade 0.2s ease both;
+}
+
+.cvs-modal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 780px);
+  max-height: 100%;
+  border: 1px solid var(--cvs-border);
+  border-radius: 18px;
+  background: var(--cvs-raise);
+  box-shadow: 0 40px 90px -40px rgba(0, 0, 0, 0.9);
+  overflow: hidden;
+  animation: cvs-pop 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.cvs-modal-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--cvs-border-2);
+}
+
+.cvs-modal-head h3 {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.98rem;
+  font-weight: 650;
+}
+
+.cvs-modal-body {
+  padding: 1rem;
+  overflow: auto;
+  background: var(--cvs-stage);
+}
+
+.cvs-modal-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  padding: 0.8rem 1rem;
+  border-top: 1px solid var(--cvs-border-2);
+}
+
+@keyframes cvs-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes cvs-pop {
+  from { opacity: 0; transform: translateY(14px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+/* --------------------------------- toast ---------------------------------- */
+
+.cvs-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 1.5rem;
+  z-index: 130;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--cvs-border);
+  border-radius: 999px;
+  background: var(--cvs-raise);
+  color: var(--cvs-text);
+  font-size: 0.83rem;
+  font-weight: 600;
+  box-shadow: 0 20px 45px -22px rgba(0, 0, 0, 0.85);
+  transform: translate(-50%, 0);
+  animation: cvs-toast-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.cvs-toast[data-tone='error'] {
+  color: #fb7185;
+}
+
+@keyframes cvs-toast-in {
+  from { opacity: 0; transform: translate(-50%, 16px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ==========================================================================
+   Açılış ekranı (screen loader)
+   ========================================================================== */
+
+.cvs-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background: rgb(var(--c-page));
+  transition: opacity 0.55s ease, visibility 0.55s ease;
+}
+
+.cvs-loader[data-leaving='true'] {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.cvs-loader-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.cvs-loader-bg::before {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(38% 42% at 24% 26%, color-mix(in srgb, var(--cvs-accent) 24%, transparent), transparent 62%),
+    radial-gradient(36% 40% at 78% 34%, color-mix(in srgb, var(--cvs-accent-2) 22%, transparent), transparent 62%),
+    radial-gradient(44% 48% at 50% 92%, color-mix(in srgb, var(--cvs-accent) 14%, transparent), transparent 62%);
+  animation: cvs-drift 14s ease-in-out infinite alternate;
+}
+
+.cvs-loader-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(148, 163, 184, 0.075) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.075) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(70% 60% at 50% 45%, #000 0%, transparent 78%);
+  -webkit-mask-image: radial-gradient(70% 60% at 50% 45%, #000 0%, transparent 78%);
+}
+
+@keyframes cvs-drift {
+  from { transform: translate3d(-2%, -1%, 0) scale(1); }
+  to { transform: translate3d(2%, 2%, 0) scale(1.06); }
+}
+
+.cvs-loader-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  width: min(100%, 22rem);
+  text-align: center;
+}
+
+/* Kendini çizen belge işareti */
+.cvs-mark {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  display: grid;
+  place-items: center;
+}
+
+.cvs-mark svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.cvs-mark .sheet {
+  fill: color-mix(in srgb, var(--cvs-accent) 8%, transparent);
+  stroke: var(--cvs-accent);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-dasharray: 220;
+  stroke-dashoffset: 220;
+  animation: cvs-draw 1.5s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+.cvs-mark .rule {
+  stroke: var(--cvs-accent-2);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 40;
+  stroke-dashoffset: 40;
+  animation: cvs-draw-line 0.5s ease forwards;
+}
+
+.cvs-mark .rule:nth-of-type(2) { animation-delay: 0.75s; }
+.cvs-mark .rule:nth-of-type(3) { animation-delay: 0.95s; }
+.cvs-mark .rule:nth-of-type(4) { animation-delay: 1.15s; }
+.cvs-mark .rule:nth-of-type(5) { animation-delay: 1.35s; }
+
+.cvs-mark .halo {
+  position: absolute;
+  inset: -14px;
+  border-radius: 26px;
+  border: 1px solid color-mix(in srgb, var(--cvs-accent) 32%, transparent);
+  animation: cvs-halo 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes cvs-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes cvs-draw-line {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes cvs-halo {
+  0% { transform: scale(0.92); opacity: 0.75; }
+  70%, 100% { transform: scale(1.22); opacity: 0; }
+}
+
+.cvs-loader-brand {
+  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  background: linear-gradient(100deg, var(--cvs-accent), var(--cvs-accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.cvs-loader-track {
+  position: relative;
+  width: 100%;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--cvs-border);
+  overflow: hidden;
+}
+
+.cvs-loader-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--cvs-accent), var(--cvs-accent-2));
+  /* Genişlik her karede JS tarafından yumuşatılarak verilir; ayrıca CSS geçişi
+     eklenirse çubuk yüzdenin gerisinde kalır. */
+}
+
+.cvs-loader-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  animation: cvs-sheen 1.5s linear infinite;
+}
+
+@keyframes cvs-sheen {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+
+.cvs-loader-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 1rem;
+  font-size: 0.76rem;
+  color: var(--cvs-text-2);
+}
+
+.cvs-loader-status span {
+  animation: cvs-fade 0.4s ease both;
+  text-align: left;
+}
+
+.cvs-loader-status b {
+  color: var(--cvs-text-2);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cvs-loader-bg::before,
+  .cvs-mark .halo,
+  .cvs-loader-fill::after {
+    animation: none;
+  }
+  .cvs-mark .sheet,
+  .cvs-mark .rule {
+    stroke-dashoffset: 0;
+    animation: none;
+  }
+}
+
+/* Araç iskeleti yüklenirken sahnenin çökmemesi için ayrılan alan. */
+.cvs-boot {
+  min-height: 70vh;
+}
+
+/* ==========================================================================
+   BELGE — ortak taban
+   `.cv-doc` doğrudan kâğıdın kendisidir (genişlik/yükseklik satır içi stilden gelir).
+   Renk/tipografi değişkenleri React tarafında `--cv-*` olarak basılır.
+   ========================================================================== */
+
+.cv-doc {
+  --cv-text: #1e2532;
+  --cv-muted: #5c6678;
+  --cv-soft: #8b94a5;
+  --cv-line: #e3e7ef;
+  --cv-tint: color-mix(in srgb, var(--cv-accent) 10%, transparent);
+  --cv-aside-w: 64mm;
+  /* Başlık boyutları değişken olarak tutulur: şablonlar bu değişkeni ezer,
+     kullanıcının "başlık ölçeği" ayarı hepsiyle birlikte çarpılır. */
+  --cv-name-fs: 2.05em;
+  --cv-h2-fs: 0.92em;
+  --cv-title-fs: 1.02em;
+  --cv-h-scale: 1;
+  --cv-sec-gap: 5.5mm;
+  --cv-ls: 0em;
+  --cv-photo-w: 25mm;
+  /* Yan sütun paleti — etkin değerler CvDocument tarafından satır içi yazılır
+     (zeminin parlaklığına göre koyu/açık); buradakiler yalnızca yedektir. */
+  --cv-rail: var(--cv-rail-user, var(--cv-ink));
+  --cv-rail-fg: rgba(255, 255, 255, 0.82);
+  --cv-rail-strong: #ffffff;
+  --cv-rail-track: rgba(255, 255, 255, 0.2);
+  --cv-rail-chip: rgba(255, 255, 255, 0.13);
+  /* Koyu rayda ham vurgu rengi okunmaz; beyaza doğru açılmış bir tonu kullanılır. */
+  --cv-rail-accent: color-mix(in srgb, var(--cv-accent) 45%, #ffffff);
+
+  position: relative;
+  padding: var(--cv-pad);
+  background-color: var(--cv-paper);
+  color: var(--cv-text);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: var(--cv-fs);
+  line-height: var(--cv-lh);
+  letter-spacing: var(--cv-ls);
+  /* Renkli bantlar ve yan sütunlar yazdırmada da bassın. */
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+
+  /* Paragrafın tek satırı öbür sayfaya sarkmasın. */
+  orphans: 3;
+  widows: 3;
+
+  /* Belge birden çok sayfaya bölündüğünde iç boşluk, zemin ve kenarlık HER
+     parçaya yeniden uygulanır; aksi halde 2. sayfa kâğıdın tepesine yapışır
+     ve renkli ray/çerçeve yalnız ilk sayfada görünür. */
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* Sütunların kendi iç boşluğu da her sayfada tekrarlanmalı (yan sütunlu
+   iskeletlerde kâğıt boşluğu 0'dır, boşluk sütunlardadır). */
+.cv-col,
+.cv-aside {
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* Bölünmesi çirkin duran bloklar tek parça taşınır. */
+.cv-head,
+.cv-aside-id,
+.cv-group,
+.cv-skill,
+.cv-bullets li,
+.cv-chips {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* Başlık satırları kendinden sonrakiyle birlikte kalsın. */
+.cv-h4,
+.cv-item-top,
+.cv-item-title,
+.cv-item-sub {
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+/* Kısa bölümler ikiye ayrılmaktansa bütün olarak sonraki sayfaya geçer. */
+.cv-sec[data-sec='skills'],
+.cv-sec[data-sec='languages'],
+.cv-sec[data-sec='interests'],
+.cv-sec[data-sec='certificates'],
+.cv-sec[data-sec='references'],
+.cv-sec[data-sec='contact'],
+.cv-sec[data-place='side'] {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* Kullanıcının "yeni sayfada başlat" dediği bölüm. */
+.cv-sec[data-break='page'] {
+  break-before: page;
+  page-break-before: always;
+}
+
+.cv-doc[data-font='serif'] { font-family: var(--font-serif), Georgia, 'Times New Roman', serif; }
+.cv-doc[data-font='mono'] { font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace; }
+.cv-doc[data-font='display'] { font-family: var(--font-display), var(--font-sans), system-ui, sans-serif; }
+
+/* Başlık ailesi gövdeden ayrı seçilebilir. */
+.cv-doc[data-font-h='sans'] :is(.cv-name, .cv-h2, .cv-h4, .cv-item-title) { font-family: var(--font-sans), system-ui, sans-serif; }
+.cv-doc[data-font-h='serif'] :is(.cv-name, .cv-h2, .cv-h4, .cv-item-title) { font-family: var(--font-serif), Georgia, 'Times New Roman', serif; }
+.cv-doc[data-font-h='mono'] :is(.cv-name, .cv-h2, .cv-h4, .cv-item-title) { font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace; }
+.cv-doc[data-font-h='display'] :is(.cv-name, .cv-h2, .cv-h4, .cv-item-title) { font-family: var(--font-display), var(--font-sans), system-ui, sans-serif; }
+
+.cv-doc * { box-sizing: border-box; }
+.cv-doc p, .cv-doc h1, .cv-doc h2, .cv-doc h3, .cv-doc h4, .cv-doc ul, .cv-doc ol { margin: 0; padding: 0; }
+.cv-doc ul { list-style: none; }
+.cv-doc a { color: inherit; text-decoration: none; }
+
+/* --------------------------------- kimlik --------------------------------- */
+
+.cv-name {
+  font-size: calc(var(--cv-name-fs) * var(--cv-h-scale));
+  font-weight: 800;
+  line-height: 1.06;
+  letter-spacing: -0.022em;
+  color: var(--cv-text);
+}
+
+.cv-role {
+  margin-top: 0.9mm;
+  font-size: 1.02em;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  color: var(--cv-accent);
+}
+
+.cv-ph { color: #b9c0cc; font-weight: 500; }
+.cv-doc[data-tone='dark'] .cv-ph { color: rgba(255, 255, 255, 0.32); }
+.cv-doc[data-tone='dark'] .cv-photo { background: rgba(255, 255, 255, 0.08); }
+
+.cv-photo {
+  flex: none;
+  object-fit: cover;
+  /* Portrede yüz genelde üst-ortadadır; kırpma oradan hizalanır. */
+  object-position: center 30%;
+  background: #eef1f6;
+  width: var(--cv-photo-w);
+  height: calc(var(--cv-photo-w) * 1.16);
+  border-radius: 0;
+}
+
+.cv-photo[data-shape='circle'] { height: var(--cv-photo-w); border-radius: 999px; }
+.cv-photo[data-shape='rounded'] { border-radius: calc(var(--cv-photo-w) * 0.12); }
+
+/* Dikey yığılan yerleşimlerde (yan sütun, ortalanmış/kahraman başlık) görsel ortalanır. */
+.cv-aside-id .cv-photo,
+.cv-doc[data-head='center'] .cv-photo,
+.cv-doc[data-head='hero'] .cv-photo {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* -------------------------------- iletişim -------------------------------- */
+
+.cv-contact li {
+  display: flex;
+  align-items: center;
+  gap: 1.6mm;
+  min-width: 0;
+  font-size: 0.9em;
+  color: var(--cv-muted);
+}
+
+.cv-contact-row { display: flex; flex-wrap: wrap; gap: 1.4mm 4.5mm; }
+.cv-contact-stack { display: grid; gap: 1.7mm; }
+.cv-personal { margin-top: 2mm; }
+
+.cv-ic {
+  flex: none;
+  /* Tailwind preflight `svg { display: block }` uygular; satır içi kullanımda
+     (ör. proje adının yanındaki bağlantı simgesi) alt satıra kaçmaması için geri alınır. */
+  display: inline-block;
+  vertical-align: -0.16em;
+  width: 1.05em;
+  height: 1.05em;
+  color: var(--cv-accent);
+}
+
+/* -------------------------------- üst blok -------------------------------- */
+
+.cv-head { margin-bottom: 6mm; }
+.cv-head-main { display: flex; align-items: center; gap: 5mm; }
+.cv-head-text { min-width: 0; flex: 1; }
+.cv-head-text .cv-contact { margin-top: 3mm; }
+
+/* ortalanmış künye */
+.cv-doc[data-head='center'] .cv-head-main { flex-direction: column; text-align: center; gap: 3.5mm; }
+.cv-doc[data-head='center'] .cv-contact-row { justify-content: center; }
+
+/* iri kahraman blok */
+.cv-doc[data-head='hero'] .cv-head-main { flex-direction: column; text-align: center; gap: 4mm; }
+.cv-doc[data-head='hero'] .cv-name { --cv-name-fs: 2.9em; letter-spacing: -0.035em; }
+.cv-doc[data-head='hero'] .cv-contact-row { justify-content: center; }
+
+/* tam genişlik renkli bant — kâğıt kenarına taşar */
+.cv-doc[data-head='band'] .cv-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4mm 8mm;
+  margin: calc(var(--cv-pad) * -1) calc(var(--cv-pad) * -1) 6mm;
+  padding: 9mm var(--cv-pad);
+  background: var(--cv-ink);
+  color: #fff;
+}
+
+.cv-doc[data-head='band'] .cv-name { color: #fff; }
+.cv-doc[data-head='band'] .cv-role { color: color-mix(in srgb, var(--cv-accent) 65%, #fff); }
+.cv-doc[data-head='band'] .cv-contact li { color: rgba(255, 255, 255, 0.85); }
+.cv-doc[data-head='band'] .cv-ic { color: color-mix(in srgb, var(--cv-accent) 60%, #fff); }
+.cv-doc[data-head='band'] .cv-head-side { min-width: 0; }
+
+/* bölünmüş başlık: sol renkli blok + sağ iletişim */
+.cv-doc[data-head='split'] .cv-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 6mm;
+  padding-bottom: 4mm;
+  border-bottom: 0.6mm solid var(--cv-accent);
+}
+
+.cv-doc[data-head='split'] .cv-head-side .cv-contact-stack { gap: 1.2mm; }
+.cv-doc[data-head='split'] .cv-head-side .cv-contact li { font-size: 0.84em; }
+
+/* -------------------------------- gövde ----------------------------------- */
+
+.cv-body { display: flex; align-items: stretch; }
+.cv-col { min-width: 0; }
+.cv-col-main { flex: 1; }
+
+.cv-doc[data-shell='plain'][data-body='duo'] .cv-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.55fr);
+  gap: 8mm;
+  align-items: start;
+}
+
+/* yan sütunlu iskeletler: kâğıt boşluğu sıfır, sütunlar kendi iç boşluğunu taşır */
+.cv-doc[data-shell='aside-left'],
+.cv-doc[data-shell='aside-right'] { padding: 0; }
+
+.cv-aside {
+  flex: none;
+  width: var(--cv-aside-w);
+  padding: calc(11mm + var(--cv-pad) * 0.3) 7mm;
+  color: var(--cv-rail-fg);
+}
+
+/* Kâğıt boşluğu bu iskelette 0'dır (yan sütun kenara dayanır); kullanıcının
+   "sayfa boşluğu" ayarı bunun yerine sütunların iç boşluğunu büyütür. */
+.cv-doc[data-shell='aside-left'] .cv-col-main {
+  padding: calc(11mm + var(--cv-pad) * 0.3) calc(10mm + var(--cv-pad) * 0.3) calc(11mm + var(--cv-pad) * 0.3) calc(8mm + var(--cv-pad) * 0.3);
+}
+
+.cv-doc[data-shell='aside-right'] .cv-col-main {
+  padding: calc(11mm + var(--cv-pad) * 0.3) calc(8mm + var(--cv-pad) * 0.3) calc(11mm + var(--cv-pad) * 0.3) calc(10mm + var(--cv-pad) * 0.3);
+}
+
+/* Yan sütun zemini kâğıda degrade olarak basılır: çok sayfalı çıktıda
+   her sayfada yeniden çizilir, tek bir uzun blok gibi kesilmez. */
+.cv-doc[data-shell='aside-left'] {
+  background-image: linear-gradient(to right, var(--cv-rail) 0 var(--cv-aside-w), var(--cv-paper) var(--cv-aside-w));
+}
+
+.cv-doc[data-shell='aside-right'] {
+  background-image: linear-gradient(to left, var(--cv-rail) 0 var(--cv-aside-w), var(--cv-paper) var(--cv-aside-w));
+}
+
+.cv-aside-id { margin-bottom: 6mm; }
+.cv-aside-id .cv-photo { margin-bottom: 4mm; }
+.cv-aside .cv-name { --cv-name-fs: 1.5em; color: var(--cv-rail-strong); }
+.cv-aside .cv-role { font-size: 0.94em; }
+.cv-aside .cv-h2 { color: var(--cv-rail-strong); }
+.cv-aside .cv-contact li,
+.cv-aside .cv-list-meta,
+.cv-aside .cv-list-note,
+.cv-aside .cv-skill-note,
+.cv-aside .cv-item-text { color: var(--cv-rail-fg); }
+.cv-aside .cv-list-main,
+.cv-aside .cv-skill-name,
+.cv-aside .cv-h4 { color: var(--cv-rail-strong); }
+.cv-aside .cv-role { color: var(--cv-rail-accent); }
+.cv-aside .cv-ic { color: var(--cv-rail-accent); }
+.cv-aside .cv-item-sub { color: var(--cv-rail-accent); }
+.cv-aside .cv-bullets li::before { background: var(--cv-rail-accent); }
+.cv-aside .cv-meter { background: var(--cv-rail-track); }
+.cv-aside .cv-meter-fill { background: var(--cv-rail-accent); }
+.cv-aside .cv-dots span.on { background: var(--cv-rail-accent); }
+.cv-aside .cv-ring-fg { stroke: var(--cv-rail-accent); }
+.cv-aside .cv-dots span { background: var(--cv-rail-track); }
+.cv-aside .cv-chip { background: var(--cv-rail-chip); color: var(--cv-rail-strong); border-color: transparent; }
+.cv-aside .cv-ring-bg { stroke: var(--cv-rail-track); }
+.cv-aside .cv-ring-txt { fill: var(--cv-rail-strong); }
+
+/* -------------------------------- bölümler -------------------------------- */
+
+.cv-sec + .cv-sec { margin-top: var(--cv-sec-gap); }
+.cv-aside .cv-sec + .cv-sec { margin-top: calc(var(--cv-sec-gap) * 0.9); }
+
+.cv-h2 {
+  display: flex;
+  align-items: center;
+  gap: 2.5mm;
+  margin-bottom: 2.6mm;
+  font-size: calc(var(--cv-h2-fs) * var(--cv-h-scale));
+  font-weight: 750;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--cv-accent);
+  /* Başlık sayfanın dibinde tek başına kalmasın. */
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+.cv-h4 {
+  margin-bottom: 1.6mm;
+  font-size: 0.82em;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--cv-soft);
+}
+
+.cv-group + .cv-group { margin-top: 3mm; }
+
+.cv-summary { color: var(--cv-muted); text-align: justify; hyphens: auto; }
+.cv-doc[data-justify='off'] .cv-summary { text-align: left; hyphens: manual; }
+
+/* --------------------------------- kayıtlar ------------------------------- */
+
+.cv-item { break-inside: avoid; page-break-inside: avoid; }
+.cv-item + .cv-item { margin-top: 3.8mm; }
+
+.cv-item-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 3mm;
+}
+
+.cv-item-title {
+  font-size: calc(var(--cv-title-fs) * var(--cv-h-scale));
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--cv-text);
+}
+
+.cv-item-link { margin-left: 1.4mm; color: var(--cv-accent); }
+.cv-item-link .cv-ic { width: 0.92em; height: 0.92em; vertical-align: -0.1em; }
+
+.cv-item-date {
+  flex: none;
+  font-size: 0.83em;
+  font-weight: 600;
+  color: var(--cv-soft);
+  white-space: nowrap;
+}
+
+.cv-item-sub {
+  margin-top: 0.4mm;
+  font-size: 0.9em;
+  font-weight: 600;
+  color: var(--cv-accent);
+}
+
+.cv-item-text { margin-top: 1.3mm; color: var(--cv-muted); }
+
+.cv-bullets { margin-top: 1.4mm; display: grid; gap: 0.9mm; }
+
+.cv-bullets li {
+  position: relative;
+  padding-left: 3.6mm;
+  color: var(--cv-muted);
+}
+
+.cv-bullets li::before {
+  content: '';
+  position: absolute;
+  left: 0.4mm;
+  top: 0.62em;
+  width: 1.3mm;
+  height: 1.3mm;
+  border-radius: 999px;
+  background: var(--cv-accent);
+}
+
+/* Madde işareti biçimi — kullanıcı ayarı. */
+.cv-doc[data-bullet='square'] .cv-bullets li::before { border-radius: 0.2mm; }
+
+.cv-doc[data-bullet='dash'] .cv-bullets li::before {
+  top: 0.72em;
+  width: 2.4mm;
+  height: 0.45mm;
+  border-radius: 999px;
+}
+
+.cv-doc[data-bullet='arrow'] .cv-bullets li::before,
+.cv-doc[data-bullet='check'] .cv-bullets li::before {
+  top: 0;
+  width: auto;
+  height: auto;
+  background: none;
+  color: var(--cv-accent);
+  font-weight: 700;
+  line-height: inherit;
+}
+
+.cv-doc[data-bullet='arrow'] .cv-bullets li::before { content: '›'; }
+.cv-doc[data-bullet='check'] .cv-bullets li::before { content: '✓'; font-size: 0.85em; }
+
+.cv-doc[data-bullet='arrow'] .cv-bullets li,
+.cv-doc[data-bullet='check'] .cv-bullets li { padding-left: 4.2mm; }
+
+.cv-tech { margin-top: 1.4mm; display: flex; flex-wrap: wrap; gap: 1.2mm; }
+
+/* ---------------------------------- listeler ------------------------------ */
+
+.cv-list { display: grid; gap: 2.3mm; }
+.cv-list li { display: grid; gap: 0.3mm; break-inside: avoid; page-break-inside: avoid; }
+.cv-list-main { font-weight: 650; color: var(--cv-text); }
+.cv-list-meta { font-size: 0.86em; color: var(--cv-muted); }
+.cv-list-note { font-size: 0.86em; color: var(--cv-soft); }
+
+/* ----------------------------------- çipler ------------------------------- */
+
+.cv-chips { display: flex; flex-wrap: wrap; gap: 1.4mm; }
+
+.cv-chip {
+  display: inline-block;
+  padding: 0.7mm 2.2mm;
+  border: 0.25mm solid color-mix(in srgb, var(--cv-accent) 30%, transparent);
+  border-radius: 999px;
+  background: var(--cv-tint);
+  font-size: 0.85em;
+  font-weight: 600;
+  color: var(--cv-text);
+  white-space: nowrap;
+}
+
+/* ---------------------------- yetenek göstergeleri ------------------------ */
+
+.cv-skills[data-style='bar'] { display: grid; gap: 2.2mm; }
+.cv-skills[data-style='bar'] .cv-skill { display: grid; gap: 0.9mm; }
+
+.cv-skills[data-style='dots'] { display: grid; gap: 1.6mm; }
+.cv-skills[data-style='dots'] .cv-skill,
+.cv-skills[data-style='ring'] .cv-skill,
+.cv-langs[data-style='text'] .cv-skill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2.5mm;
+}
+
+.cv-skill-name { font-size: 0.94em; font-weight: 600; color: var(--cv-text); }
+.cv-skill-note { font-size: 0.86em; color: var(--cv-muted); }
+
+.cv-meter {
+  display: block;
+  height: 1.2mm;
+  border-radius: 999px;
+  background: var(--cv-line);
+  overflow: hidden;
+}
+
+.cv-meter-fill { display: block; height: 100%; border-radius: 999px; background: var(--cv-accent); }
+
+.cv-dots { display: inline-flex; gap: 0.9mm; flex: none; }
+
+.cv-dots span {
+  width: 1.6mm;
+  height: 1.6mm;
+  border-radius: 999px;
+  background: var(--cv-line);
+}
+
+.cv-dots span.on { background: var(--cv-accent); }
+
+.cv-skills[data-style='chips'] { display: flex; flex-wrap: wrap; gap: 1.4mm; }
+
+.cv-skills[data-style='chips'] .cv-skill {
+  padding: 0.7mm 2.2mm;
+  border: 0.25mm solid color-mix(in srgb, var(--cv-accent) 30%, transparent);
+  border-radius: 999px;
+  background: var(--cv-tint);
+  font-size: 0.85em;
+}
+
+.cv-skills[data-style='text'] { display: flex; flex-wrap: wrap; align-items: baseline; }
+
+.cv-skills[data-style='text'] .cv-skill:not(:last-child)::after {
+  content: '·';
+  margin: 0 1.7mm;
+  color: var(--cv-soft);
+}
+
+/* Diller metin modunda ad ↔ seviye olarak iki yana yaslanır; yetenek
+   listesindeki "·" ayracı buraya taşmamalı (bu yüzden aynı özgüllükte iptal). */
+.cv-skills.cv-langs[data-style='text'] { display: grid; gap: 1.4mm; }
+.cv-skills.cv-langs[data-style='text'] .cv-skill:not(:last-child)::after { content: none; margin: 0; }
+
+.cv-skills[data-style='ring'] { display: flex; flex-wrap: wrap; gap: 3mm 4mm; }
+
+.cv-skills[data-style='ring'] .cv-skill {
+  flex-direction: column-reverse;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1.2mm;
+  width: 15mm;
+  text-align: center;
+}
+
+.cv-skills[data-style='ring'] .cv-skill-name { font-size: 0.8em; line-height: 1.25; }
+
+.cv-ring { width: 12mm; height: 12mm; flex: none; }
+.cv-ring-bg { fill: none; stroke: var(--cv-line); stroke-width: 3.2; }
+
+.cv-ring-fg {
+  fill: none;
+  stroke: var(--cv-accent);
+  stroke-width: 3.2;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+.cv-ring-txt { font-size: 11px; font-weight: 700; fill: var(--cv-text); }
+
+.cv-langs[data-style='ring'] { display: grid; gap: 1.6mm; }
+.cv-langs[data-style='ring'] .cv-skill { flex-direction: row; width: auto; text-align: left; }
+.cv-langs[data-style='ring'] .cv-ring { width: 8mm; height: 8mm; }
+
+/* Kâğıdın kendisi de border-box olmalı: çerçeveli şablonlarda kenarlık
+   210mm'nin dışına taşmasın. */
+.cv-doc { box-sizing: border-box; }
+
+/* Yan sütun + bant birlikte kullanıldığında bant iki sütunun üstünde tam
+   genişlikte durur; kâğıt boşluğu 0 olduğu için iç boşluk elle verilir. */
+.cv-doc[data-shell='aside-left'][data-head='band'] .cv-head,
+.cv-doc[data-shell='aside-right'][data-head='band'] .cv-head {
+  margin: 0;
+  padding: 9mm 10mm;
+}
+
+.cv-doc[data-shell='aside-left'][data-head='band'] .cv-col-main,
+.cv-doc[data-shell='aside-right'][data-head='band'] .cv-col-main,
+.cv-doc[data-shell='aside-left'][data-head='band'] .cv-aside,
+.cv-doc[data-shell='aside-right'][data-head='band'] .cv-aside {
+  padding-top: 8mm;
+}
+
+/* ==========================================================================
+   ŞABLON VARYANTLARI (40)
+   Adlar Elazığ → Malatya → Kastamonu ilçelerinden gelir; sıra kataloğun sırasıdır.
+   ========================================================================== */
+
+/* 1 — Ağın · koyu yan sütun, kurumsal */
+.cv-doc[data-tpl='agin'] { --cv-aside-w: 62mm; }
+.cv-doc[data-tpl='agin'] .cv-col-main .cv-h2 {
+  color: var(--cv-ink);
+  padding-bottom: 1.7mm;
+  border-bottom: 0.4mm solid var(--cv-line);
+}
+.cv-doc[data-tpl='agin'] .cv-col-main .cv-h2::before {
+  content: '';
+  width: 4.5mm;
+  height: 0.9mm;
+  border-radius: 999px;
+  background: var(--cv-accent);
+}
+.cv-doc[data-tpl='agin'] .cv-aside .cv-h2 {
+  padding-bottom: 1.5mm;
+  border-bottom: 0.25mm solid rgba(255, 255, 255, 0.24);
+}
+.cv-doc[data-tpl='agin'] .cv-photo { box-shadow: 0 0 0 0.8mm rgba(255, 255, 255, 0.14); }
+
+/* 2 — Alacakaya · degrade bant + iki sütun */
+.cv-doc[data-tpl='alacakaya'] .cv-head {
+  background: linear-gradient(112deg, var(--cv-ink), color-mix(in srgb, var(--cv-accent) 72%, #04222c));
+}
+.cv-doc[data-tpl='alacakaya'] .cv-h2 { color: var(--cv-ink); }
+.cv-doc[data-tpl='alacakaya'] .cv-h2::after {
+  content: '';
+  flex: 1;
+  height: 0.25mm;
+  background: var(--cv-line);
+}
+.cv-doc[data-tpl='alacakaya'] .cv-item-title { letter-spacing: -0.005em; }
+
+/* 3 — Arıcak · minimal, ince çizgiler */
+.cv-doc[data-tpl='aricak'] .cv-name { --cv-name-fs: 2.45em; font-weight: 300; letter-spacing: -0.035em; }
+.cv-doc[data-tpl='aricak'] .cv-role { color: var(--cv-soft); font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.9em; }
+.cv-doc[data-tpl='aricak'] .cv-head { padding-bottom: 5mm; }
+.cv-doc[data-tpl='aricak'] .cv-h2 {
+  --cv-h2-fs: 0.76em;
+  letter-spacing: 0.3em;
+  color: var(--cv-soft);
+  padding-top: 2.2mm;
+  border-top: 0.25mm solid var(--cv-line);
+}
+.cv-doc[data-tpl='aricak'] .cv-item-sub { color: var(--cv-text); }
+.cv-doc[data-tpl='aricak'] .cv-bullets li::before { background: var(--cv-soft); }
+
+/* 4 — Baskil · gece mavisi sütun, camgöbeği vurgu */
+.cv-doc[data-tpl='baskil'] { --cv-aside-w: 66mm; }
+.cv-doc[data-tpl='baskil'] .cv-col-main .cv-h2 { color: var(--cv-ink); }
+.cv-doc[data-tpl='baskil'] .cv-h2::before {
+  content: '';
+  flex: none;
+  width: 1.9mm;
+  height: 1.9mm;
+  background: var(--cv-accent);
+  transform: rotate(45deg);
+}
+.cv-doc[data-tpl='baskil'] .cv-photo { border-radius: 2mm; }
+.cv-doc[data-tpl='baskil'] .cv-item-title { font-weight: 750; }
+
+/* 5 — Karakoçan · açık lavanta ray, sağda */
+.cv-doc[data-tpl='karakocan'] { --cv-aside-w: 60mm; }
+.cv-doc[data-tpl='karakocan'] .cv-name {
+  background: linear-gradient(100deg, var(--cv-ink), var(--cv-accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.cv-doc[data-tpl='karakocan'] .cv-aside .cv-name { background: none; color: var(--cv-rail-strong); }
+.cv-doc[data-tpl='karakocan'] .cv-h2::before {
+  content: '';
+  width: 3mm;
+  height: 3mm;
+  border-radius: 999px;
+  background: radial-gradient(circle at 32% 30%, color-mix(in srgb, var(--cv-accent) 55%, #fff), var(--cv-accent));
+}
+.cv-doc[data-tpl='karakocan'] .cv-head { padding-bottom: 4mm; border-bottom: 0.25mm solid var(--cv-line); }
+
+/* 6 — Keban · düz renk bant, rozet başlıklar */
+.cv-doc[data-tpl='keban'] .cv-h2 { color: var(--cv-ink); }
+.cv-doc[data-tpl='keban'] .cv-h2 span {
+  padding: 0.9mm 2.8mm;
+  border-radius: 999px;
+  background: var(--cv-tint);
+}
+.cv-doc[data-tpl='keban'] .cv-h2::after {
+  content: '';
+  flex: 1;
+  height: 0.25mm;
+  background: var(--cv-line);
+}
+
+/* 7 — Kovancılar · sol kenar şeridi */
+.cv-doc[data-tpl='kovancilar'] {
+  background-image: linear-gradient(to right, var(--cv-accent) 0 4mm, var(--cv-paper) 4mm);
+  padding-left: calc(var(--cv-pad) + 5mm);
+}
+.cv-doc[data-tpl='kovancilar'] .cv-h2 { color: var(--cv-ink); }
+.cv-doc[data-tpl='kovancilar'] .cv-h2::before {
+  content: '';
+  width: 2.6mm;
+  height: 2.6mm;
+  border: 0.6mm solid var(--cv-accent);
+  border-radius: 999px;
+}
+.cv-doc[data-tpl='kovancilar'] .cv-name { font-weight: 750; }
+
+/* 8 — Maden · serif klasik, ortalanmış */
+.cv-doc[data-tpl='maden'] .cv-name { font-weight: 600; letter-spacing: 0.015em; }
+.cv-doc[data-tpl='maden'] .cv-head { padding-bottom: 4.5mm; border-bottom: 0.7mm double var(--cv-line); }
+.cv-doc[data-tpl='maden'] .cv-h2 {
+  justify-content: center;
+  font-weight: 600;
+  --cv-h2-fs: 0.88em;
+  letter-spacing: 0.2em;
+  color: var(--cv-ink);
+}
+.cv-doc[data-tpl='maden'] .cv-h2::before,
+.cv-doc[data-tpl='maden'] .cv-h2::after {
+  content: '';
+  flex: 1;
+  height: 0.25mm;
+  background: var(--cv-line);
+}
+.cv-doc[data-tpl='maden'] .cv-item-sub { font-style: italic; }
+
+/* 9 — Palu · İsviçre ızgarası */
+.cv-doc[data-tpl='palu'] .cv-name { --cv-name-fs: 2.6em; font-weight: 800; letter-spacing: -0.042em; }
+.cv-doc[data-tpl='palu'] .cv-role { color: var(--cv-muted); }
+.cv-doc[data-tpl='palu'] .cv-head { padding-bottom: 4mm; border-bottom: 1mm solid var(--cv-text); }
+.cv-doc[data-tpl='palu'] .cv-h2 {
+  padding-top: 1.8mm;
+  border-top: 0.7mm solid var(--cv-text);
+  --cv-h2-fs: 0.78em;
+  letter-spacing: 0.22em;
+  color: var(--cv-text);
+}
+.cv-doc[data-tpl='palu'] .cv-item-sub { color: var(--cv-muted); }
+.cv-doc[data-tpl='palu'] .cv-bullets li::before { border-radius: 0; background: var(--cv-text); }
+
+/* 10 — Sivrice · iri isim, sıcak vurgu */
+.cv-doc[data-tpl='sivrice'] .cv-name { text-transform: uppercase; font-weight: 700; }
+.cv-doc[data-tpl='sivrice'] .cv-role { letter-spacing: 0.18em; text-transform: uppercase; font-size: 0.88em; }
+.cv-doc[data-tpl='sivrice'] .cv-head { padding-bottom: 5mm; border-bottom: 0.25mm solid var(--cv-line); }
+.cv-doc[data-tpl='sivrice'] .cv-photo { box-shadow: 0 0 0 1mm var(--cv-accent); }
+.cv-doc[data-tpl='sivrice'] .cv-h2 { color: var(--cv-ink); --cv-h2-fs: 0.95em; }
+.cv-doc[data-tpl='sivrice'] .cv-h2 span { padding-bottom: 1mm; border-bottom: 0.9mm solid var(--cv-accent); }
+
+/* 11 — Battalgazi · monospace, geliştirici */
+.cv-doc[data-tpl='battalgazi'] { --cv-aside-w: 63mm; }
+.cv-doc[data-tpl='battalgazi'] .cv-name { --cv-name-fs: 1.42em; letter-spacing: -0.01em; }
+.cv-doc[data-tpl='battalgazi'] .cv-h2 { letter-spacing: 0.06em; }
+.cv-doc[data-tpl='battalgazi'] .cv-col-main .cv-h2 { color: var(--cv-ink); }
+.cv-doc[data-tpl='battalgazi'] .cv-h2::before { content: '//'; font-weight: 700; color: var(--cv-accent); }
+.cv-doc[data-tpl='battalgazi'] .cv-item-title::before { content: '> '; color: var(--cv-accent); }
+.cv-doc[data-tpl='battalgazi'] .cv-bullets li::before { border-radius: 0.3mm; }
+.cv-doc[data-tpl='battalgazi'] .cv-photo { border-radius: 1.5mm; }
+
+/* 12 — Yeşilyurt · ince çerçeve, fildişi kâğıt */
+.cv-doc[data-tpl='yesilyurt'] {
+  border: 0.3mm solid color-mix(in srgb, var(--cv-accent) 40%, transparent);
+  box-shadow: inset 0 0 0 1mm var(--cv-paper), inset 0 0 0 1.25mm color-mix(in srgb, var(--cv-accent) 22%, transparent);
+}
+.cv-doc[data-tpl='yesilyurt'] .cv-name { font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; --cv-name-fs: 1.85em; }
+.cv-doc[data-tpl='yesilyurt'] .cv-head { padding-bottom: 4mm; }
+.cv-doc[data-tpl='yesilyurt'] .cv-h2 {
+  justify-content: center;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  --cv-h2-fs: 0.84em;
+  color: var(--cv-ink);
+}
+.cv-doc[data-tpl='yesilyurt'] .cv-h2::before,
+.cv-doc[data-tpl='yesilyurt'] .cv-h2::after {
+  content: '';
+  flex: 1;
+  height: 0.25mm;
+  background: color-mix(in srgb, var(--cv-accent) 35%, transparent);
+}
+
+/* 13 — Akçadağ · zaman tüneli */
+.cv-doc[data-tpl='akcadag'] .cv-h2 { color: var(--cv-ink); }
+.cv-doc[data-tpl='akcadag'] .cv-h2::before {
+  content: '';
+  width: 2.4mm;
+  height: 2.4mm;
+  border-radius: 999px;
+  border: 0.6mm solid var(--cv-accent);
+}
+.cv-doc[data-tpl='akcadag'] .cv-sec[data-sec='experience'] .cv-sec-body,
+.cv-doc[data-tpl='akcadag'] .cv-sec[data-sec='education'] .cv-sec-body {
+  margin-left: 1.2mm;
+  padding-left: 6mm;
+  border-left: 0.3mm solid var(--cv-line);
+}
+.cv-doc[data-tpl='akcadag'] .cv-sec[data-sec='experience'] .cv-item,
+.cv-doc[data-tpl='akcadag'] .cv-sec[data-sec='education'] .cv-item { position: relative; }
+.cv-doc[data-tpl='akcadag'] .cv-sec[data-sec='experience'] .cv-item::before,
+.cv-doc[data-tpl='akcadag'] .cv-sec[data-sec='education'] .cv-item::before {
+  content: '';
+  position: absolute;
+  left: -7.3mm;
+  top: 1.5mm;
+  width: 2.4mm;
+  height: 2.4mm;
+  border-radius: 999px;
+  background: var(--cv-paper);
+  border: 0.65mm solid var(--cv-accent);
+}
+
+/* 14 — Arapgir · yoğun, ATS dostu */
+.cv-doc[data-tpl='arapgir'] .cv-name { --cv-name-fs: 1.95em; font-weight: 700; }
+.cv-doc[data-tpl='arapgir'] .cv-sec + .cv-sec { margin-top: 4.2mm; }
+.cv-doc[data-tpl='arapgir'] .cv-item + .cv-item { margin-top: 3mm; }
+.cv-doc[data-tpl='arapgir'] .cv-h2 {
+  --cv-h2-fs: 0.86em;
+  letter-spacing: 0.14em;
+  color: var(--cv-ink);
+  padding-bottom: 1.1mm;
+  border-bottom: 0.5mm solid var(--cv-ink);
+}
+.cv-doc[data-tpl='arapgir'] .cv-item-sub { color: var(--cv-text); }
+.cv-doc[data-tpl='arapgir'] .cv-head { padding-bottom: 3.5mm; }
+
+/* 15 — Arguvan · ortalanmış portre, halkalar */
+.cv-doc[data-tpl='arguvan'] .cv-photo { box-shadow: 0 0 0 0.8mm var(--cv-accent), 0 0 0 2.2mm var(--cv-tint); }
+.cv-doc[data-tpl='arguvan'] .cv-name { font-weight: 750; }
+.cv-doc[data-tpl='arguvan'] .cv-head { padding-bottom: 5mm; }
+.cv-doc[data-tpl='arguvan'] .cv-h2 { color: #fff; }
+.cv-doc[data-tpl='arguvan'] .cv-h2 span {
+  padding: 0.9mm 3mm;
+  border-radius: 1.4mm;
+  background: var(--cv-accent);
+}
+.cv-doc[data-tpl='arguvan'] .cv-h2::after {
+  content: '';
+  flex: 1;
+  height: 0.25mm;
+  background: var(--cv-line);
+}
+
+/* 16 — Darende · akademik */
+.cv-doc[data-tpl='darende'] .cv-name { font-weight: 600; --cv-name-fs: 2.05em; letter-spacing: 0.005em; }
+.cv-doc[data-tpl='darende'] .cv-role { font-style: italic; font-weight: 500; }
+.cv-doc[data-tpl='darende'] .cv-head { padding-bottom: 4mm; }
+.cv-doc[data-tpl='darende'] .cv-h2 {
+  --cv-h2-fs: 0.85em;
+  letter-spacing: 0.16em;
+  color: var(--cv-ink);
+  padding-bottom: 1.2mm;
+  border-bottom: 0.25mm solid var(--cv-ink);
+}
+.cv-doc[data-tpl='darende'] .cv-item-title { font-weight: 600; }
+.cv-doc[data-tpl='darende'] .cv-item-sub { font-style: italic; font-weight: 500; color: var(--cv-muted); }
+
+/* 17 — Doğanşehir · infografik, sağ ray */
+.cv-doc[data-tpl='dogansehir'] { --cv-aside-w: 58mm; }
+.cv-doc[data-tpl='dogansehir'] .cv-head {
+  background: linear-gradient(105deg, var(--cv-ink), color-mix(in srgb, var(--cv-accent) 78%, #2b0a1e));
+}
+.cv-doc[data-tpl='dogansehir'] .cv-h2 { color: var(--cv-ink); }
+.cv-doc[data-tpl='dogansehir'] .cv-aside .cv-h2 { color: var(--cv-rail-strong); }
+.cv-doc[data-tpl='dogansehir'] .cv-h2::before {
+  content: '';
+  width: 3.4mm;
+  height: 1mm;
+  border-radius: 999px;
+  background: var(--cv-accent);
+}
+
+/* 18 — Doğanyol · geniş bant, sağda portre */
+.cv-doc[data-tpl='doganyol'] .cv-head-main { flex-direction: row-reverse; }
+.cv-doc[data-tpl='doganyol'] .cv-h2 { color: var(--cv-ink); }
+.cv-doc[data-tpl='doganyol'] .cv-h2::before {
+  content: '';
+  width: 1.1mm;
+  height: 3.6mm;
+  border-radius: 999px;
+  background: var(--cv-accent);
+}
+.cv-doc[data-tpl='doganyol'] .cv-head { background: linear-gradient(90deg, var(--cv-ink), color-mix(in srgb, var(--cv-ink) 74%, var(--cv-accent))); }
+
+/* 19 — Hekimhan · keten dokulu, yumuşak serif */
+.cv-doc[data-tpl='hekimhan'] {
+  background-image: repeating-linear-gradient(45deg, rgba(120, 72, 20, 0.026) 0 1.5px, transparent 1.5px 5px);
+}
+.cv-doc[data-tpl='hekimhan'] .cv-name { font-weight: 500; letter-spacing: 0.025em; }
+.cv-doc[data-tpl='hekimhan'] .cv-head { padding-bottom: 4.5mm; border-bottom: 0.25mm solid color-mix(in srgb, var(--cv-ink) 20%, transparent); }
+.cv-doc[data-tpl='hekimhan'] .cv-h2 {
+  --cv-h2-fs: 0.8em;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  color: var(--cv-ink);
+}
+.cv-doc[data-tpl='hekimhan'] .cv-h2::after {
+  content: '';
+  flex: 1;
+  height: 0.25mm;
+  background: color-mix(in srgb, var(--cv-ink) 20%, transparent);
+}
+
+/* 20 — Kale · geometrik köşe bloğu */
+.cv-doc[data-tpl='kale'] {
+  background-image: linear-gradient(225deg, var(--cv-accent) 0 17mm, transparent 17mm);
+  background-repeat: no-repeat;
+  background-position: top right;
+  background-size: 42mm 42mm;
+}
+.cv-doc[data-tpl='kale'] .cv-name { text-transform: uppercase; font-weight: 800; letter-spacing: -0.02em; }
+.cv-doc[data-tpl='kale'] .cv-head { border-bottom-width: 1mm; }
+.cv-doc[data-tpl='kale'] .cv-h2 { color: var(--cv-ink); --cv-h2-fs: 0.98em; font-weight: 800; letter-spacing: 0.06em; }
+.cv-doc[data-tpl='kale'] .cv-h2::before {
+  content: '';
+  width: 2.6mm;
+  height: 2.6mm;
+  background: var(--cv-accent);
+}
+.cv-doc[data-tpl='kale'] .cv-chip { border-radius: 0.8mm; }
+
+/* 21 — Kuluncak · başlıklar sol kenar boşluğunda */
+.cv-doc[data-tpl='kuluncak'] .cv-sec {
+  display: grid;
+  grid-template-columns: 26mm minmax(0, 1fr);
+  gap: 0 6mm;
+  align-items: start;
+}
+.cv-doc[data-tpl='kuluncak'] .cv-h2 {
+  --cv-h2-fs: 0.78em;
+  justify-content: flex-end;
+  margin: 0;
+  padding-top: 0.6mm;
+  text-align: right;
+  letter-spacing: 0.16em;
+  color: var(--cv-soft);
+}
+.cv-doc[data-tpl='kuluncak'] .cv-name { --cv-name-fs: 2.3em; font-weight: 600; }
+.cv-doc[data-tpl='kuluncak'] .cv-head { padding-bottom: 5mm; border-bottom: 0.25mm solid var(--cv-line); }
+/* Dar sütun altına düşen ekranlarda başlık üstte kalsın diye tek sütuna iner. */
+.cv-doc[data-tpl='kuluncak'] .cv-aside .cv-sec { grid-template-columns: minmax(0, 1fr); }
+
+/* 22 — Pütürge · numaralı bölümler */
+.cv-doc[data-tpl='puturge'] { counter-reset: cv-sec; }
+.cv-doc[data-tpl='puturge'] .cv-head { border-radius: 0; }
+.cv-doc[data-tpl='puturge'] .cv-h2 { color: var(--cv-ink); align-items: baseline; }
+.cv-doc[data-tpl='puturge'] .cv-h2::before {
+  counter-increment: cv-sec;
+  content: counter(cv-sec, decimal-leading-zero);
+  font-size: 1.15em;
+  font-weight: 800;
+  color: var(--cv-accent);
+  letter-spacing: 0;
+}
+.cv-doc[data-tpl='puturge'] .cv-h2::after {
+  content: '';
+  flex: 1;
+  height: 0.5mm;
+  background: var(--cv-accent);
+}
+.cv-doc[data-tpl='puturge'] .cv-item-title { font-weight: 750; }
+
+/* 23 — Yazıhan · başlık üstte, künye yan sütunda */
+.cv-doc[data-tpl='yazihan'] { --cv-aside-w: 60mm; }
+.cv-doc[data-tpl='yazihan'] .cv-head {
+  margin: 0;
+  padding: 10mm 10mm 6mm;
+  border-bottom: 0.8mm solid var(--cv-accent);
+}
+.cv-doc[data-tpl='yazihan'] .cv-col-main,
+.cv-doc[data-tpl='yazihan'] .cv-aside { padding-top: 8mm; }
+.cv-doc[data-tpl='yazihan'] .cv-col-main .cv-h2 { color: var(--cv-ink); }
+.cv-doc[data-tpl='yazihan'] .cv-h2::before {
+  content: '';
+  width: 3mm;
+  height: 3mm;
+  border-radius: 0.6mm;
+  background: var(--cv-accent);
+}
+
+/* 24 — Abana · dergi düzeni, gömme baş harf */
+.cv-doc[data-tpl='abana'] .cv-name { --cv-name-fs: 2.4em; font-weight: 600; letter-spacing: 0.01em; }
+.cv-doc[data-tpl='abana'] .cv-head { padding-bottom: 4mm; border-bottom: 0.25mm solid var(--cv-line); }
+.cv-doc[data-tpl='abana'] .cv-h2 {
+  --cv-h2-fs: 0.82em;
+  color: var(--cv-ink);
+  letter-spacing: 0.2em;
+  padding-bottom: 1mm;
+  border-bottom: 0.25mm solid var(--cv-line);
+}
+/* Özetin ilk harfi iki satır boyunca büyütülür — dergi künyesi hissi. */
+.cv-doc[data-tpl='abana'] .cv-summary::first-letter {
+  float: left;
+  margin: 0.4mm 1.6mm 0 0;
+  font-size: 2.9em;
+  line-height: 0.82;
+  font-weight: 600;
+  color: var(--cv-accent);
+}
+
+/* 25 — Ağlı · koyu kâğıt (metin tonları CvDocument tarafından çevrilir) */
+.cv-doc[data-tpl='agli'] .cv-name { --cv-name-fs: 3.1em; font-weight: 300; letter-spacing: -0.03em; }
+.cv-doc[data-tpl='agli'] .cv-role { letter-spacing: 0.24em; text-transform: uppercase; font-size: 0.82em; }
+.cv-doc[data-tpl='agli'] .cv-head { padding-bottom: 6mm; }
+.cv-doc[data-tpl='agli'] .cv-h2 { --cv-h2-fs: 0.78em; letter-spacing: 0.26em; }
+.cv-doc[data-tpl='agli'] .cv-h2::after {
+  content: '';
+  flex: 1;
+  height: 0.25mm;
+  background: var(--cv-line);
+}
+.cv-doc[data-tpl='agli'] .cv-photo { box-shadow: 0 0 0 0.7mm var(--cv-accent); }
+
+/* 26 — Araç · çerçeveli bölüm kutuları */
+.cv-doc[data-tpl='arac'] .cv-sec {
+  padding: 3.5mm 4mm;
+  border: 0.25mm solid var(--cv-line);
+  border-radius: 1.6mm;
+}
+.cv-doc[data-tpl='arac'] .cv-sec + .cv-sec { margin-top: calc(var(--cv-sec-gap) * 0.7); }
+.cv-doc[data-tpl='arac'] .cv-h2 { color: var(--cv-ink); }
+.cv-doc[data-tpl='arac'] .cv-h2::before {
+  content: '';
+  width: 1.1mm;
+  height: 3.4mm;
+  background: var(--cv-accent);
+}
+.cv-doc[data-tpl='arac'] .cv-head { padding-bottom: 4mm; }
+
+/* 27 — Azdavay · sağda koyu künye sütunu */
+.cv-doc[data-tpl='azdavay'] { --cv-aside-w: 62mm; }
+.cv-doc[data-tpl='azdavay'] .cv-col-main .cv-h2 { color: var(--cv-ink); }
+.cv-doc[data-tpl='azdavay'] .cv-h2::before {
+  content: '';
+  width: 4.5mm;
+  height: 0.8mm;
+  border-radius: 999px;
+  background: var(--cv-accent);
+}
+.cv-doc[data-tpl='azdavay'] .cv-aside-id { text-align: center; }
+.cv-doc[data-tpl='azdavay'] .cv-photo { box-shadow: 0 0 0 0.7mm var(--cv-rail-accent); }
+
+/* 28 — Bozkurt · ağır tipografi, iki sütun */
+.cv-doc[data-tpl='bozkurt'] .cv-name { --cv-name-fs: 2.7em; font-weight: 800; letter-spacing: -0.045em; text-transform: uppercase; }
+.cv-doc[data-tpl='bozkurt'] .cv-head { border-bottom-width: 1.4mm; border-bottom-color: var(--cv-text); }
+.cv-doc[data-tpl='bozkurt'] .cv-h2 {
+  --cv-h2-fs: 0.8em;
+  color: var(--cv-text);
+  letter-spacing: 0.24em;
+  padding-bottom: 1.4mm;
+  border-bottom: 0.25mm solid var(--cv-text);
+}
+.cv-doc[data-tpl='bozkurt'] .cv-item-sub { color: var(--cv-muted); }
+
+/* 29 — Cide · sekme biçimli başlıklar */
+.cv-doc[data-tpl='cide'] .cv-h2 {
+  color: #fff;
+  align-items: stretch;
+  gap: 0;
+}
+.cv-doc[data-tpl='cide'] .cv-h2 span {
+  padding: 1mm 3.2mm;
+  border-radius: 1.4mm 1.4mm 0 0;
+  background: var(--cv-accent);
+}
+.cv-doc[data-tpl='cide'] .cv-h2::after {
+  content: '';
+  flex: 1;
+  align-self: flex-end;
+  height: 0.8mm;
+  background: var(--cv-accent);
+}
+.cv-doc[data-tpl='cide'] .cv-sec-body { padding-top: 1.4mm; }
+
+/* 30 — Çatalzeytin · açık künye sütunu, ortalanmış başlık */
+.cv-doc[data-tpl='catalzeytin'] { --cv-aside-w: 58mm; }
+.cv-doc[data-tpl='catalzeytin'] .cv-head {
+  margin: 0;
+  padding: 11mm 10mm 5mm;
+  border-bottom: 0.7mm double var(--cv-line);
+}
+.cv-doc[data-tpl='catalzeytin'] .cv-col-main,
+.cv-doc[data-tpl='catalzeytin'] .cv-aside { padding-top: 7mm; }
+.cv-doc[data-tpl='catalzeytin'] .cv-name { font-weight: 600; letter-spacing: 0.04em; }
+.cv-doc[data-tpl='catalzeytin'] .cv-h2 {
+  --cv-h2-fs: 0.82em;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--cv-ink);
+}
+.cv-doc[data-tpl='catalzeytin'] .cv-item-sub { font-style: italic; }
+
+/* 31 — Daday · tarihler sol sütunda */
+.cv-doc[data-tpl='daday'] .cv-item {
+  display: grid;
+  grid-template-columns: 26mm minmax(0, 1fr);
+  gap: 0 5mm;
+}
+.cv-doc[data-tpl='daday'] .cv-item-top { display: contents; }
+.cv-doc[data-tpl='daday'] .cv-item-date {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  text-align: right;
+  font-size: 0.8em;
+  /* Uzun tarih aralıkları ("2022 — Devam ediyor") sütuna sığmadığında sarar. */
+  white-space: normal;
+  line-height: 1.3;
+}
+.cv-doc[data-tpl='daday'] .cv-item-title { grid-column: 2; }
+.cv-doc[data-tpl='daday'] .cv-item-sub,
+.cv-doc[data-tpl='daday'] .cv-item-text,
+.cv-doc[data-tpl='daday'] .cv-bullets,
+.cv-doc[data-tpl='daday'] .cv-tech { grid-column: 2; }
+.cv-doc[data-tpl='daday'] .cv-h2 { color: var(--cv-ink); letter-spacing: 0.08em; }
+.cv-doc[data-tpl='daday'] .cv-h2::before { content: '#'; color: var(--cv-accent); font-weight: 700; }
+.cv-doc[data-tpl='daday'] .cv-name { --cv-name-fs: 1.7em; }
+
+/* 32 — Devrekani · gazete kuralları */
+.cv-doc[data-tpl='devrekani'] .cv-name { --cv-name-fs: 2.2em; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; }
+.cv-doc[data-tpl='devrekani'] .cv-head {
+  padding: 3mm 0 3.5mm;
+  border-top: 1mm solid var(--cv-text);
+  border-bottom: 0.25mm solid var(--cv-text);
+}
+.cv-doc[data-tpl='devrekani'] .cv-h2 {
+  --cv-h2-fs: 0.8em;
+  justify-content: center;
+  font-weight: 600;
+  letter-spacing: 0.26em;
+  color: var(--cv-text);
+  padding-bottom: 1mm;
+  border-bottom: 0.25mm solid var(--cv-line);
+}
+.cv-doc[data-tpl='devrekani'] .cv-item-sub { font-style: italic; color: var(--cv-muted); }
+
+/* 33 — Doğanyurt · dev baş harf, koyu sağ ray */
+.cv-doc[data-tpl='doganyurt'] { --cv-aside-w: 56mm; }
+.cv-doc[data-tpl='doganyurt'] .cv-head { margin: 0; padding: 12mm 10mm 6mm; }
+.cv-doc[data-tpl='doganyurt'] .cv-col-main,
+.cv-doc[data-tpl='doganyurt'] .cv-aside { padding-top: 8mm; }
+.cv-doc[data-tpl='doganyurt'] .cv-name { --cv-name-fs: 3.2em; font-weight: 800; letter-spacing: -0.04em; }
+.cv-doc[data-tpl='doganyurt'] .cv-photo { box-shadow: 0 0 0 1mm var(--cv-accent); }
+.cv-doc[data-tpl='doganyurt'] .cv-col-main .cv-h2 { color: var(--cv-ink); }
+.cv-doc[data-tpl='doganyurt'] .cv-h2::before {
+  content: '';
+  width: 2.6mm;
+  height: 2.6mm;
+  border-radius: 999px;
+  background: var(--cv-accent);
+}
+
+/* 34 — Hanönü · yumuşak kartlar */
+.cv-doc[data-tpl='hanonu'] .cv-sec {
+  padding: 3.6mm 4mm;
+  border-radius: 2.4mm;
+  background: color-mix(in srgb, var(--cv-accent) 6%, transparent);
+}
+.cv-doc[data-tpl='hanonu'] .cv-sec + .cv-sec { margin-top: calc(var(--cv-sec-gap) * 0.7); }
+.cv-doc[data-tpl='hanonu'] .cv-h2 { color: var(--cv-ink); }
+.cv-doc[data-tpl='hanonu'] .cv-h2::before {
+  content: '';
+  width: 2.4mm;
+  height: 2.4mm;
+  border-radius: 999px;
+  background: var(--cv-accent);
+}
+.cv-doc[data-tpl='hanonu'] .cv-head { padding-bottom: 4mm; }
+
+/* 35 — İhsangazi · teknik çizim ızgarası */
+.cv-doc[data-tpl='ihsangazi'] {
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--cv-accent) 8%, transparent) 0.2mm, transparent 0.2mm),
+    linear-gradient(to bottom, color-mix(in srgb, var(--cv-accent) 8%, transparent) 0.2mm, transparent 0.2mm);
+  background-size: 5mm 5mm;
+}
+.cv-doc[data-tpl='ihsangazi'] .cv-head { background: var(--cv-ink); }
+.cv-doc[data-tpl='ihsangazi'] .cv-h2 {
+  color: var(--cv-ink);
+  letter-spacing: 0.1em;
+  padding-bottom: 1.2mm;
+  border-bottom: 0.25mm dashed color-mix(in srgb, var(--cv-accent) 55%, transparent);
+}
+.cv-doc[data-tpl='ihsangazi'] .cv-h2::before { content: '[ ]'; color: var(--cv-accent); font-weight: 700; }
+.cv-doc[data-tpl='ihsangazi'] .cv-sec { background: color-mix(in srgb, var(--cv-paper) 82%, transparent); }
+
+/* 36 — İnebolu · sıkı iki sütun */
+.cv-doc[data-tpl='inebolu'] .cv-name { --cv-name-fs: 1.8em; font-weight: 700; }
+.cv-doc[data-tpl='inebolu'] .cv-sec + .cv-sec { margin-top: calc(var(--cv-sec-gap) * 0.72); }
+.cv-doc[data-tpl='inebolu'] .cv-item + .cv-item { margin-top: 2.6mm; }
+.cv-doc[data-tpl='inebolu'] .cv-head { padding-bottom: 3mm; }
+.cv-doc[data-tpl='inebolu'] .cv-h2 {
+  --cv-h2-fs: 0.8em;
+  letter-spacing: 0.14em;
+  color: var(--cv-ink);
+  padding-bottom: 0.9mm;
+  border-bottom: 0.4mm solid var(--cv-ink);
+}
+.cv-doc[data-tpl='inebolu'] .cv-item-sub { color: var(--cv-text); }
+
+/* 37 — Küre · degrade ray, halka göstergeler */
+.cv-doc[data-tpl='kure'] { --cv-aside-w: 62mm; }
+/* Ray dikey kalır; degrade yalnızca rayın genişliği içinde, üstten aşağı erir. */
+.cv-doc[data-tpl='kure'] {
+  background-image:
+    linear-gradient(180deg, color-mix(in srgb, var(--cv-accent) 65%, transparent), transparent 70%),
+    linear-gradient(to right, var(--cv-rail) 0 var(--cv-aside-w), var(--cv-paper) var(--cv-aside-w));
+  background-size: var(--cv-aside-w) 100%, 100% 100%;
+  background-repeat: no-repeat, no-repeat;
+  background-position: left top, left top;
+}
+.cv-doc[data-tpl='kure'] .cv-aside-id { text-align: center; }
+.cv-doc[data-tpl='kure'] .cv-photo { box-shadow: 0 0 0 0.8mm rgba(255, 255, 255, 0.28); }
+.cv-doc[data-tpl='kure'] .cv-col-main .cv-h2 { color: var(--cv-ink); }
+.cv-doc[data-tpl='kure'] .cv-h2::before {
+  content: '';
+  width: 3mm;
+  height: 3mm;
+  border-radius: 999px;
+  border: 0.7mm solid var(--cv-accent);
+}
+
+/* 38 — Pınarbaşı · her kayıtta sol vurgu şeridi */
+.cv-doc[data-tpl='pinarbasi'] .cv-item {
+  padding-left: 4mm;
+  border-left: 0.8mm solid color-mix(in srgb, var(--cv-accent) 35%, transparent);
+}
+.cv-doc[data-tpl='pinarbasi'] .cv-item + .cv-item { margin-top: 3.2mm; }
+.cv-doc[data-tpl='pinarbasi'] .cv-h2 { color: var(--cv-ink); }
+.cv-doc[data-tpl='pinarbasi'] .cv-h2 span {
+  padding: 0.8mm 2.6mm;
+  border-radius: 0.8mm;
+  background: var(--cv-tint);
+}
+.cv-doc[data-tpl='pinarbasi'] .cv-name { font-weight: 750; }
+
+/* 39 — Taşköprü · madalyon başlık, ince çerçeve */
+.cv-doc[data-tpl='taskopru'] {
+  box-shadow: inset 0 0 0 1.2mm var(--cv-paper), inset 0 0 0 1.45mm color-mix(in srgb, var(--cv-accent) 30%, transparent);
+}
+.cv-doc[data-tpl='taskopru'] .cv-photo { box-shadow: 0 0 0 0.6mm var(--cv-accent), 0 0 0 1.8mm var(--cv-tint); }
+.cv-doc[data-tpl='taskopru'] .cv-name { --cv-name-fs: 2.1em; font-weight: 700; letter-spacing: 0.02em; }
+.cv-doc[data-tpl='taskopru'] .cv-head { padding-bottom: 5mm; border-bottom: 0.25mm solid var(--cv-line); }
+.cv-doc[data-tpl='taskopru'] .cv-h2 {
+  justify-content: center;
+  --cv-h2-fs: 0.84em;
+  letter-spacing: 0.22em;
+  color: var(--cv-ink);
+}
+.cv-doc[data-tpl='taskopru'] .cv-h2::before,
+.cv-doc[data-tpl='taskopru'] .cv-h2::after {
+  content: '';
+  flex: 1;
+  height: 0.25mm;
+  background: var(--cv-line);
+}
+
+/* 40 — Tosya · koyu kâğıt, altın vurgu */
+.cv-doc[data-tpl='tosya'] .cv-name { --cv-name-fs: 2.8em; font-weight: 600; letter-spacing: 0.01em; }
+.cv-doc[data-tpl='tosya'] .cv-role { letter-spacing: 0.2em; text-transform: uppercase; font-size: 0.82em; }
+.cv-doc[data-tpl='tosya'] .cv-head { padding-bottom: 5mm; border-bottom: 0.25mm solid var(--cv-line); }
+.cv-doc[data-tpl='tosya'] .cv-h2 {
+  --cv-h2-fs: 0.82em;
+  letter-spacing: 0.24em;
+  justify-content: center;
+}
+.cv-doc[data-tpl='tosya'] .cv-h2::before,
+.cv-doc[data-tpl='tosya'] .cv-h2::after {
+  content: '';
+  flex: 1;
+  height: 0.25mm;
+  background: var(--cv-line);
+}
+
+/* ==========================================================================
+   YAZDIRMA — PDF çıktısı
+   Yazdırma anında `<html>` üzerine `cv-printing` sınıfı eklenir; sayfada
+   yalnızca #cv-print-root (belgenin 1:1 kopyası) kalır.
+   ========================================================================== */
+
+#cv-print-root { display: none; }
+
+@media print {
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  /* Site kabuğunun tamamı (navbar, footer, araç arayüzü) çıktıdan çıkarılır. */
+  body > *:not(#cv-print-root) { display: none !important; }
+
+  #cv-print-root {
+    display: block !important;
+    position: static !important;
+  }
+
+  #cv-print-root .cv-doc {
+    margin: 0 auto;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  .cv-doc { break-after: auto; }
+}
+
+/* ------------------------------- arka plan -------------------------------- */
+
+.cvs-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  --cvb-sheet: rgba(148, 163, 184, 0.05);
+  --cvb-line: rgba(148, 163, 184, 0.16);
+  --cvb-accent: rgba(34, 211, 238, 0.35);
+}
+
+:root[data-theme='light'] .cvs-backdrop {
+  --cvb-sheet: rgba(15, 23, 42, 0.02);
+  --cvb-line: rgba(15, 23, 42, 0.08);
+  --cvb-accent: rgba(8, 145, 178, 0.3);
+}
+
+.cvs-backdrop-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(74% 60% at 50% 32%, #000 0%, transparent 82%);
+  -webkit-mask-image: radial-gradient(74% 60% at 50% 32%, #000 0%, transparent 82%);
+}
+
+.cvs-backdrop-glow {
+  position: absolute;
+  width: 46rem;
+  height: 46rem;
+  border-radius: 999px;
+  filter: blur(120px);
+  opacity: 0.5;
+}
+
+.cvs-backdrop-glow.a {
+  top: -16rem;
+  left: -12rem;
+  background: radial-gradient(circle, color-mix(in srgb, var(--cvs-accent) 42%, transparent), transparent 68%);
+}
+
+.cvs-backdrop-glow.b {
+  top: 12rem;
+  right: -18rem;
+  background: radial-gradient(circle, color-mix(in srgb, var(--cvs-accent-2) 38%, transparent), transparent 68%);
+}
+
+.cvs-backdrop-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.85;
+}
+
+/* ------------------------------ SweetAlert2 ------------------------------- */
+
+.cvs-swal-bg { backdrop-filter: blur(4px); }
+
+.cvs-swal {
+  border: 1px solid var(--cvs-border);
+  border-radius: 18px !important;
+  background: var(--cvs-raise) !important;
+  color: var(--cvs-text) !important;
+  font-family: var(--font-sans), system-ui, sans-serif !important;
+}
+
+.cvs-swal .swal2-title { color: var(--cvs-text) !important; font-size: 1.15rem !important; }
+.cvs-swal .swal2-html-container { color: var(--cvs-text-2) !important; font-size: 0.9rem !important; }
+.cvs-swal .swal2-actions { gap: 0.6rem; }
