@@ -11,7 +11,9 @@ export default function Navbar() {
   const [open, setOpen] = useState(false)
   const t = useT()
 
-  const links = [
+  // `wide`: masaüstü çubuğunda yalnızca xl'den itibaren görünür (lg'de 9 bağlantı sığmıyor);
+  // mobil menüde her zaman listelenir.
+  const links: { href: string; label: string; wide?: boolean }[] = [
     { href: '/#hakkimda', label: t.nav.about },
     { href: '/#yetenekler', label: t.nav.skills },
     { href: '/#deneyim', label: t.nav.experience },
@@ -19,6 +21,7 @@ export default function Navbar() {
     { href: '/blog#calismalar', label: t.nav.works },
     { href: '/code-review', label: t.nav.codeReview },
     { href: '/cv-olustur', label: t.nav.cvBuilder },
+    { href: '/ats-analiz', label: t.nav.atsCheck, wide: true },
     { href: '/#iletisim', label: t.nav.contact },
   ]
 
@@ -59,7 +62,7 @@ export default function Navbar() {
 
           <ul className="hidden items-center gap-0.5 lg:flex">
             {links.map((l) => (
-              <li key={l.href}>
+              <li key={l.href} className={l.wide ? 'hidden xl:block' : undefined}>
                 <Link
                   href={l.href}
                   className="whitespace-nowrap rounded-lg px-2 py-2 text-[13px] font-medium text-fg2 transition-colors hover:bg-surface/5 hover:text-accent-soft xl:px-3 xl:text-sm"

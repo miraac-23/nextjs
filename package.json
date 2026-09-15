@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "postinstall": "node scripts/copy-pdf-worker.mjs",
     "rules:build": "node scripts/gen-bundled-rules.mjs"
   },
   "engines": {
@@ -16,6 +17,7 @@
     "@types/react-syntax-highlighter": "^15.5.13",
     "@vercel/analytics": "^2.0.1",
     "next": "14.0.3",
+    "pdfjs-dist": "^6.3.289",
     "react": "^18",
     "react-dom": "^18",
     "react-markdown": "^9.1.0",

@@ -1,0 +1,1154 @@
+/* ==========================================================================
+   ŞABLON VARYANTLARI — DOĞU (32)
+   Bayburt → Erzurum → Artvin ilçeleri; sıra lib/cv/templates-dogu.ts ile aynıdır.
+   Yalnızca CvDesignDocument DOM'u üzerinde CSS: dış görsel/font yok. Desenler
+   degrade, maske, clip-path ve sözde öğelerle çizilir; kâğıt kökündeki zemin
+   katmanları `box-decoration-break: clone` sayesinde her sayfada yeniden basılır.
+   Renkler mümkün olduğunca `--cv-accent/--cv-ink/--cv-rail/--cv-paper` üzerinden
+   türetilir ki kullanıcının renk seçimleri desenlere de yansısın.
+   ========================================================================== */
+
+/* ------------------------------- Bayburt -------------------------------- */
+
+/* 41 — Bayburt · kale burcu: dişli bant alt kenarı, dişli başlık çizgileri */
+.cv-doc.cv-design[data-tpl='bayburt'] .cv-head {
+  padding-bottom: 13mm;
+  margin-bottom: 5mm;
+  background: linear-gradient(to top, var(--cv-ink) 0 4mm, var(--cv-accent) 4mm 4.7mm, var(--cv-ink) 4.7mm);
+  /* Burç dişleri: alt 4 mm'lik şerit maskeyle aralıklı kesilir. */
+  -webkit-mask:
+    linear-gradient(#000 0 0) top / 100% calc(100% - 4mm) no-repeat,
+    repeating-linear-gradient(90deg, #000 0 9mm, transparent 9mm 14mm) bottom left / 100% 4mm no-repeat;
+  mask:
+    linear-gradient(#000 0 0) top / 100% calc(100% - 4mm) no-repeat,
+    repeating-linear-gradient(90deg, #000 0 9mm, transparent 9mm 14mm) bottom left / 100% 4mm no-repeat;
+}
+.cv-doc.cv-design[data-tpl='bayburt'] .cv-name { font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; --cv-name-fs: 1.95em; }
+.cv-doc.cv-design[data-tpl='bayburt'] .cv-role { font-style: italic; font-weight: 500; }
+.cv-doc.cv-design[data-tpl='bayburt'] .cv-photo { border: 0.7mm solid color-mix(in srgb, var(--cv-accent) 70%, #fff); }
+.cv-doc.cv-design[data-tpl='bayburt'] .cv-h2 {
+  align-items: flex-end;
+  --cv-h2-fs: 0.86em;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--cv-ink);
+}
+.cv-doc.cv-design[data-tpl='bayburt'] .cv-h2::after {
+  content: '';
+  flex: 1;
+  height: 1.9mm;
+  margin-bottom: 0.5mm;
+  background:
+    linear-gradient(color-mix(in srgb, var(--cv-accent) 60%, transparent) 0 0) bottom / 100% 0.45mm no-repeat,
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--cv-accent) 60%, transparent) 0 2.2mm, transparent 2.2mm 3.8mm) top left / 100% 1.45mm no-repeat;
+}
+.cv-doc.cv-design[data-tpl='bayburt'][data-tone='dark'] .cv-h2 { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='bayburt'] .cv-item-sub { font-style: italic; color: color-mix(in srgb, var(--cv-accent) 80%, var(--cv-text)); }
+
+/* 42 — Aydıntepe · yeraltı şehri: toprak katmanlı ray, basamak başlık işareti */
+.cv-doc.cv-design[data-tpl='aydintepe'] {
+  --cv-aside-w: 63mm;
+  background-image:
+    linear-gradient(174deg,
+      transparent 0 calc(100% - 44mm),
+      color-mix(in srgb, var(--cv-accent) 38%, var(--cv-rail)) calc(100% - 44mm) calc(100% - 35mm),
+      color-mix(in srgb, var(--cv-rail) 72%, #000) calc(100% - 35mm) calc(100% - 28mm),
+      color-mix(in srgb, var(--cv-accent) 22%, var(--cv-rail)) calc(100% - 28mm) calc(100% - 17mm),
+      color-mix(in srgb, var(--cv-accent) 50%, var(--cv-rail)) calc(100% - 17mm) calc(100% - 11mm),
+      color-mix(in srgb, var(--cv-rail) 60%, #000) calc(100% - 11mm)),
+    linear-gradient(to right, var(--cv-rail) 0 var(--cv-aside-w), var(--cv-paper) var(--cv-aside-w));
+  background-size: var(--cv-aside-w) 100%, 100% 100%;
+  background-repeat: no-repeat;
+  background-position: left top, left top;
+}
+.cv-doc.cv-design[data-tpl='aydintepe'] .cv-aside .cv-name { text-transform: uppercase; letter-spacing: 0.02em; }
+.cv-doc.cv-design[data-tpl='aydintepe'] .cv-photo { border: 0.8mm solid var(--cv-rail-accent); }
+.cv-doc.cv-design[data-tpl='aydintepe'] .cv-h2 { align-items: flex-end; }
+.cv-doc.cv-design[data-tpl='aydintepe'] .cv-h2::before {
+  content: '';
+  flex: none;
+  width: 4.2mm;
+  height: 3.6mm;
+  background: var(--cv-accent);
+  clip-path: polygon(0 100%, 0 66%, 33% 66%, 33% 33%, 66% 33%, 66% 0, 100% 0, 100% 100%);
+}
+.cv-doc.cv-design[data-tpl='aydintepe'] .cv-aside .cv-h2::before { background: var(--cv-rail-accent); }
+.cv-doc.cv-design[data-tpl='aydintepe'] .cv-col-main .cv-h2 { color: var(--cv-ink); padding-bottom: 1.2mm; border-bottom: 0.3mm solid var(--cv-line); }
+.cv-doc.cv-design[data-tpl='aydintepe'][data-tone='dark'] .cv-col-main .cv-h2 { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='aydintepe'] .cv-meter { height: 1.6mm; border-radius: 0; }
+.cv-doc.cv-design[data-tpl='aydintepe'] .cv-meter-fill { border-radius: 0; }
+
+/* 43 — Demirözü · çelik: fırçalanmış ray + perçin sırası, perçinli bölüm plakaları */
+.cv-doc.cv-design[data-tpl='demirozu'] {
+  --cv-aside-w: 62mm;
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.34) 0 0.55mm, transparent 0.65mm),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0 0.3mm, transparent 0.3mm 1.1mm),
+    linear-gradient(to left, var(--cv-rail) 0 var(--cv-aside-w), var(--cv-paper) var(--cv-aside-w));
+  background-size: 4mm 9mm, var(--cv-aside-w) 100%, 100% 100%;
+  background-repeat: repeat-y, no-repeat, no-repeat;
+  background-position: calc(100% - var(--cv-aside-w) + 5mm) 2mm, right top, left top;
+}
+.cv-doc.cv-design[data-tpl='demirozu'] .cv-aside { padding-left: 10mm; }
+.cv-doc.cv-design[data-tpl='demirozu'] .cv-aside .cv-name { --cv-name-fs: 1.35em; text-transform: uppercase; letter-spacing: 0.04em; }
+.cv-doc.cv-design[data-tpl='demirozu'] .cv-aside .cv-h2::before {
+  content: '';
+  width: 2mm;
+  height: 2mm;
+  background: var(--cv-rail-accent);
+}
+.cv-doc.cv-design[data-tpl='demirozu'] .cv-col-main .cv-sec {
+  padding: 4mm 4.5mm 3.8mm;
+  border: 0.3mm solid var(--cv-line);
+  background:
+    radial-gradient(circle, var(--cv-soft) 0 0.45mm, transparent 0.55mm) left 0.4mm top 0.4mm / 2.4mm 2.4mm no-repeat,
+    radial-gradient(circle, var(--cv-soft) 0 0.45mm, transparent 0.55mm) right 0.4mm top 0.4mm / 2.4mm 2.4mm no-repeat,
+    radial-gradient(circle, var(--cv-soft) 0 0.45mm, transparent 0.55mm) left 0.4mm bottom 0.4mm / 2.4mm 2.4mm no-repeat,
+    radial-gradient(circle, var(--cv-soft) 0 0.45mm, transparent 0.55mm) right 0.4mm bottom 0.4mm / 2.4mm 2.4mm no-repeat,
+    color-mix(in srgb, var(--cv-ink) 3%, var(--cv-paper));
+}
+.cv-doc.cv-design[data-tpl='demirozu'] .cv-col-main .cv-sec + .cv-sec { margin-top: calc(var(--cv-sec-gap) * 0.75); }
+.cv-doc.cv-design[data-tpl='demirozu'] .cv-col-main .cv-h2 { letter-spacing: 0.08em; color: #fff; }
+.cv-doc.cv-design[data-tpl='demirozu'] .cv-col-main .cv-h2 span {
+  padding: 0.6mm 2.4mm;
+  background: var(--cv-ink);
+  border-left: 1.2mm solid var(--cv-accent);
+}
+.cv-doc.cv-design[data-tpl='demirozu'] .cv-item-title::before { content: '▸ '; color: var(--cv-accent); }
+.cv-doc.cv-design[data-tpl='demirozu'] .cv-photo { border: 0.6mm solid rgba(255, 255, 255, 0.3); }
+
+/* ------------------------------- Erzurum -------------------------------- */
+
+/* 44 — Aşkale · defter sayfası: delikler, çift kırmızı kenar çizgisi */
+.cv-doc.cv-design[data-tpl='askale'] {
+  padding-left: calc(var(--cv-pad) + 15mm);
+  background-image:
+    radial-gradient(circle, color-mix(in srgb, var(--cv-ink) 13%, var(--cv-paper)) 0 2mm, transparent 2.15mm),
+    linear-gradient(to right,
+      transparent calc(var(--cv-pad) + 9mm),
+      color-mix(in srgb, var(--cv-accent) 55%, transparent) calc(var(--cv-pad) + 9mm) calc(var(--cv-pad) + 9.3mm),
+      transparent calc(var(--cv-pad) + 9.3mm) calc(var(--cv-pad) + 10.2mm),
+      color-mix(in srgb, var(--cv-accent) 55%, transparent) calc(var(--cv-pad) + 10.2mm) calc(var(--cv-pad) + 10.5mm),
+      transparent calc(var(--cv-pad) + 10.5mm));
+  background-size: 9mm 74mm, 100% 100%;
+  background-repeat: repeat-y, no-repeat;
+  background-position: calc(var(--cv-pad) * 0.5 - 1mm) 36mm, left top;
+}
+.cv-doc.cv-design[data-tpl='askale'] .cv-head {
+  padding-bottom: 4mm;
+  border-bottom: 0.5mm solid color-mix(in srgb, var(--cv-ink) 55%, transparent);
+}
+.cv-doc.cv-design[data-tpl='askale'] .cv-name { font-style: italic; font-weight: 600; color: var(--cv-ink); letter-spacing: -0.01em; }
+.cv-doc.cv-design[data-tpl='askale'] .cv-role { text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.84em; }
+.cv-doc.cv-design[data-tpl='askale'] .cv-h2 {
+  display: flex;
+  text-transform: none;
+  letter-spacing: 0.01em;
+  --cv-h2-fs: 1.12em;
+  font-weight: 700;
+  font-style: italic;
+  color: var(--cv-ink);
+}
+.cv-doc.cv-design[data-tpl='askale'] .cv-h2 span {
+  padding-bottom: 0.5mm;
+  background: linear-gradient(color-mix(in srgb, var(--cv-ink) 45%, transparent) 0 0) left bottom / 100% 0.35mm no-repeat;
+}
+.cv-doc.cv-design[data-tpl='askale'] .cv-h2::before {
+  content: '';
+  width: 5.5mm;
+  height: 0.35mm;
+  margin-left: -8.5mm;
+  background: var(--cv-accent);
+}
+.cv-doc.cv-design[data-tpl='askale'][data-tone='dark'] :is(.cv-name, .cv-h2) { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='askale'] .cv-item-sub { font-style: italic; font-weight: 500; color: var(--cv-muted); }
+.cv-doc.cv-design[data-tpl='askale'] .cv-item-date { color: var(--cv-accent); font-weight: 500; }
+
+/* 45 — Aziziye · kenara taşan çatal kuyruklu kurdele başlıklar */
+.cv-doc.cv-design[data-tpl='aziziye'] .cv-head { padding-bottom: 4.5mm; border-bottom: 0.9mm double var(--cv-line); }
+.cv-doc.cv-design[data-tpl='aziziye'] .cv-name { --cv-name-fs: 2.25em; color: var(--cv-ink); }
+.cv-doc.cv-design[data-tpl='aziziye'][data-tone='dark'] .cv-name { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='aziziye'] .cv-photo { border-bottom: 1.6mm solid var(--cv-accent); }
+.cv-doc.cv-design[data-tpl='aziziye'] .cv-h2 { color: #fff; letter-spacing: 0.12em; }
+.cv-doc.cv-design[data-tpl='aziziye'] .cv-col-main .cv-h2 span {
+  margin-left: calc(var(--cv-pad) * -1);
+  padding: 1.1mm 7mm 1.1mm var(--cv-pad);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--cv-accent) 70%, #000), var(--cv-accent) 40%);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 2.6mm) 50%, 100% 100%, 0 100%);
+}
+.cv-doc.cv-design[data-tpl='aziziye'] .cv-col-side .cv-h2 { margin-right: calc(var(--cv-pad) * -1); }
+.cv-doc.cv-design[data-tpl='aziziye'] .cv-col-side .cv-h2 span {
+  flex: 1;
+  padding: 1.1mm var(--cv-pad) 1.1mm 6mm;
+  background: linear-gradient(270deg, color-mix(in srgb, var(--cv-accent) 70%, #000), var(--cv-accent) 40%);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 2.6mm 50%);
+}
+.cv-doc.cv-design[data-tpl='aziziye'] .cv-item-date {
+  padding: 0.2mm 1.8mm;
+  border-radius: 0.6mm;
+  background: var(--cv-tint);
+  color: var(--cv-accent);
+}
+
+/* 46 — Çat · bento ızgarası: koyu yuvarlak künye kartı, iki sütunlu bölüm kartları */
+.cv-doc.cv-design[data-tpl='cat'] .cv-head {
+  padding: 7mm 8mm;
+  border-radius: 4mm;
+  background:
+    radial-gradient(circle at 100% 0, color-mix(in srgb, var(--cv-accent) 70%, transparent) 0 14mm, transparent 14.2mm),
+    var(--cv-ink);
+  margin-bottom: 4mm;
+}
+.cv-doc.cv-design[data-tpl='cat'] .cv-head .cv-name { color: #fff; --cv-name-fs: 2.3em; letter-spacing: -0.03em; }
+.cv-doc.cv-design[data-tpl='cat'] .cv-head .cv-role { color: color-mix(in srgb, var(--cv-accent) 45%, #fff); }
+.cv-doc.cv-design[data-tpl='cat'] .cv-head .cv-contact li { color: rgba(255, 255, 255, 0.82); }
+.cv-doc.cv-design[data-tpl='cat'] .cv-head .cv-ic { color: color-mix(in srgb, var(--cv-accent) 45%, #fff); }
+.cv-doc.cv-design[data-tpl='cat'] .cv-photo { border: 0.9mm solid rgba(255, 255, 255, 0.9); }
+.cv-doc.cv-design[data-tpl='cat'] .cv-col-main {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-flow: row dense;
+  gap: 4mm;
+  align-items: start;
+}
+.cv-doc.cv-design[data-tpl='cat'] .cv-col-main .cv-sec {
+  margin: 0;
+  padding: 4mm 4.5mm;
+  border: 0.25mm solid var(--cv-line);
+  border-radius: 3mm;
+  background: color-mix(in srgb, var(--cv-paper) 30%, #fff);
+}
+.cv-doc.cv-design[data-tpl='cat'][data-tone='dark'] .cv-col-main .cv-sec { background: rgba(255, 255, 255, 0.05); }
+.cv-doc.cv-design[data-tpl='cat'] .cv-sec:is([data-sec='summary'], [data-sec='experience'], [data-sec='projects']) { grid-column: 1 / -1; }
+.cv-doc.cv-design[data-tpl='cat'] .cv-h2 { --cv-h2-fs: 0.8em; color: var(--cv-ink); }
+.cv-doc.cv-design[data-tpl='cat'][data-tone='dark'] .cv-h2 { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='cat'] .cv-h2::before {
+  content: '';
+  width: 3.2mm;
+  height: 3.2mm;
+  border-radius: 1mm;
+  background: var(--cv-accent);
+}
+
+/* 47 — Hınıs · kilim: künyenin üstünde ve altında zikzak şeritler */
+.cv-doc.cv-design[data-tpl='hinis'] .cv-head {
+  padding: 9mm 0 9mm;
+  background:
+    conic-gradient(from 135deg at 50% 0, var(--cv-accent) 90deg, transparent 0) top left / 4.8mm 2.4mm repeat-x,
+    conic-gradient(from -45deg at 50% 100%, color-mix(in srgb, var(--cv-accent) 45%, transparent) 90deg, transparent 0) left top 2.8mm / 4.8mm 2.4mm repeat-x,
+    conic-gradient(from -45deg at 50% 100%, var(--cv-accent) 90deg, transparent 0) bottom left / 4.8mm 2.4mm repeat-x,
+    conic-gradient(from 135deg at 50% 0, color-mix(in srgb, var(--cv-accent) 45%, transparent) 90deg, transparent 0) left bottom 2.8mm / 4.8mm 2.4mm repeat-x;
+}
+.cv-doc.cv-design[data-tpl='hinis'] .cv-name { font-weight: 600; letter-spacing: 0.03em; color: var(--cv-ink); }
+.cv-doc.cv-design[data-tpl='hinis'][data-tone='dark'] .cv-name { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='hinis'] .cv-role { text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.82em; }
+.cv-doc.cv-design[data-tpl='hinis'] .cv-photo { outline: 0.45mm dashed var(--cv-accent); outline-offset: 1.2mm; }
+.cv-doc.cv-design[data-tpl='hinis'] .cv-h2 {
+  justify-content: center;
+  gap: 3mm;
+  --cv-h2-fs: 0.86em;
+  letter-spacing: 0.2em;
+  color: var(--cv-ink);
+}
+.cv-doc.cv-design[data-tpl='hinis'][data-tone='dark'] .cv-h2 { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='hinis'] .cv-h2::before,
+.cv-doc.cv-design[data-tpl='hinis'] .cv-h2::after {
+  content: '';
+  flex: 1;
+  height: 2.2mm;
+  background:
+    conic-gradient(from 135deg at 50% 0, color-mix(in srgb, var(--cv-accent) 55%, transparent) 90deg, transparent 0) left top / 2.2mm 1.1mm repeat-x,
+    conic-gradient(from -45deg at 50% 100%, color-mix(in srgb, var(--cv-accent) 55%, transparent) 90deg, transparent 0) left bottom / 2.2mm 1.1mm repeat-x;
+}
+.cv-doc.cv-design[data-tpl='hinis'] .cv-item-sub { font-style: italic; }
+
+/* 48 — Horasan · Çobandede köprüsü: taş kemerli künye, kemer simgeli başlıklar */
+.cv-doc.cv-design[data-tpl='horasan'] .cv-head {
+  position: relative;
+  padding: 10mm 0 6mm;
+  border-bottom: 0.9mm solid var(--cv-ink);
+}
+.cv-doc.cv-design[data-tpl='horasan'] .cv-head::before {
+  content: '';
+  position: absolute;
+  inset: 0 12% 0;
+  background:
+    repeating-conic-gradient(from -90deg at 50% 100%, color-mix(in srgb, var(--cv-accent) 55%, transparent) 0 1deg, transparent 1deg 9deg),
+    color-mix(in srgb, var(--cv-accent) 22%, transparent);
+  -webkit-mask: radial-gradient(ellipse 50% 100% at 50% 100%, transparent 0 84%, #000 84.5% 99%, transparent 99.5%);
+  mask: radial-gradient(ellipse 50% 100% at 50% 100%, transparent 0 84%, #000 84.5% 99%, transparent 99.5%);
+}
+.cv-doc.cv-design[data-tpl='horasan'] .cv-head > * { position: relative; }
+.cv-doc.cv-design[data-tpl='horasan'] .cv-name { --cv-name-fs: 2.6em; color: var(--cv-ink); }
+.cv-doc.cv-design[data-tpl='horasan'][data-tone='dark'] .cv-name { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='horasan'] .cv-photo { border: 1mm solid var(--cv-paper); outline: 0.4mm solid var(--cv-accent); }
+.cv-doc.cv-design[data-tpl='horasan'] .cv-h2 { align-items: flex-end; color: var(--cv-ink); }
+.cv-doc.cv-design[data-tpl='horasan'][data-tone='dark'] .cv-h2 { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='horasan'] .cv-h2::before {
+  content: '';
+  flex: none;
+  width: 4.6mm;
+  height: 3.2mm;
+  border: 0.7mm solid var(--cv-accent);
+  border-bottom: 0;
+  border-radius: 999px 999px 0 0;
+}
+.cv-doc.cv-design[data-tpl='horasan'] .cv-h2::after {
+  content: '';
+  flex: 1;
+  height: 0.35mm;
+  margin-bottom: 0.1mm;
+  background: var(--cv-accent);
+}
+
+/* 49 — İspir · sayfa tepesinde iki katmanlı dağ silueti, dağa taşan portre */
+.cv-doc.cv-design[data-tpl='ispir'] .cv-head { padding-top: 19mm; margin-top: calc(var(--cv-pad) * -0.4); }
+.cv-doc.cv-design[data-tpl='ispir'] .cv-head::before,
+.cv-doc.cv-design[data-tpl='ispir'] .cv-head::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 30mm;
+}
+.cv-doc.cv-design[data-tpl='ispir'] .cv-head::before {
+  background: color-mix(in srgb, var(--cv-accent) 30%, var(--cv-paper));
+  clip-path: polygon(0 0, 100% 0, 100% 52%, 91% 30%, 83% 48%, 72% 18%, 60% 46%, 52% 30%, 41% 56%, 30% 26%, 19% 50%, 10% 34%, 0 54%);
+}
+.cv-doc.cv-design[data-tpl='ispir'] .cv-head::after {
+  background: linear-gradient(180deg, var(--cv-ink), color-mix(in srgb, var(--cv-accent) 75%, var(--cv-ink)));
+  clip-path: polygon(0 0, 100% 0, 100% 22%, 94% 38%, 86% 20%, 77% 42%, 66% 26%, 56% 36%, 46% 12%, 36% 34%, 25% 18%, 14% 38%, 6% 24%, 0 34%);
+}
+.cv-doc.cv-design[data-tpl='ispir'] .cv-head-main { flex-direction: row-reverse; align-items: flex-end; }
+.cv-doc.cv-design[data-tpl='ispir'] .cv-photo { position: relative; z-index: 1; margin-top: -12mm; border: 1.2mm solid var(--cv-paper); }
+.cv-doc.cv-design[data-tpl='ispir'] .cv-name { --cv-name-fs: 2.3em; color: var(--cv-ink); }
+.cv-doc.cv-design[data-tpl='ispir'][data-tone='dark'] .cv-name { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='ispir'] .cv-h2 { color: var(--cv-ink); align-items: flex-end; }
+.cv-doc.cv-design[data-tpl='ispir'][data-tone='dark'] .cv-h2 { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='ispir'] .cv-h2::before {
+  content: '';
+  flex: none;
+  width: 4.4mm;
+  height: 3mm;
+  background: var(--cv-accent);
+  clip-path: polygon(0 100%, 32% 22%, 48% 58%, 68% 0, 100% 100%);
+}
+.cv-doc.cv-design[data-tpl='ispir'] .cv-h2::after { content: ''; flex: 1; height: 0.25mm; margin-bottom: 0.2mm; background: var(--cv-line); }
+
+/* 50 — Karaçoban · defter-i kebir: zebra kayıt satırları, dikey tarih sütunu */
+.cv-doc.cv-design[data-tpl='karacoban'] .cv-head {
+  padding: 5mm 5mm 5mm 6mm;
+  border-top: 1.4mm solid var(--cv-ink);
+  border-bottom: 0.3mm solid var(--cv-ink);
+  background: color-mix(in srgb, var(--cv-accent) 9%, var(--cv-paper));
+}
+.cv-doc.cv-design[data-tpl='karacoban'] .cv-name { color: var(--cv-ink); }
+.cv-doc.cv-design[data-tpl='karacoban'][data-tone='dark'] :is(.cv-name, .cv-h2) { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='karacoban'] .cv-h2 { color: var(--cv-ink); margin-bottom: 0; padding-bottom: 1.4mm; }
+.cv-doc.cv-design[data-tpl='karacoban'] .cv-h2::before { content: ''; width: 2.2mm; height: 2.2mm; background: var(--cv-accent); }
+.cv-doc.cv-design[data-tpl='karacoban'] .cv-sec-body {
+  border-top: 0.55mm solid var(--cv-ink);
+  border-bottom: 0.25mm solid color-mix(in srgb, var(--cv-ink) 40%, transparent);
+}
+.cv-doc.cv-design[data-tpl='karacoban'] .cv-sec[data-sec='summary'] .cv-sec-body,
+.cv-doc.cv-design[data-tpl='karacoban'] .cv-sec[data-sec='skills'] .cv-sec-body,
+.cv-doc.cv-design[data-tpl='karacoban'] .cv-sec[data-sec='languages'] .cv-sec-body,
+.cv-doc.cv-design[data-tpl='karacoban'] .cv-sec[data-sec='interests'] .cv-sec-body { padding: 2.4mm 3mm; }
+.cv-doc.cv-design[data-tpl='karacoban'] .cv-item,
+.cv-doc.cv-design[data-tpl='karacoban'] .cv-list li { padding: 2.4mm 3mm; }
+.cv-doc.cv-design[data-tpl='karacoban'] .cv-item + .cv-item { margin-top: 0; border-top: 0.25mm solid var(--cv-line); }
+.cv-doc.cv-design[data-tpl='karacoban'] .cv-list { gap: 0; }
+.cv-doc.cv-design[data-tpl='karacoban'] .cv-item:nth-child(even),
+.cv-doc.cv-design[data-tpl='karacoban'] .cv-list li:nth-child(even) { background: color-mix(in srgb, var(--cv-accent) 7%, transparent); }
+.cv-doc.cv-design[data-tpl='karacoban'] .cv-item-date {
+  align-self: stretch;
+  min-width: 30mm;
+  padding-left: 3mm;
+  border-left: 0.25mm solid var(--cv-line);
+  font-variant-numeric: tabular-nums;
+  color: var(--cv-text);
+}
+.cv-doc.cv-design[data-tpl='karacoban'] .cv-meter { border-radius: 0; height: 1.5mm; }
+.cv-doc.cv-design[data-tpl='karacoban'] .cv-meter-fill { border-radius: 0; }
+
+/* 51 — Karayazı · daktilo sayfası: harfli bölümler, çift alt çizgi, köşeli tarihler */
+.cv-doc.cv-design[data-tpl='karayazi'] { counter-reset: kyz; }
+.cv-doc.cv-design[data-tpl='karayazi'] .cv-name { --cv-name-fs: 1.65em; font-weight: 600; letter-spacing: 0.32em; text-transform: uppercase; }
+.cv-doc.cv-design[data-tpl='karayazi'] .cv-role { font-weight: 500; color: var(--cv-muted); letter-spacing: 0.04em; }
+.cv-doc.cv-design[data-tpl='karayazi'] .cv-role::before { content: '— '; }
+.cv-doc.cv-design[data-tpl='karayazi'] .cv-role::after { content: ' —'; }
+.cv-doc.cv-design[data-tpl='karayazi'] .cv-head {
+  padding-bottom: 5mm;
+  background: repeating-linear-gradient(90deg, var(--cv-text) 0 1.6mm, transparent 1.6mm 2.8mm) left bottom / 100% 0.3mm no-repeat;
+}
+.cv-doc.cv-design[data-tpl='karayazi'] .cv-h2 {
+  --cv-h2-fs: 0.95em;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--cv-text);
+  text-decoration: underline double;
+  text-decoration-thickness: 0.2mm;
+  text-underline-offset: 1.1mm;
+  margin-bottom: 3mm;
+}
+.cv-doc.cv-design[data-tpl='karayazi'] .cv-h2::before {
+  counter-increment: kyz;
+  content: counter(kyz, upper-alpha) '.';
+  text-decoration: none;
+  display: inline-block;
+}
+.cv-doc.cv-design[data-tpl='karayazi'] .cv-item-title { font-weight: 700; }
+.cv-doc.cv-design[data-tpl='karayazi'] .cv-item-sub { font-weight: 400; color: var(--cv-text); text-transform: uppercase; font-size: 0.82em; letter-spacing: 0.06em; }
+.cv-doc.cv-design[data-tpl='karayazi'] .cv-item-date { font-weight: 400; color: var(--cv-muted); }
+.cv-doc.cv-design[data-tpl='karayazi'] .cv-item-date::before { content: '['; }
+.cv-doc.cv-design[data-tpl='karayazi'] .cv-item-date::after { content: ']'; }
+.cv-doc.cv-design[data-tpl='karayazi'] .cv-chip {
+  border: 0.25mm dashed color-mix(in srgb, var(--cv-text) 50%, transparent);
+  border-radius: 0;
+  background: none;
+  font-weight: 400;
+}
+
+/* 52 — Köprüköy · tüm bölümler numaralı adımlarla tek omurgaya bağlanır */
+.cv-doc.cv-design[data-tpl='koprukoy'] .cv-head { padding-bottom: 5mm; border-bottom: 0.5mm solid var(--cv-line); }
+.cv-doc.cv-design[data-tpl='koprukoy'] .cv-name { color: var(--cv-ink); font-weight: 750; }
+.cv-doc.cv-design[data-tpl='koprukoy'][data-tone='dark'] :is(.cv-name, .cv-h2) { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='koprukoy'] .cv-col-main {
+  counter-reset: kpr;
+  padding-left: 12mm;
+  background: linear-gradient(color-mix(in srgb, var(--cv-accent) 28%, transparent) 0 0) 3.45mm 0 / 0.5mm 100% no-repeat;
+}
+.cv-doc.cv-design[data-tpl='koprukoy'] .cv-sec { position: relative; }
+.cv-doc.cv-design[data-tpl='koprukoy'] .cv-h2 { color: var(--cv-ink); --cv-h2-fs: 0.95em; letter-spacing: 0.1em; min-height: 7.4mm; }
+.cv-doc.cv-design[data-tpl='koprukoy'] .cv-h2::before {
+  counter-increment: kpr;
+  content: counter(kpr);
+  position: absolute;
+  left: -12mm;
+  top: 0;
+  display: grid;
+  place-items: center;
+  width: 7.4mm;
+  height: 7.4mm;
+  border-radius: 999px;
+  border: 0.9mm solid var(--cv-paper);
+  background: var(--cv-accent);
+  color: #fff;
+  font-size: 0.95em;
+  letter-spacing: 0;
+  line-height: 1;
+}
+.cv-doc.cv-design[data-tpl='koprukoy'] .cv-item-date {
+  padding: 0.2mm 2mm;
+  border: 0.25mm solid color-mix(in srgb, var(--cv-accent) 40%, transparent);
+  border-radius: 999px;
+  color: var(--cv-accent);
+}
+
+/* 53 — Narman · kızıl toprak sağ ray, dibinde peribacası tepeleri */
+.cv-doc.cv-design[data-tpl='narman'] {
+  --cv-aside-w: 61mm;
+  --nrm: color-mix(in srgb, var(--cv-accent) 55%, var(--cv-rail));
+  --nrm2: color-mix(in srgb, var(--cv-accent) 30%, var(--cv-rail));
+  background-image:
+    conic-gradient(from 158deg at 50% 0, var(--nrm) 44deg, transparent 0),
+    conic-gradient(from 160deg at 50% 0, var(--nrm2) 40deg, transparent 0),
+    conic-gradient(from 156deg at 50% 0, var(--nrm) 48deg, transparent 0),
+    conic-gradient(from 162deg at 50% 0, var(--nrm2) 36deg, transparent 0),
+    conic-gradient(from 158deg at 50% 0, var(--nrm) 44deg, transparent 0),
+    conic-gradient(from 160deg at 50% 0, var(--nrm2) 40deg, transparent 0),
+    linear-gradient(to left, var(--cv-rail) 0 var(--cv-aside-w), var(--cv-paper) var(--cv-aside-w));
+  background-size: 12mm 17mm, 12mm 25mm, 12mm 21mm, 12mm 30mm, 12mm 19mm, 12mm 24mm, 100% 100%;
+  background-position: right -2mm bottom 0, right 8mm bottom 0, right 18mm bottom 0, right 28mm bottom 0, right 38mm bottom 0, right 48mm bottom 0, left top;
+  background-repeat: no-repeat;
+}
+.cv-doc.cv-design[data-tpl='narman'] .cv-aside-id { text-align: center; }
+.cv-doc.cv-design[data-tpl='narman'] .cv-photo { border: 0.9mm solid var(--cv-rail-accent); }
+.cv-doc.cv-design[data-tpl='narman'] .cv-col-main .cv-h2 { color: var(--cv-ink); align-items: flex-end; }
+.cv-doc.cv-design[data-tpl='narman'][data-tone='dark'] .cv-col-main .cv-h2 { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='narman'] .cv-h2::before {
+  content: '';
+  flex: none;
+  width: 3.6mm;
+  height: 4mm;
+  background: var(--cv-accent);
+  clip-path: polygon(50% 0, 70% 30%, 100% 100%, 0 100%, 30% 30%);
+}
+.cv-doc.cv-design[data-tpl='narman'] .cv-aside .cv-h2::before { background: var(--cv-rail-accent); }
+.cv-doc.cv-design[data-tpl='narman'] .cv-col-main .cv-h2::after {
+  content: '';
+  flex: 1;
+  height: 0.8mm;
+  margin-bottom: 0.2mm;
+  background: linear-gradient(90deg, var(--cv-accent), color-mix(in srgb, var(--cv-accent) 10%, transparent));
+}
+
+/* 54 — Oltu · Oltu taşı siyahı: gümüş faset işaretler, metalik isim */
+.cv-doc.cv-design[data-tpl='oltu'] {
+  background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.05), transparent 38%);
+}
+.cv-doc.cv-design[data-tpl='oltu'] .cv-head { padding-bottom: 5mm; border-bottom: 1mm double color-mix(in srgb, var(--cv-accent) 70%, transparent); }
+.cv-doc.cv-design[data-tpl='oltu'] .cv-name { --cv-name-fs: 2.2em; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+.cv-doc.cv-design[data-tpl='oltu'][data-tone='dark'] .cv-name {
+  background: linear-gradient(100deg, #ffffff, var(--cv-accent) 45%, #8b93a1 75%, #eef1f5);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.cv-doc.cv-design[data-tpl='oltu'] .cv-role { letter-spacing: 0.24em; text-transform: uppercase; font-size: 0.8em; font-weight: 500; }
+.cv-doc.cv-design[data-tpl='oltu'][data-tone='light'] .cv-role { color: var(--cv-muted); }
+.cv-doc.cv-design[data-tpl='oltu'] .cv-photo { padding: 1mm; border: 0.35mm solid var(--cv-accent); background: transparent; }
+.cv-doc.cv-design[data-tpl='oltu'] .cv-h2 { --cv-h2-fs: 0.82em; letter-spacing: 0.22em; color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='oltu'] .cv-h2::before {
+  content: '';
+  flex: none;
+  width: 2.7mm;
+  height: 3.1mm;
+  background: linear-gradient(135deg, #ffffff, var(--cv-accent) 45%, #6b7280);
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+}
+.cv-doc.cv-design[data-tpl='oltu'][data-tone='light'] .cv-h2::before { background: linear-gradient(135deg, #9ca3af, #1f2937); }
+.cv-doc.cv-design[data-tpl='oltu'] .cv-h2::after {
+  content: '';
+  flex: 1;
+  height: 0.25mm;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--cv-accent) 60%, transparent), transparent);
+}
+.cv-doc.cv-design[data-tpl='oltu'][data-tone='light'] :is(.cv-item-sub, .cv-bullets li::before) { color: var(--cv-muted); }
+.cv-doc.cv-design[data-tpl='oltu'] .cv-dots span { border-radius: 0; transform: rotate(45deg) scale(0.85); }
+
+/* 55 — Olur · polaroid portre, katlanmış not kâğıdı özet, fosforlu kalem başlıklar */
+.cv-doc.cv-design[data-tpl='olur'] .cv-head-main { flex-direction: row-reverse; align-items: flex-start; }
+.cv-doc.cv-design[data-tpl='olur'] .cv-photo {
+  padding: 1.6mm 1.6mm 6.5mm;
+  height: calc(var(--cv-photo-w) * 1.22);
+  border: 0.25mm solid #e7e5e4;
+  background: #ffffff;
+  box-shadow: 0 0.8mm 1.8mm rgba(28, 25, 23, 0.18);
+  transform: rotate(3deg);
+}
+.cv-doc.cv-design[data-tpl='olur'] .cv-name { --cv-name-fs: 2.4em; font-weight: 800; letter-spacing: -0.04em; color: var(--cv-ink); }
+.cv-doc.cv-design[data-tpl='olur'][data-tone='dark'] :is(.cv-name, .cv-h2) { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='olur'] .cv-role,
+.cv-doc.cv-design[data-tpl='olur'] .cv-item-sub { color: color-mix(in srgb, var(--cv-accent) 62%, var(--cv-text)); }
+.cv-doc.cv-design[data-tpl='olur'] .cv-h2 {
+  text-transform: none;
+  letter-spacing: -0.01em;
+  --cv-h2-fs: 1.2em;
+  font-weight: 800;
+  color: var(--cv-ink);
+}
+.cv-doc.cv-design[data-tpl='olur'] .cv-h2 span {
+  padding: 0 1.2mm;
+  margin-left: -1.2mm;
+  background: linear-gradient(transparent 52%, color-mix(in srgb, var(--cv-accent) 42%, transparent) 52% 90%, transparent 90%);
+}
+.cv-doc.cv-design[data-tpl='olur'] .cv-summary {
+  padding: 3.5mm 4.5mm;
+  background: linear-gradient(225deg, transparent 4mm, color-mix(in srgb, var(--cv-accent) 15%, var(--cv-paper)) 4mm);
+  color: var(--cv-text);
+}
+.cv-doc.cv-design[data-tpl='olur'] :is(.cv-chip, .cv-skills[data-style='chips'] .cv-skill) {
+  border: 0;
+  border-radius: 0.4mm;
+  background: color-mix(in srgb, var(--cv-accent) 16%, transparent);
+}
+
+/* 56 — Palandöken · kayak pisti: eğik kesilmiş bant + iz çizgileri, paralelkenar etiketler */
+.cv-doc.cv-design[data-tpl='palandoken'] .cv-head {
+  position: relative;
+  padding-bottom: 19mm;
+  margin-bottom: 1mm;
+  background: linear-gradient(115deg, var(--cv-ink) 20%, color-mix(in srgb, var(--cv-accent) 70%, var(--cv-ink)));
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 13mm), 0 100%);
+}
+.cv-doc.cv-design[data-tpl='palandoken'] .cv-head::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 13mm;
+  background: linear-gradient(to top left, transparent 58%, rgba(255, 255, 255, 0.5) 58% 59.5%, transparent 59.5% 65%, rgba(255, 255, 255, 0.3) 65% 66%, transparent 66%);
+}
+.cv-doc.cv-design[data-tpl='palandoken'] .cv-head > * { position: relative; z-index: 1; }
+.cv-doc.cv-design[data-tpl='palandoken'] .cv-name { text-transform: uppercase; letter-spacing: -0.01em; }
+.cv-doc.cv-design[data-tpl='palandoken'] .cv-photo { border: 0.9mm solid rgba(255, 255, 255, 0.85); }
+.cv-doc.cv-design[data-tpl='palandoken'] .cv-h2 { color: #fff; letter-spacing: 0.1em; }
+.cv-doc.cv-design[data-tpl='palandoken'] .cv-h2 span {
+  padding: 0.9mm 4.2mm;
+  background: var(--cv-accent);
+  clip-path: polygon(1.8mm 0, 100% 0, calc(100% - 1.8mm) 100%, 0 100%);
+}
+.cv-doc.cv-design[data-tpl='palandoken'] .cv-h2::after {
+  content: '';
+  flex: 1;
+  height: 2.2mm;
+  background: linear-gradient(to top left, transparent 48%, color-mix(in srgb, var(--cv-accent) 35%, transparent) 48% 56%, transparent 56%);
+}
+.cv-doc.cv-design[data-tpl='palandoken'] .cv-meter { border-radius: 0; height: 1.8mm; clip-path: polygon(1mm 0, 100% 0, calc(100% - 1mm) 100%, 0 100%); }
+.cv-doc.cv-design[data-tpl='palandoken'] .cv-meter-fill { border-radius: 0; }
+
+/* 57 — Pasinler · neo-brütalist: kalın kontur, sert "gölgeli" bloklar, sarı vurgu */
+.cv-doc.cv-design[data-tpl='pasinler'] .cv-head {
+  padding: 5.5mm 6mm;
+  margin-bottom: 9mm;
+  border: 0.6mm solid var(--cv-ink);
+  border-right-width: 2.4mm;
+  border-bottom-width: 2.4mm;
+  background: var(--cv-accent);
+}
+.cv-doc.cv-design[data-tpl='pasinler'] .cv-head :is(.cv-name, .cv-role, .cv-contact li, .cv-ic) { color: var(--cv-ink); }
+.cv-doc.cv-design[data-tpl='pasinler'] .cv-name { text-transform: uppercase; font-weight: 800; letter-spacing: -0.03em; --cv-name-fs: 2.3em; }
+.cv-doc.cv-design[data-tpl='pasinler'] .cv-photo { border: 0.6mm solid var(--cv-ink); border-right-width: 1.6mm; border-bottom-width: 1.6mm; }
+.cv-doc.cv-design[data-tpl='pasinler'] .cv-sec {
+  padding: 5mm 4.5mm 3.8mm;
+  border: 0.5mm solid var(--cv-text);
+  border-right-width: 1.7mm;
+  border-bottom-width: 1.7mm;
+}
+.cv-doc.cv-design[data-tpl='pasinler'] .cv-sec + .cv-sec { margin-top: calc(var(--cv-sec-gap) + 3.5mm); }
+.cv-doc.cv-design[data-tpl='pasinler'] .cv-h2 { margin: -8.6mm 0 2.6mm -1mm; color: var(--cv-accent); letter-spacing: 0.08em; }
+.cv-doc.cv-design[data-tpl='pasinler'] .cv-h2 span { padding: 0.9mm 2.8mm; background: var(--cv-ink); }
+.cv-doc.cv-design[data-tpl='pasinler'][data-tone='dark'] .cv-h2 span { background: var(--cv-text); color: var(--cv-paper); }
+.cv-doc.cv-design[data-tpl='pasinler'] :is(.cv-role, .cv-item-sub) { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='pasinler'] .cv-item-date {
+  padding: 0 1.6mm;
+  border: 0.3mm solid var(--cv-ink);
+  background: var(--cv-accent);
+  color: var(--cv-ink);
+}
+.cv-doc.cv-design[data-tpl='pasinler'] .cv-bullets li::before { background: var(--cv-text); border-radius: 0; }
+.cv-doc.cv-design[data-tpl='pasinler'] :is(.cv-chip, .cv-skills[data-style='chips'] .cv-skill) {
+  border: 0.35mm solid var(--cv-ink);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--cv-accent) 55%, var(--cv-paper));
+  color: var(--cv-ink);
+}
+.cv-doc.cv-design[data-tpl='pasinler'] .cv-meter { border: 0.3mm solid var(--cv-text); border-radius: 0; height: 2mm; background: none; }
+.cv-doc.cv-design[data-tpl='pasinler'] .cv-meter-fill { border-radius: 0; background: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='pasinler'] .cv-dots span.on { background: var(--cv-text); }
+
+/* 58 — Pazaryolu · bilet: delikli koçanlı künye, kesik ayraçlar, barkodlu başlıklar */
+.cv-doc.cv-design[data-tpl='pazaryolu'] .cv-head {
+  gap: 0;
+  padding: 6mm 0 6mm 7mm;
+  border: 0.35mm solid color-mix(in srgb, var(--cv-ink) 45%, transparent);
+  border-radius: 2.5mm;
+  background: color-mix(in srgb, var(--cv-accent) 7%, var(--cv-paper));
+}
+.cv-doc.cv-design[data-tpl='pazaryolu'] .cv-head-side {
+  position: relative;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  margin: -6mm 0;
+  padding: 6mm 7mm;
+  border-left: 0.5mm dashed color-mix(in srgb, var(--cv-ink) 45%, transparent);
+  margin-left: 6mm;
+}
+.cv-doc.cv-design[data-tpl='pazaryolu'] .cv-head-side::before,
+.cv-doc.cv-design[data-tpl='pazaryolu'] .cv-head-side::after {
+  content: '';
+  position: absolute;
+  left: -2.75mm;
+  width: 5mm;
+  height: 5mm;
+  border-radius: 999px;
+  border: 0.35mm solid color-mix(in srgb, var(--cv-ink) 45%, transparent);
+  background: var(--cv-paper);
+}
+.cv-doc.cv-design[data-tpl='pazaryolu'] .cv-head-side::before { top: -2.85mm; clip-path: inset(50% 0 0 0); }
+.cv-doc.cv-design[data-tpl='pazaryolu'] .cv-head-side::after { bottom: -2.85mm; clip-path: inset(0 0 50% 0); }
+.cv-doc.cv-design[data-tpl='pazaryolu'] .cv-name { color: var(--cv-ink); letter-spacing: -0.02em; }
+.cv-doc.cv-design[data-tpl='pazaryolu'][data-tone='dark'] :is(.cv-name, .cv-h2) { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='pazaryolu'] .cv-sec + .cv-sec {
+  margin-top: 0;
+  padding-top: var(--cv-sec-gap);
+  background: repeating-linear-gradient(90deg, var(--cv-line) 0 1.4mm, transparent 1.4mm 2.6mm) left calc(var(--cv-sec-gap) * 0.5) / 100% 0.4mm no-repeat;
+}
+.cv-doc.cv-design[data-tpl='pazaryolu'] .cv-h2 { color: var(--cv-ink); --cv-h2-fs: 0.8em; letter-spacing: 0.22em; }
+.cv-doc.cv-design[data-tpl='pazaryolu'] .cv-h2::after {
+  content: '';
+  flex: none;
+  margin-left: auto;
+  width: 15mm;
+  height: 3mm;
+  opacity: 0.55;
+  background: repeating-linear-gradient(90deg,
+    var(--cv-text) 0 0.3mm, transparent 0.3mm 0.7mm, var(--cv-text) 0.7mm 1.4mm, transparent 1.4mm 1.8mm,
+    var(--cv-text) 1.8mm 2mm, transparent 2mm 2.6mm, var(--cv-text) 2.6mm 3.1mm, transparent 3.1mm 3.4mm);
+}
+.cv-doc.cv-design[data-tpl='pazaryolu'] .cv-item-date { font-variant-numeric: tabular-nums; letter-spacing: 0.04em; }
+
+/* 59 — Şenkaya · köşe süslü çerçeve, çift kural, sütun çizgisi */
+.cv-doc.cv-design[data-tpl='senkaya'] {
+  --snk: color-mix(in srgb, var(--cv-accent) 70%, transparent);
+  background-image:
+    linear-gradient(var(--snk) 0 0), linear-gradient(var(--snk) 0 0),
+    linear-gradient(var(--snk) 0 0), linear-gradient(var(--snk) 0 0),
+    linear-gradient(var(--snk) 0 0), linear-gradient(var(--snk) 0 0),
+    linear-gradient(var(--snk) 0 0), linear-gradient(var(--snk) 0 0);
+  background-size: 16mm 0.5mm, 0.5mm 16mm, 16mm 0.5mm, 0.5mm 16mm, 16mm 0.5mm, 0.5mm 16mm, 16mm 0.5mm, 0.5mm 16mm;
+  background-position:
+    left 6mm top 6mm, left 6mm top 6mm,
+    right 6mm top 6mm, right 6mm top 6mm,
+    left 6mm bottom 6mm, left 6mm bottom 6mm,
+    right 6mm bottom 6mm, right 6mm bottom 6mm;
+  background-repeat: no-repeat;
+}
+.cv-doc.cv-design[data-tpl='senkaya'] .cv-head {
+  padding-bottom: 5mm;
+  background:
+    linear-gradient(var(--cv-line) 0 0) left bottom 1mm / 100% 0.25mm no-repeat,
+    linear-gradient(var(--cv-line) 0 0) left bottom / 100% 0.25mm no-repeat;
+}
+.cv-doc.cv-design[data-tpl='senkaya'] .cv-name { font-variant: small-caps; font-weight: 600; letter-spacing: 0.04em; --cv-name-fs: 2.3em; color: var(--cv-ink); }
+.cv-doc.cv-design[data-tpl='senkaya'] .cv-role { font-style: italic; font-weight: 500; }
+.cv-doc.cv-design[data-tpl='senkaya'] .cv-h2 {
+  font-variant: small-caps;
+  text-transform: none;
+  --cv-h2-fs: 1.12em;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--cv-ink);
+}
+.cv-doc.cv-design[data-tpl='senkaya'][data-tone='dark'] :is(.cv-name, .cv-h2) { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='senkaya'] .cv-h2::before {
+  content: '';
+  flex: none;
+  width: 1.8mm;
+  height: 1.8mm;
+  border: 0.35mm solid var(--cv-accent);
+  transform: rotate(45deg);
+}
+.cv-doc.cv-design[data-tpl='senkaya'] .cv-h2::after { content: ''; flex: 1; height: 0.25mm; background: var(--cv-line); }
+.cv-doc.cv-design[data-tpl='senkaya'] .cv-body { gap: 0; }
+.cv-doc.cv-design[data-tpl='senkaya'] .cv-col-main { padding-right: 6mm; }
+.cv-doc.cv-design[data-tpl='senkaya'] .cv-col-side { padding-left: 6mm; border-left: 0.25mm solid var(--cv-line); align-self: stretch; }
+.cv-doc.cv-design[data-tpl='senkaya'] .cv-item-sub { font-style: italic; font-weight: 500; }
+
+/* 60 — Tekman · cetvel: çentikli künye alt kenarı ve başlıklar, bölmeli göstergeler */
+.cv-doc.cv-design[data-tpl='tekman'] { --cv-aside-w: 60mm; }
+.cv-doc.cv-design[data-tpl='tekman'] .cv-head {
+  margin: 0;
+  padding: 10mm 10mm 8mm calc(var(--cv-aside-w) + 8mm);
+  background:
+    linear-gradient(var(--cv-accent) 0 0) left bottom / 100% 0.35mm no-repeat,
+    repeating-linear-gradient(90deg, var(--cv-accent) 0 0.3mm, transparent 0.3mm 10mm) left bottom / 100% 3.4mm no-repeat,
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--cv-accent) 55%, transparent) 0 0.2mm, transparent 0.2mm 2mm) left bottom / 100% 1.7mm no-repeat;
+}
+.cv-doc.cv-design[data-tpl='tekman']:not([data-photo='none']) .cv-head { padding-left: calc((var(--cv-aside-w) - var(--cv-photo-w)) / 2); }
+.cv-doc.cv-design[data-tpl='tekman']:not([data-photo='none']) .cv-head-main { gap: calc((var(--cv-aside-w) - var(--cv-photo-w)) / 2 + 8mm); }
+.cv-doc.cv-design[data-tpl='tekman'] .cv-col-main,
+.cv-doc.cv-design[data-tpl='tekman'] .cv-aside { padding-top: 8mm; }
+.cv-doc.cv-design[data-tpl='tekman'] .cv-name { color: var(--cv-ink); letter-spacing: -0.03em; }
+.cv-doc.cv-design[data-tpl='tekman'][data-tone='dark'] :is(.cv-name, .cv-col-main .cv-h2) { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='tekman'] .cv-col-main .cv-h2 { color: var(--cv-ink); align-items: flex-end; }
+.cv-doc.cv-design[data-tpl='tekman'] .cv-h2::after {
+  content: '';
+  flex: 1;
+  height: 1.6mm;
+  background:
+    linear-gradient(var(--cv-accent) 0 0) left bottom / 100% 0.3mm no-repeat,
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--cv-accent) 55%, transparent) 0 0.2mm, transparent 0.2mm 1.6mm) left bottom / 100% 1.1mm no-repeat,
+    repeating-linear-gradient(90deg, var(--cv-accent) 0 0.25mm, transparent 0.25mm 8mm) left bottom / 100% 1.6mm no-repeat;
+}
+.cv-doc.cv-design[data-tpl='tekman'] .cv-aside .cv-h2::after { background: linear-gradient(var(--cv-rail-accent) 0 0) left bottom / 100% 0.3mm no-repeat, repeating-linear-gradient(90deg, var(--cv-rail-accent) 0 0.2mm, transparent 0.2mm 1.6mm) left bottom / 100% 1.1mm no-repeat; }
+.cv-doc.cv-design[data-tpl='tekman'] .cv-meter { position: relative; height: 1.9mm; border-radius: 0; }
+.cv-doc.cv-design[data-tpl='tekman'] .cv-meter-fill { border-radius: 0; }
+.cv-doc.cv-design[data-tpl='tekman'] .cv-meter::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, transparent 0 calc(20% - 0.5mm), var(--cv-rail) calc(20% - 0.5mm) 20%);
+}
+.cv-doc.cv-design[data-tpl='tekman'] .cv-col-main .cv-meter::after { background: repeating-linear-gradient(90deg, transparent 0 calc(20% - 0.5mm), var(--cv-paper) calc(20% - 0.5mm) 20%); }
+
+/* 61 — Tortum · göl: dalga halkalı bant, halka işaretler, halka noktalar */
+.cv-doc.cv-design[data-tpl='tortum'] .cv-head {
+  background:
+    linear-gradient(90deg, var(--cv-ink) 30%, transparent 78%),
+    repeating-radial-gradient(circle at 86% 115%, rgba(255, 255, 255, 0.2) 0 0.35mm, transparent 0.35mm 4.2mm),
+    linear-gradient(180deg, var(--cv-ink), color-mix(in srgb, var(--cv-accent) 65%, var(--cv-ink)));
+}
+.cv-doc.cv-design[data-tpl='tortum'] .cv-photo { box-shadow: 0 0 0 0.8mm #fff, 0 0 0 2.2mm color-mix(in srgb, var(--cv-accent) 55%, transparent); }
+.cv-doc.cv-design[data-tpl='tortum'] .cv-name { font-weight: 700; letter-spacing: -0.02em; }
+.cv-doc.cv-design[data-tpl='tortum'] .cv-h2 { color: var(--cv-ink); }
+.cv-doc.cv-design[data-tpl='tortum'][data-tone='dark'] .cv-h2 { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='tortum'] .cv-h2::before {
+  content: '';
+  flex: none;
+  width: 3.6mm;
+  height: 3.6mm;
+  border-radius: 999px;
+  background: radial-gradient(circle, var(--cv-accent) 0 0.65mm, transparent 0.7mm 1.15mm, var(--cv-accent) 1.2mm 1.5mm, transparent 1.55mm);
+}
+.cv-doc.cv-design[data-tpl='tortum'] .cv-h2::after {
+  content: '';
+  flex: 1;
+  height: 1.2mm;
+  background:
+    radial-gradient(circle at 50% 0, transparent 0.75mm, color-mix(in srgb, var(--cv-accent) 40%, transparent) 0.8mm 1.05mm, transparent 1.1mm) left top / 2.8mm 1.2mm repeat-x;
+}
+.cv-doc.cv-design[data-tpl='tortum'] .cv-dots span { background: transparent; border: 0.3mm solid color-mix(in srgb, var(--cv-accent) 45%, transparent); }
+.cv-doc.cv-design[data-tpl='tortum'] .cv-dots span.on { background: var(--cv-accent); border-color: var(--cv-accent); }
+
+/* 62 — Uzundere · şelale: açık rayda akan su çizgileri, damla işaretli dikey bölüm hatları */
+.cv-doc.cv-design[data-tpl='uzundere'] {
+  --cv-aside-w: 62mm;
+  --uzd: color-mix(in srgb, var(--cv-accent) 55%, transparent);
+  background-image:
+    linear-gradient(180deg, var(--uzd), transparent 22%, var(--uzd) 40%, transparent 58%, var(--uzd) 76%, transparent),
+    linear-gradient(180deg, transparent, var(--uzd) 18%, transparent 36%, var(--uzd) 54%, transparent 72%, var(--uzd) 90%),
+    linear-gradient(180deg, var(--uzd), transparent 30%, var(--uzd) 60%, transparent 90%),
+    linear-gradient(to right, var(--cv-rail) 0 var(--cv-aside-w), var(--cv-paper) var(--cv-aside-w));
+  background-size: 0.5mm 100%, 0.35mm 100%, 0.25mm 100%, 100% 100%;
+  background-position: calc(var(--cv-aside-w) - 2.5mm) 0, calc(var(--cv-aside-w) - 4.2mm) 0, calc(var(--cv-aside-w) - 5.6mm) 0, left top;
+  background-repeat: no-repeat;
+}
+.cv-doc.cv-design[data-tpl='uzundere'] .cv-aside { padding-right: 9mm; }
+.cv-doc.cv-design[data-tpl='uzundere'] .cv-photo { box-shadow: 0 0 0 0.7mm var(--cv-paper), 0 0 0 1.3mm var(--cv-accent); }
+.cv-doc.cv-design[data-tpl='uzundere'] .cv-aside .cv-h2 { padding-bottom: 1.2mm; border-bottom: 0.3mm solid color-mix(in srgb, var(--cv-accent) 35%, transparent); }
+.cv-doc.cv-design[data-tpl='uzundere'] .cv-col-main .cv-sec {
+  position: relative;
+  padding-left: 6mm;
+  border-left: 0.45mm solid color-mix(in srgb, var(--cv-accent) 30%, transparent);
+}
+.cv-doc.cv-design[data-tpl='uzundere'] .cv-col-main .cv-h2 { color: var(--cv-ink); }
+.cv-doc.cv-design[data-tpl='uzundere'][data-tone='dark'] .cv-col-main .cv-h2 { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='uzundere'] .cv-col-main .cv-h2::before {
+  content: '';
+  position: absolute;
+  left: -1.6mm;
+  top: 0.3mm;
+  width: 2.8mm;
+  height: 2.8mm;
+  border-radius: 0 50% 50% 50%;
+  background: var(--cv-accent);
+  transform: rotate(45deg);
+}
+
+/* 63 — Yakutiye · Selçuklu çinisi: taşan kafes şeridi, sekiz köşeli yıldızlar */
+.cv-doc.cv-design[data-tpl='yakutiye'] {
+  --ykt-star: polygon(50% 0, 64.6% 14.6%, 85.4% 14.6%, 85.4% 35.4%, 100% 50%, 85.4% 64.6%, 85.4% 85.4%, 64.6% 85.4%, 50% 100%, 35.4% 85.4%, 14.6% 85.4%, 14.6% 64.6%, 0 50%, 14.6% 35.4%, 14.6% 14.6%, 35.4% 14.6%);
+}
+.cv-doc.cv-design[data-tpl='yakutiye'] .cv-head {
+  margin: calc(var(--cv-pad) * -1) calc(var(--cv-pad) * -1) 5mm;
+  padding: calc(var(--cv-pad) + 10mm) var(--cv-pad) 4mm;
+  background:
+    linear-gradient(var(--cv-ink) 0 0) left top 7.2mm / 100% 0.6mm no-repeat,
+    radial-gradient(circle, var(--cv-paper) 0 0.7mm, transparent 0.75mm) left -1.8mm top 1.8mm / 3.6mm 3.6mm repeat-x,
+    repeating-linear-gradient(45deg, var(--cv-accent) 0 0.35mm, transparent 0.35mm 2.55mm) left top / 100% 7.2mm no-repeat,
+    repeating-linear-gradient(-45deg, var(--cv-accent) 0 0.35mm, transparent 0.35mm 2.55mm) left top / 100% 7.2mm no-repeat,
+    linear-gradient(color-mix(in srgb, var(--cv-accent) 14%, var(--cv-paper)) 0 0) left top / 100% 7.2mm no-repeat;
+}
+.cv-doc.cv-design[data-tpl='yakutiye'] .cv-head::after {
+  content: '';
+  display: block;
+  width: 5mm;
+  height: 5mm;
+  margin: 4mm auto 0;
+  background: var(--cv-accent);
+  clip-path: var(--ykt-star);
+}
+.cv-doc.cv-design[data-tpl='yakutiye'] .cv-name { --cv-name-fs: 2.3em; letter-spacing: 0.01em; color: var(--cv-ink); }
+.cv-doc.cv-design[data-tpl='yakutiye'][data-tone='dark'] :is(.cv-name, .cv-h2) { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='yakutiye'] .cv-photo { border: 0.6mm solid var(--cv-accent); padding: 0.8mm; background: var(--cv-paper); }
+.cv-doc.cv-design[data-tpl='yakutiye'] .cv-h2 { color: var(--cv-ink); }
+.cv-doc.cv-design[data-tpl='yakutiye'] .cv-h2::before {
+  content: '';
+  flex: none;
+  width: 3.4mm;
+  height: 3.4mm;
+  background: var(--cv-accent);
+  clip-path: var(--ykt-star);
+}
+.cv-doc.cv-design[data-tpl='yakutiye'] .cv-h2::after { content: ''; flex: 1; height: 0.25mm; background: color-mix(in srgb, var(--cv-accent) 35%, transparent); }
+.cv-doc.cv-design[data-tpl='yakutiye'] .cv-col-side {
+  padding: 4mm;
+  border-top: 1mm solid var(--cv-accent);
+  background: color-mix(in srgb, var(--cv-accent) 5%, transparent);
+}
+.cv-doc.cv-design[data-tpl='yakutiye'] :is(.cv-chip, .cv-skills[data-style='chips'] .cv-skill) { border-radius: 0.8mm; }
+
+/* -------------------------------- Artvin -------------------------------- */
+
+/* 64 — Artvin · çapraz bölünmüş iki tonlu künye, eğik blok işaretler */
+.cv-doc.cv-design[data-tpl='artvin'] .cv-head {
+  margin: calc(var(--cv-pad) * -1) calc(var(--cv-pad) * -1) 7mm;
+  padding: calc(var(--cv-pad) * 0.5 + 7mm) var(--cv-pad) 8mm;
+  border-bottom: 0;
+  background: linear-gradient(103deg,
+    var(--cv-ink) 0 61%,
+    var(--cv-accent) 61% 62.6%,
+    color-mix(in srgb, var(--cv-accent) 10%, var(--cv-paper)) 62.6%);
+}
+.cv-doc.cv-design[data-tpl='artvin'] .cv-head-main .cv-name { color: #fff; }
+.cv-doc.cv-design[data-tpl='artvin'] .cv-head-main .cv-role { color: color-mix(in srgb, var(--cv-accent) 45%, #fff); }
+.cv-doc.cv-design[data-tpl='artvin'] .cv-head-side .cv-contact li { color: var(--cv-ink); }
+.cv-doc.cv-design[data-tpl='artvin'][data-tone='dark'] .cv-head-side .cv-contact li { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='artvin'] .cv-head > .cv-personal li { color: rgba(255, 255, 255, 0.78); }
+.cv-doc.cv-design[data-tpl='artvin'] .cv-photo { border: 0.8mm solid rgba(255, 255, 255, 0.85); }
+.cv-doc.cv-design[data-tpl='artvin'] .cv-h2 { color: var(--cv-ink); }
+.cv-doc.cv-design[data-tpl='artvin'][data-tone='dark'] .cv-h2 { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='artvin'] .cv-h2::before {
+  content: '';
+  flex: none;
+  width: 3.2mm;
+  height: 3.6mm;
+  background: var(--cv-accent);
+  clip-path: polygon(38% 0, 100% 0, 62% 100%, 0 100%);
+}
+.cv-doc.cv-design[data-tpl='artvin'] .cv-h2::after { content: ''; flex: 1; height: 0.3mm; background: var(--cv-line); }
+.cv-doc.cv-design[data-tpl='artvin'] .cv-item-date { color: var(--cv-text); font-weight: 700; }
+
+/* 65 — Ardanuç · dergi künyesi kutusu, Roma rakamlı ortalanmış bölüm başlıkları */
+.cv-doc.cv-design[data-tpl='ardanuc'] { counter-reset: ard; }
+.cv-doc.cv-design[data-tpl='ardanuc'] .cv-head {
+  padding: 7mm 6mm 6mm;
+  border: 0.3mm solid var(--cv-text);
+  outline: 0.25mm solid var(--cv-text);
+  outline-offset: -1.6mm;
+}
+.cv-doc.cv-design[data-tpl='ardanuc'] .cv-name { font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; --cv-name-fs: 1.9em; }
+.cv-doc.cv-design[data-tpl='ardanuc'] .cv-role { font-style: italic; font-weight: 500; }
+.cv-doc.cv-design[data-tpl='ardanuc'] .cv-h2 {
+  flex-direction: column;
+  gap: 0.6mm;
+  --cv-h2-fs: 0.82em;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  color: var(--cv-ink);
+  text-align: center;
+}
+.cv-doc.cv-design[data-tpl='ardanuc'][data-tone='dark'] .cv-h2 { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='ardanuc'] .cv-h2::before {
+  counter-increment: ard;
+  content: counter(ard, upper-roman);
+  font-size: 1.5em;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  color: var(--cv-accent);
+}
+.cv-doc.cv-design[data-tpl='ardanuc'] .cv-h2::after { content: ''; width: 14mm; height: 0.3mm; margin-top: 0.8mm; background: var(--cv-accent); }
+.cv-doc.cv-design[data-tpl='ardanuc'] .cv-item-title { font-weight: 600; }
+.cv-doc.cv-design[data-tpl='ardanuc'] .cv-item-sub { font-variant: small-caps; font-weight: 500; letter-spacing: 0.03em; color: var(--cv-muted); }
+.cv-doc.cv-design[data-tpl='ardanuc'] .cv-item-date { font-style: italic; font-weight: 500; }
+
+/* 66 — Arhavi · Karadeniz dalgası kenarlı sağ ray, dalga çizgili başlıklar */
+.cv-doc.cv-design[data-tpl='arhavi'] {
+  --cv-aside-w: 62mm;
+  background-image:
+    radial-gradient(circle at 0 50%, var(--cv-paper) 0 2.6mm, transparent 2.7mm),
+    radial-gradient(circle at 100% 50%, var(--cv-rail) 0 2.6mm, transparent 2.7mm),
+    linear-gradient(to left, var(--cv-rail) 0 var(--cv-aside-w), var(--cv-paper) var(--cv-aside-w));
+  background-size: 2.7mm 10.4mm, 2.7mm 10.4mm, 100% 100%;
+  background-position: calc(100% - var(--cv-aside-w) + 2.7mm) 5.2mm, calc(100% - var(--cv-aside-w)) 0, left top;
+  background-repeat: repeat-y, repeat-y, no-repeat;
+}
+.cv-doc.cv-design[data-tpl='arhavi'] .cv-aside { padding-left: 9mm; }
+.cv-doc.cv-design[data-tpl='arhavi'] .cv-aside-id { text-align: center; }
+.cv-doc.cv-design[data-tpl='arhavi'] .cv-photo { box-shadow: 0 0 0 0.8mm var(--cv-rail-accent); }
+.cv-doc.cv-design[data-tpl='arhavi'] .cv-col-main .cv-h2 { color: var(--cv-ink); }
+.cv-doc.cv-design[data-tpl='arhavi'][data-tone='dark'] .cv-col-main .cv-h2 { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='arhavi'] .cv-h2::after {
+  content: '';
+  flex: 1;
+  height: 1.6mm;
+  background:
+    radial-gradient(circle at 50% 0, transparent 0.85mm, var(--cv-accent) 0.9mm 1.2mm, transparent 1.25mm) left top / 3.4mm 1.6mm repeat-x;
+}
+.cv-doc.cv-design[data-tpl='arhavi'] .cv-aside .cv-h2::after {
+  background: radial-gradient(circle at 50% 0, transparent 0.85mm, var(--cv-rail-accent) 0.9mm 1.2mm, transparent 1.25mm) left top / 3.4mm 1.6mm repeat-x;
+}
+
+/* 67 — Borçka · Karagöl: zümrüt degrade ray, portre ardında göl halkası, yaprak işaretler */
+.cv-doc.cv-design[data-tpl='borcka'] {
+  --cv-aside-w: 63mm;
+  background-image:
+    radial-gradient(closest-side, color-mix(in srgb, var(--cv-accent) 34%, var(--cv-rail)) 0 78%, color-mix(in srgb, var(--cv-accent) 60%, var(--cv-rail)) 78% 82%, transparent 83%),
+    linear-gradient(rgba(255, 255, 255, 0.22) 0 0),
+    linear-gradient(180deg, color-mix(in srgb, var(--cv-rail) 85%, var(--cv-accent)), var(--cv-rail) 60%, color-mix(in srgb, var(--cv-rail) 80%, #000)),
+    linear-gradient(to right, var(--cv-rail) 0 var(--cv-aside-w), var(--cv-paper) var(--cv-aside-w));
+  background-size: 56mm 44mm, 0.3mm 100%, var(--cv-aside-w) 100%, 100% 100%;
+  background-position: left calc((var(--cv-aside-w) - 56mm) / 2) top 6mm, left calc(var(--cv-aside-w) - 3mm) top, left top, left top;
+  background-repeat: no-repeat;
+}
+.cv-doc.cv-design[data-tpl='borcka'] .cv-aside { padding-right: 9mm; }
+.cv-doc.cv-design[data-tpl='borcka'] .cv-aside-id { text-align: center; }
+.cv-doc.cv-design[data-tpl='borcka'] .cv-photo { border: 0.8mm solid rgba(255, 255, 255, 0.75); }
+.cv-doc.cv-design[data-tpl='borcka'] .cv-col-main .cv-h2 { color: var(--cv-ink); }
+.cv-doc.cv-design[data-tpl='borcka'][data-tone='dark'] .cv-col-main .cv-h2 { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='borcka'] .cv-h2::before {
+  content: '';
+  flex: none;
+  width: 3.2mm;
+  height: 3.2mm;
+  border-radius: 0 100% 0 100%;
+  background: var(--cv-accent);
+}
+.cv-doc.cv-design[data-tpl='borcka'] .cv-aside .cv-h2::before { background: var(--cv-rail-accent); }
+.cv-doc.cv-design[data-tpl='borcka'] .cv-col-main .cv-h2::after { content: ''; flex: 1; height: 0.25mm; background: color-mix(in srgb, var(--cv-accent) 35%, transparent); }
+.cv-doc.cv-design[data-tpl='borcka'] .cv-meter { height: 1.4mm; }
+
+/* 68 — Hopa · çay terasları: sayfa üstü/altı eğimli şeritler, çizgili başlık altları */
+.cv-doc.cv-design[data-tpl='hopa'] {
+  --hop1: color-mix(in srgb, var(--cv-accent) 75%, var(--cv-paper));
+  --hop2: color-mix(in srgb, var(--cv-accent) 40%, var(--cv-paper));
+  padding-top: calc(var(--cv-pad) + 9mm);
+  padding-bottom: calc(var(--cv-pad) + 6mm);
+  background-image:
+    repeating-linear-gradient(-7deg, var(--hop1) 0 1.5mm, var(--cv-paper) 1.5mm 2.1mm, var(--hop2) 2.1mm 3.6mm, var(--cv-paper) 3.6mm 4.2mm),
+    repeating-linear-gradient(-7deg, var(--hop2) 0 1.5mm, var(--cv-paper) 1.5mm 2.1mm, var(--hop1) 2.1mm 3.6mm, var(--cv-paper) 3.6mm 4.2mm);
+  background-size: 100% 11mm, 100% 5mm;
+  background-position: left top, left bottom;
+  background-repeat: no-repeat;
+}
+.cv-doc.cv-design[data-tpl='hopa'] .cv-head { padding-bottom: 4mm; }
+.cv-doc.cv-design[data-tpl='hopa'] .cv-name { color: var(--cv-ink); font-weight: 750; }
+.cv-doc.cv-design[data-tpl='hopa'][data-tone='dark'] :is(.cv-name, .cv-h2) { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='hopa'] .cv-photo { border: 0.8mm solid var(--hop2); }
+.cv-doc.cv-design[data-tpl='hopa'] .cv-h2 { color: var(--cv-ink); align-items: flex-end; }
+.cv-doc.cv-design[data-tpl='hopa'] .cv-h2 span {
+  padding-bottom: 1.6mm;
+  background: repeating-linear-gradient(-45deg, var(--cv-accent) 0 0.55mm, transparent 0.55mm 1.3mm) left bottom / 100% 1.1mm no-repeat;
+}
+.cv-doc.cv-design[data-tpl='hopa'] .cv-h2::after { content: ''; flex: 1; height: 0.25mm; background: var(--cv-line); }
+.cv-doc.cv-design[data-tpl='hopa'] :is(.cv-chip, .cv-skills[data-style='chips'] .cv-skill) { border-radius: 1mm; }
+
+/* 69 — Kemalpaşa · pasaport: koyu çerçeve + kesik "sınır" hattı, damga etiketler */
+.cv-doc.cv-design[data-tpl='kemalpasa'] {
+  --kmp: color-mix(in srgb, var(--cv-accent) 55%, transparent);
+  border: 1.4mm solid var(--cv-ink);
+  background-image:
+    repeating-linear-gradient(90deg, var(--kmp) 0 2.4mm, transparent 2.4mm 3.8mm),
+    repeating-linear-gradient(90deg, var(--kmp) 0 2.4mm, transparent 2.4mm 3.8mm),
+    repeating-linear-gradient(180deg, var(--kmp) 0 2.4mm, transparent 2.4mm 3.8mm),
+    repeating-linear-gradient(180deg, var(--kmp) 0 2.4mm, transparent 2.4mm 3.8mm);
+  background-size: calc(100% - 7mm) 0.35mm, calc(100% - 7mm) 0.35mm, 0.35mm calc(100% - 7mm), 0.35mm calc(100% - 7mm);
+  background-position: left 3.5mm top 3.5mm, left 3.5mm bottom 3.5mm, left 3.5mm top 3.5mm, right 3.5mm top 3.5mm;
+  background-repeat: no-repeat;
+}
+.cv-doc.cv-design[data-tpl='kemalpasa'] .cv-head {
+  padding: 5mm 0 5mm;
+  border-radius: 2mm;
+  background: repeating-radial-gradient(ellipse at 50% 130%, color-mix(in srgb, var(--cv-accent) 11%, transparent) 0 0.3mm, transparent 0.3mm 1.9mm);
+  border-bottom: 0.3mm solid var(--cv-line);
+}
+.cv-doc.cv-design[data-tpl='kemalpasa'] .cv-name { color: var(--cv-ink); text-transform: uppercase; letter-spacing: 0.06em; --cv-name-fs: 2em; }
+.cv-doc.cv-design[data-tpl='kemalpasa'][data-tone='dark'] :is(.cv-name) { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='kemalpasa'] .cv-photo { outline: 0.5mm solid var(--cv-accent); outline-offset: 1.2mm; }
+.cv-doc.cv-design[data-tpl='kemalpasa'] .cv-h2 { gap: 3mm; letter-spacing: 0.16em; }
+.cv-doc.cv-design[data-tpl='kemalpasa'] .cv-h2 span {
+  padding: 0.7mm 2.6mm;
+  border: 0.45mm solid var(--cv-accent);
+  border-radius: 1mm;
+  box-shadow: inset 0 0 0 0.45mm var(--cv-paper), inset 0 0 0 0.7mm var(--cv-accent);
+  transform: rotate(-1.8deg);
+}
+.cv-doc.cv-design[data-tpl='kemalpasa'] .cv-h2::after {
+  content: '';
+  flex: 1;
+  height: 0.4mm;
+  background: radial-gradient(circle, var(--cv-soft) 0 0.2mm, transparent 0.25mm) left center / 1.2mm 0.4mm repeat-x;
+}
+
+/* 70 — Murgul · bakır maden: köşelerde eş yükselti eğrileri, bakır degrade çizgi ve çubuklar */
+.cv-doc.cv-design[data-tpl='murgul'] {
+  --mrg: color-mix(in srgb, var(--cv-accent) 22%, transparent);
+  background-image:
+    repeating-radial-gradient(ellipse at 100% 0, transparent 0 3.1mm, var(--mrg) 3.1mm 3.35mm),
+    repeating-radial-gradient(ellipse at 0 100%, transparent 0 3.6mm, var(--mrg) 3.6mm 3.85mm);
+  background-size: 92mm 62mm, 70mm 54mm;
+  background-position: right top, left bottom;
+  background-repeat: no-repeat;
+}
+.cv-doc.cv-design[data-tpl='murgul'] .cv-head {
+  padding-bottom: 5mm;
+  border-bottom: 0;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--cv-accent) 55%, #000), var(--cv-accent) 35%, color-mix(in srgb, var(--cv-accent) 45%, #fde68a) 65%, var(--cv-accent)) left bottom / 100% 1.2mm no-repeat;
+}
+.cv-doc.cv-design[data-tpl='murgul'] .cv-name { --cv-name-fs: 1.9em; color: var(--cv-ink); letter-spacing: -0.02em; }
+.cv-doc.cv-design[data-tpl='murgul'][data-tone='dark'] :is(.cv-name, .cv-h2) { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='murgul'] .cv-h2 { color: var(--cv-ink); letter-spacing: 0.08em; }
+.cv-doc.cv-design[data-tpl='murgul'] .cv-h2::before {
+  content: '';
+  flex: none;
+  width: 3.4mm;
+  height: 3.4mm;
+  border-radius: 999px;
+  background: repeating-radial-gradient(circle, var(--cv-accent) 0 0.3mm, transparent 0.3mm 0.75mm);
+}
+.cv-doc.cv-design[data-tpl='murgul'] .cv-h2::after {
+  content: '';
+  flex: 1;
+  height: 0.3mm;
+  background: repeating-linear-gradient(90deg, var(--cv-accent) 0 1.2mm, transparent 1.2mm 2mm);
+}
+.cv-doc.cv-design[data-tpl='murgul'] .cv-col-side { padding-left: 5mm; border-left: 0.3mm dashed color-mix(in srgb, var(--cv-accent) 45%, transparent); }
+.cv-doc.cv-design[data-tpl='murgul'] .cv-meter { height: 1.6mm; border-radius: 0; }
+.cv-doc.cv-design[data-tpl='murgul'] .cv-meter-fill {
+  border-radius: 0;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--cv-accent) 60%, #000), var(--cv-accent), color-mix(in srgb, var(--cv-accent) 50%, #fde68a));
+}
+
+/* 71 — Şavşat · yayla: künye altında katmanlı yuvarlak tepeler, sade yeşil başlıklar */
+.cv-doc.cv-design[data-tpl='savsat'] .cv-head {
+  padding-bottom: 19mm;
+  margin-bottom: 4mm;
+  /* Önden arkaya: koyu yakın tepeler, açık uzak sırtlar. */
+  background:
+    radial-gradient(ellipse 22% 100% at 22% 100%, color-mix(in srgb, var(--cv-accent) 80%, var(--cv-paper)) 0 98%, transparent 100%) left bottom / 100% 7mm no-repeat,
+    radial-gradient(ellipse 18% 100% at 78% 100%, color-mix(in srgb, var(--cv-accent) 70%, var(--cv-paper)) 0 98%, transparent 100%) left bottom / 100% 9mm no-repeat,
+    radial-gradient(ellipse 26% 100% at 50% 100%, color-mix(in srgb, var(--cv-accent) 42%, var(--cv-paper)) 0 98%, transparent 100%) left bottom / 100% 12mm no-repeat,
+    radial-gradient(ellipse 20% 100% at 95% 100%, color-mix(in srgb, var(--cv-accent) 30%, var(--cv-paper)) 0 98%, transparent 100%) left bottom / 100% 14mm no-repeat,
+    radial-gradient(ellipse 24% 100% at 6% 100%, color-mix(in srgb, var(--cv-accent) 22%, var(--cv-paper)) 0 98%, transparent 100%) left bottom / 100% 15mm no-repeat;
+}
+.cv-doc.cv-design[data-tpl='savsat'] .cv-name { font-weight: 650; letter-spacing: -0.025em; --cv-name-fs: 2.35em; }
+.cv-doc.cv-design[data-tpl='savsat'] .cv-role { font-weight: 500; }
+.cv-doc.cv-design[data-tpl='savsat'] .cv-h2 {
+  text-transform: none;
+  letter-spacing: -0.005em;
+  --cv-h2-fs: 1.1em;
+  font-weight: 650;
+  gap: 3mm;
+}
+.cv-doc.cv-design[data-tpl='savsat'] .cv-h2::after { content: ''; flex: 1; height: 0.25mm; background: color-mix(in srgb, var(--cv-accent) 30%, transparent); }
+.cv-doc.cv-design[data-tpl='savsat'] .cv-item-sub { font-weight: 500; }
+
+/* 72 — Yusufeli · nehir: degradeli sağ ray + çağlayan çizgileri, akıntı çubuklu başlıklar */
+.cv-doc.cv-design[data-tpl='yusufeli'] {
+  --cv-aside-w: 62mm;
+  background-image:
+    repeating-linear-gradient(-62deg, transparent 0 7mm, rgba(255, 255, 255, 0.08) 7mm 7.5mm, transparent 7.5mm 11mm, rgba(255, 255, 255, 0.13) 11mm 11.3mm, transparent 11.3mm 19mm),
+    linear-gradient(180deg, color-mix(in srgb, var(--cv-accent) 60%, var(--cv-rail)), var(--cv-rail) 45%, color-mix(in srgb, var(--cv-rail) 75%, #000)),
+    linear-gradient(to left, var(--cv-rail) 0 var(--cv-aside-w), var(--cv-paper) var(--cv-aside-w));
+  background-size: var(--cv-aside-w) 100%, var(--cv-aside-w) 100%, 100% 100%;
+  background-position: right top, right top, left top;
+  background-repeat: no-repeat;
+}
+.cv-doc.cv-design[data-tpl='yusufeli'] .cv-head {
+  margin: 0;
+  padding: 11mm calc(var(--cv-aside-w) + 8mm) 6mm 10mm;
+}
+.cv-doc.cv-design[data-tpl='yusufeli']:not([data-photo='none']) .cv-head { padding-right: calc((var(--cv-aside-w) - var(--cv-photo-w)) / 2); }
+.cv-doc.cv-design[data-tpl='yusufeli']:not([data-photo='none']) .cv-head-main { flex-direction: row-reverse; gap: calc((var(--cv-aside-w) - var(--cv-photo-w)) / 2 + 8mm); }
+.cv-doc.cv-design[data-tpl='yusufeli'] .cv-col-main,
+.cv-doc.cv-design[data-tpl='yusufeli'] .cv-aside { padding-top: 5mm; }
+.cv-doc.cv-design[data-tpl='yusufeli'] .cv-name { --cv-name-fs: 2.5em; letter-spacing: -0.035em; color: var(--cv-ink); }
+.cv-doc.cv-design[data-tpl='yusufeli'][data-tone='dark'] :is(.cv-name, .cv-col-main .cv-h2) { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='yusufeli'] .cv-photo { box-shadow: 0 0 0 1mm rgba(255, 255, 255, 0.85); }
+.cv-doc.cv-design[data-tpl='yusufeli'] .cv-head { position: relative; }
+.cv-doc.cv-design[data-tpl='yusufeli'] .cv-col-main .cv-h2 { color: var(--cv-ink); }
+.cv-doc.cv-design[data-tpl='yusufeli'] .cv-h2::before {
+  content: '';
+  flex: none;
+  width: 7mm;
+  height: 1.5mm;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--cv-accent), color-mix(in srgb, var(--cv-accent) 25%, transparent));
+}
+.cv-doc.cv-design[data-tpl='yusufeli'] .cv-aside .cv-h2::before { background: linear-gradient(90deg, var(--cv-rail-accent), transparent); }

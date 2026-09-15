@@ -24,6 +24,12 @@ import { MM, PAPER, type PaperId } from '@/lib/cv/browser'
 
 type Props = {
   paper: PaperId
+  /**
+   * Belgenin sayfa kenar boşluğu (mm) — genelde `settings.margin`. Yalnızca ilk
+   * ölçümden önce kullanılır; sonrasında gerçek iç boşluk DOM'dan okunur (yan
+   * sütunlu görsel şablonlarda kâğıt boşluğu 0'dır, boşluk sütunlardadır).
+   */
+  marginMm?: number
   /** 'fit' → kapsayıcıya sığdır (en fazla 1×); sayı → sabit ölçek. */
   zoom?: 'fit' | number
   guides?: boolean
@@ -37,23 +43,30 @@ type Props = {
 /**
  * Sayfa sınırlarının belge içindeki konumları (px).
  *
- * Doğal akış her `pageH` piksellik dilimde kesilir; kullanıcının zorunlu sayfa
- * başı koyduğu noktalarda ise sayfa erken kapanır ve sayaç oradan yeniden başlar.
- * Böylece ekrandaki kesik çizgiler PDF'in gerçek sayfa geçişleriyle örtüşür.
+ * İç boşluk (`.cv-doc`un ya da yan sütunlu şablonlarda sütunların) `box-decoration-break:
+ * clone` ile her yazdırılan sayfada tekrarlanır; dolayısıyla bir sayfaya sığan içerik
+ * `pageH - padTop - padBottom` kadardır. İlk sayfa `pageH - padBottom` konumunda kapanır
+ * (üstte bant/başlık olsa bile), sonrakiler her `contentH` pikselde: `padTop + k*contentH`.
+ * Kullanıcının zorunlu sayfa başı koyduğu noktalarda sayfa erken kapanır ve sayaç
+ * oradan yeniden başlar. Böylece ekrandaki kesik çizgiler ve sayfa sayısı PDF'in
+ * gerçek sayfa geçişleriyle örtüşür.
  */
-function pageBoundaries(total: number, pageH: number, forced: number[]): number[] {
+function pageBoundaries(total: number, pageH: number, padTop: number, padBottom: number, forced: number[]): number[] {
   const out: number[] = []
-  let pageStart = 0
+  // Aşırı büyük boşlukta sıfıra/negatife düşüp sonsuz döngü kurmasın.
+  const contentH = Math.max(1, pageH - padTop - padBottom)
+  const contentEnd = total - padBottom
+  let pageStart = padTop
   const marks = forced.concat(Infinity)
 
   for (const mark of marks) {
-    // Bu zorunlu başlangıca (ya da belgenin sonuna) kadar olan doğal kesmeler.
-    const limit = Math.min(mark, total)
-    while (pageStart + pageH < limit - 1) {
-      pageStart += pageH
+    // Bu zorunlu başlangıca (ya da içeriğin sonuna) kadar olan doğal kesmeler.
+    const limit = Math.min(mark, contentEnd)
+    while (pageStart + contentH < limit - 1) {
+      pageStart += contentH
       out.push(pageStart)
     }
-    if (mark === Infinity || mark >= total) break
+    if (mark === Infinity || mark >= contentEnd) break
     if (mark > pageStart) {
       out.push(mark)
       pageStart = mark
@@ -66,17 +79,22 @@ function sameNumbers(a: number[], b: number[]): boolean {
   return a.length === b.length && a.every((v, i) => v === b[i])
 }
 
-export default function CvPaper({ paper, zoom = 'fit', guides = true, shadow = true, children, onPages, pageLabel }: Props) {
+export default function CvPaper({ paper, marginMm, zoom = 'fit', guides = true, shadow = true, children, onPages, pageLabel }: Props) {
   const hostRef = useRef<HTMLDivElement>(null)
   const docRef = useRef<HTMLDivElement>(null)
   const [avail, setAvail] = useState(0)
   const [docH, setDocH] = useState(0)
+  /** Belgeden okunan, her sayfada tekrarlanan üst/alt iç boşluk (px); ölçülene dek `null`. */
+  const [measuredPad, setMeasuredPad] = useState<{ top: number; bottom: number } | null>(null)
   /** Kullanıcının "yeni sayfada başlat" dediği bölümlerin belge içindeki konumu (px). */
   const [forced, setForced] = useState<number[]>([])
 
   const size = PAPER[paper] ?? PAPER.a4
   const paperW = size.w * MM
   const pageH = size.h * MM
+  const fallbackPad = typeof marginMm === 'number' && Number.isFinite(marginMm) ? marginMm * MM : 0
+  const padTop = measuredPad ? measuredPad.top : fallbackPad
+  const padBottom = measuredPad ? measuredPad.bottom : fallbackPad
 
   // Kapsayıcı genişliği — pencere boyutu ve panel düzeni değiştikçe güncellenir.
   useEffect(() => {
@@ -103,6 +121,21 @@ export default function CvPaper({ paper, zoom = 'fit', guides = true, shadow = t
     if (!el) return
     const h = el.offsetHeight
     if (h > 0) setDocH((prev) => (prev === h ? prev : h))
+    const doc = el.querySelector<HTMLElement>('.cv-doc')
+    if (doc) {
+      // Yan sütunlu görsel şablonlarda kâğıt boşluğu 0'dır; her sayfada tekrarlanan
+      // boşluk ana sütundadır (yan sütunla aynı dikey değerler).
+      const read = (n: Element) => {
+        const cs = window.getComputedStyle(n)
+        return { top: parseFloat(cs.paddingTop) || 0, bottom: parseFloat(cs.paddingBottom) || 0 }
+      }
+      let p = read(doc)
+      const col = doc.querySelector('.cv-col-main')
+      if (p.top === 0 && p.bottom === 0 && col) p = read(col)
+      // Tam piksele yuvarla: alt piksel farkları yeniden render tetiklemesin.
+      const next = { top: Math.round(p.top), bottom: Math.round(p.bottom) }
+      setMeasuredPad((prev) => (prev && prev.top === next.top && prev.bottom === next.bottom ? prev : next))
+    }
     // `.cv-doc` position: relative olduğu için bölümlerin offsetParent'ı odur;
     // offsetTop dönüşümden etkilenmez, ölçek uygulanmamış gerçek konumu verir.
     const marks = Array.from(el.querySelectorAll<HTMLElement>('.cv-sec[data-break="page"]'))
@@ -124,7 +157,7 @@ export default function CvPaper({ paper, zoom = 'fit', guides = true, shadow = t
     return () => ro.disconnect()
   }, [measure])
 
-  // İçerik (yazı tipi yüklenmesi, görsel) sonradan yerleşebilir — bir kez daha bak.
+  // İçerik (yazı tipi yüklenmesi) sonradan yerleşebilir — bir kez daha bak.
   useEffect(() => {
     const t = window.setTimeout(measure, 350)
     const fonts = (document as Document & { fonts?: FontFaceSet }).fonts
@@ -143,7 +176,7 @@ export default function CvPaper({ paper, zoom = 'fit', guides = true, shadow = t
   // çubuğu doğurmasını (ve oradan salınımı) engeller.
   const boxW = Math.floor(paperW * scale)
   const height = Math.round((docH > 0 ? docH : pageH) * scale)
-  const boundaries = pageBoundaries(docH || pageH, pageH, forced)
+  const boundaries = pageBoundaries(docH || pageH, pageH, padTop, padBottom, forced)
   const pages = boundaries.length + 1
 
   // `onPages` çoğu zaman satır içi bir okla geçilir; kimliği her render'da

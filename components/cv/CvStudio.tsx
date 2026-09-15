@@ -7,14 +7,26 @@
  * Durum localStorage'a otomatik yazılır, PDF çıktısı tarayıcının kendi
  * yazdırma motoruyla alınır (bkz. lib/cv/browser.ts → printDocument).
  *
- * Akış dört adımdır: şablon → bilgiler → ince ayar → indirme. Kullanıcı
+ * Akış dört adımdır: şablon → bilgiler → ince ayar → ATS & indir. Kullanıcı
  * ziyaret ettiği adımlara serbestçe dönebilir, bir adım ileriye atlayabilir.
+ *
+ * ATS raporu burada bir kez hesaplanır: başlıktaki skor rozeti ve son adım aynı
+ * sonucu kullanır. Yazarken her tuşta analiz çalışmasın diye girdiler gecikmeli.
+ * Skor SEÇİLİ şablonun gerçek yerleşimine göre çıkar; görsel (design) şablonda son
+ * adım aynı veriyi önerilen ATS şablonuyla da puanlayıp karşılaştırma gösterir.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { createPortal } from 'react-dom'
 import Swal from 'sweetalert2'
 import 'sweetalert2/dist/sweetalert2.min.css'
+import { ScoreRing } from '@/components/ats/primitives'
+import '@/components/ats/ats.css'
+import { analyze } from '@/lib/ats/analyze'
+import { fromCv } from '@/lib/ats/from-cv'
+import type { AtsFixTarget } from '@/lib/ats/types'
+import { atsText } from '@/lib/ats/ui-text'
 import { PAPER, downloadText, printDocument, safeFileName } from '@/lib/cv/browser'
 import {
   clearState,
@@ -27,7 +39,7 @@ import {
   settingsForTemplate,
 } from '@/lib/cv/state'
 import type { CvState } from '@/lib/cv/types'
-import { TEMPLATES } from '@/lib/cv/templates'
+import { RECOMMENDED_ATS_TEMPLATE_ID, TEMPLATES, getTemplate } from '@/lib/cv/templates'
 import { cvText } from '@/lib/cv/ui-text'
 import { useLanguage } from '@/lib/i18n/LanguageProvider'
 import CvDocument from './CvDocument'
@@ -45,20 +57,39 @@ const dialog = Swal.mixin({
   buttonsStyling: false,
 })
 
+/** İş ilanı ve hedef unvan — CV verisinden ayrı tutulur, "yeni CV" ile silinmez. */
+const JOB_KEY = 'cv-studio:ats-job'
+
+type RefineTab = 'design' | 'sections' | 'template'
+
+/** Değeri `ms` boyunca değişmezse yayınlar; ilk değer beklemeden gelir. */
+function useDebounced<T>(value: T, ms: number): T {
+  const [out, setOut] = useState(value)
+  useEffect(() => {
+    const id = window.setTimeout(() => setOut(value), ms)
+    return () => window.clearTimeout(id)
+  }, [value, ms])
+  return out
+}
+
 export default function CvStudio() {
   const { lang } = useLanguage()
   const t = useMemo(() => cvText(lang), [lang])
+  const at = atsText(lang)
 
   const [booting, setBooting] = useState(true)
   const [ready, setReady] = useState(false)
-  const [state, setState] = useState<CvState>(() => initialState())
+  const [state, setState] = useState<CvState>(() => initialState(undefined, lang))
   const [step, setStep] = useState(0)
   const [maxStep, setMaxStep] = useState(0)
+  const [refineTab, setRefineTab] = useState<RefineTab>('design')
   const [fileName, setFileName] = useState('')
   const [pages, setPages] = useState(1)
   const [printing, setPrinting] = useState(false)
   const [toast, setToast] = useState<{ message: string; tone: 'ok' | 'error' } | null>(null)
   const [printHost, setPrintHost] = useState<HTMLElement | null>(null)
+  const [jobDesc, setJobDesc] = useState('')
+  const [targetTitle, setTargetTitle] = useState('')
 
   const { data, settings } = state
 
@@ -76,6 +107,14 @@ export default function CvStudio() {
         setMaxStep(3)
       }
     }
+    try {
+      const raw = localStorage.getItem(JOB_KEY)
+      const job = raw ? (JSON.parse(raw) as { description?: unknown; title?: unknown }) : null
+      if (job && typeof job.description === 'string') setJobDesc(job.description)
+      if (job && typeof job.title === 'string') setTargetTitle(job.title)
+    } catch {
+      /* bozuk kayıt yok sayılır */
+    }
     setReady(true)
   }, [])
 
@@ -85,6 +124,19 @@ export default function CvStudio() {
     const id = window.setTimeout(() => saveState(state), 400)
     return () => window.clearTimeout(id)
   }, [state, ready])
+
+  useEffect(() => {
+    if (!ready) return
+    const id = window.setTimeout(() => {
+      try {
+        if (!jobDesc.trim() && !targetTitle.trim()) localStorage.removeItem(JOB_KEY)
+        else localStorage.setItem(JOB_KEY, JSON.stringify({ description: jobDesc, title: targetTitle }))
+      } catch {
+        /* kota/gizli sekme */
+      }
+    }, 400)
+    return () => window.clearTimeout(id)
+  }, [jobDesc, targetTitle, ready])
 
   // Yazdırma kopyası için body altında bir kapsayıcı. Adım 4'te doldurulur.
   useEffect(() => {
@@ -111,7 +163,7 @@ export default function CvStudio() {
   const setSettings = useCallback((next: CvState['settings']) => setState((s) => ({ ...s, settings: next })), [])
 
   const pickTemplate = useCallback((templateId: string) => {
-    // Şablon ön ayarları uygulanır; bölüm sırası/gizlilik gibi kullanıcı
+    // Şablon ön ayarları uygulanır; bölüm sırası/gizlilik/CV dili gibi kullanıcı
     // tercihleri settingsForTemplate içinde korunur.
     setState((s) => ({ ...s, settings: settingsForTemplate(templateId, s.settings) }))
   }, [])
@@ -122,6 +174,31 @@ export default function CvStudio() {
     // Adım değişince sayfanın üstüne dön — uzun formda alt kısımda kalmak kafa karıştırır.
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [])
+
+  /** "Diğer ATS şablonlarını gör": galeri filtresi dışarıdan açılamadığı için ince ayar adımının şablon sekmesine gider. */
+  const browseTemplates = useCallback(() => {
+    setRefineTab('template')
+    go(2)
+  }, [go])
+
+  /** Önerilen ATS uyumlu şablona geçer; kullanıcı son adımda kalır ve yeni skoru görür. */
+  const switchToAts = useCallback(() => {
+    pickTemplate(RECOMMENDED_ATS_TEMPLATE_ID)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [pickTemplate])
+
+  /** Rapordaki "Düzelt" düğmeleri: ilgili adıma (ve düzenleme sekmesine) götürür. */
+  const fixIt = useCallback(
+    (target: AtsFixTarget) => {
+      if (target === 'details') go(1)
+      else if (target === 'template') browseTemplates()
+      else if (target === 'design' || target === 'sections') {
+        setRefineTab(target)
+        go(2)
+      }
+    },
+    [go, browseTemplates],
+  )
 
   function fillSample() {
     setState((s) => ({ ...s, data: sampleCv(lang) }))
@@ -139,7 +216,7 @@ export default function CvStudio() {
       customClass: { popup: 'cvs-swal', container: 'cvs-swal-bg', confirmButton: 'cvs-btn danger', cancelButton: 'cvs-btn' },
     })
     if (!res.isConfirmed) return
-    setState((s) => ({ ...initialState(s.settings.templateId), settings: s.settings }))
+    setState((s) => ({ ...initialState(s.settings.templateId, s.settings.docLang), settings: s.settings }))
   }
 
   function exportJson() {
@@ -174,14 +251,15 @@ export default function CvStudio() {
     })
     if (!res.isConfirmed) return
     clearState()
-    setState(initialState())
+    setState(initialState(undefined, lang))
     setFileName('')
+    setRefineTab('design')
     setStep(0)
     setMaxStep(0)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  /** Örnek veri her render'da yeniden üretilirse galerideki 20 önizleme de
+  /** Örnek veri her render'da yeniden üretilirse galerideki önizlemeler de
    *  boşuna yeniden render edilir; dile göre bir kez kurulur. */
   const sample = useMemo(() => sampleCv(lang), [lang])
 
@@ -197,9 +275,51 @@ export default function CvStudio() {
     printDocument(effectiveName, () => setPrinting(false))
   }
 
-  /* --------------------------------- render -------------------------------- */
+  /* --------------------------------- ATS ----------------------------------- */
 
   const pct = completeness(data)
+  const hasContent = pct > 0
+
+  // Yazarken analiz her tuşta koşmasın: veri ve ilan gecikmeli, düşük öncelikli.
+  const atsState = useDeferredValue(useDebounced(state, 300))
+  const atsJob = useDeferredValue(useDebounced(jobDesc, 350))
+  const atsTitle = useDeferredValue(useDebounced(targetTitle, 350))
+  // Gerçek sayfa sayısı yalnızca son adımdaki önizleme ölçtüğünde bilinir.
+  const atsPages = step === 3 ? pages : undefined
+
+  const ats = useMemo(() => {
+    if (!ready || completeness(atsState.data) === 0) return null
+    try {
+      const { doc, structured, template } = fromCv(atsState.data, atsState.settings, atsPages ? { pages: atsPages } : undefined)
+      const report = analyze({ doc, structured, template, lang, jobDescription: atsJob, targetTitle: atsTitle })
+      return { doc, report }
+    } catch (err) {
+      if (process.env.NODE_ENV !== 'production') console.error('[ats] rapor hesaplanamadı', err)
+      return null
+    }
+  }, [ready, atsState, atsPages, lang, atsJob, atsTitle])
+
+  // Karşılaştırma raporu: yalnızca son adımda ve görsel şablon seçiliyken. Aynı veri + aynı
+  // ilan, önerilen ATS şablonunun ön ayarlarıyla (kullanıcının bölüm sırası/dil/kâğıt tercihi
+  // korunur). Ölçülen sayfa sayısı görsel şablona ait olduğundan geçirilmez; motor tahmin eder.
+  const atsFamily = getTemplate(atsState.settings.templateId).family
+  const wantAlt = step === 3 && atsFamily === 'design' && !!ats
+  const altReport = useMemo(() => {
+    if (!wantAlt) return null
+    try {
+      const altSettings = settingsForTemplate(RECOMMENDED_ATS_TEMPLATE_ID, atsState.settings)
+      const { doc, structured, template } = fromCv(atsState.data, altSettings)
+      return analyze({ doc, structured, template, lang, jobDescription: atsJob, targetTitle: atsTitle })
+    } catch (err) {
+      if (process.env.NODE_ENV !== 'production') console.error('[ats] karşılaştırma raporu hesaplanamadı', err)
+      return null
+    }
+  }, [wantAlt, atsState, lang, atsJob, atsTitle])
+
+  const currentTpl = getTemplate(settings.templateId)
+
+  /* --------------------------------- render -------------------------------- */
+
   const steps = t.steps
 
   if (booting) {
@@ -233,6 +353,10 @@ export default function CvStudio() {
         </div>
 
         <div className="cvs-actions">
+          <Link href="/ats-analiz" className="cvs-btn sm ats-toplink">
+            <UiIcon name="search" />
+            {at.builder.analyzeLink}
+          </Link>
           <span className="cvs-badge">
             <span className="dot" />
             {t.freeBadge}
@@ -247,6 +371,22 @@ export default function CvStudio() {
               <small>{t.steps[1].sub}</small>
             </span>
           </div>
+          {hasContent && ats && (
+            <button
+              type="button"
+              className="ats-badge"
+              data-grade={ats.report.grade}
+              onClick={() => go(3)}
+              title={at.badgeTitle(ats.report.score, at.template.family[currentTpl.family], currentTpl.name)}
+              aria-label={at.badgeTitle(ats.report.score, at.template.family[currentTpl.family], currentTpl.name)}
+            >
+              <ScoreRing score={ats.report.score} grade={ats.report.grade} size={34} stroke={11} label={false} animate={false} />
+              <span className="ats-badge-txt">
+                <b>{ats.report.score}</b>
+                <small>{at.badge}</small>
+              </span>
+            </button>
+          )}
         </div>
       </header>
 
@@ -331,24 +471,46 @@ export default function CvStudio() {
             setSettings={setSettings}
             onTemplate={pickTemplate}
             onReset={() => setSettings(settingsForTemplate(settings.templateId, settings))}
+            initialTab={refineTab}
           />
         </section>
       )}
 
       {step === 3 && (
-        <ExportStep
-          t={t}
-          data={data}
-          settings={settings}
-          fileName={fileName || autoName}
-          setFileName={setFileName}
-          pages={pages}
-          onPages={setPages}
-          printing={printing}
-          onDownload={download}
-          onExportJson={exportJson}
-          onStartOver={() => void startOver()}
-        />
+        <section>
+          <h2 className="cvs-title" style={{ fontSize: '1.35rem' }}>
+            {steps[3].title}
+          </h2>
+          <p className="cvs-sub" style={{ marginBottom: '1.1rem' }}>
+            {t.exportStep.desc}
+          </p>
+          <ExportStep
+            t={t}
+            lang={lang}
+            data={data}
+            settings={settings}
+            report={ats?.report ?? null}
+            altReport={altReport}
+            onSwitchToAts={switchToAts}
+            onBrowseAts={browseTemplates}
+            plainText={ats?.doc.text ?? ''}
+            hasContent={hasContent}
+            fileName={fileName || autoName}
+            setFileName={setFileName}
+            pages={pages}
+            onPages={setPages}
+            printing={printing}
+            onDownload={download}
+            onExportJson={exportJson}
+            onStartOver={() => void startOver()}
+            jobDescription={jobDesc}
+            onJobDescription={setJobDesc}
+            targetTitle={targetTitle}
+            onTargetTitle={setTargetTitle}
+            onFix={fixIt}
+            onToast={notify}
+          />
+        </section>
       )}
 
       <div className="cvs-nav">
@@ -377,13 +539,14 @@ export default function CvStudio() {
       )}
 
       {/* Yazdırma kopyası: ekranda gizli, @media print içinde tek görünen düğüm.
-          Yalnızca indirme adımında monte edilir — belgeyi boşuna iki kez render etmeyiz. */}
+          Yalnızca indirme adımında monte edilir — belgeyi boşuna iki kez render etmeyiz.
+          Kenar boşluğunu belgenin (her sayfada klonlanan) iç boşluğu verir; @page margin 0. */}
       {step === 3 &&
         printHost &&
         createPortal(
           <>
-            <style>{`@page { size: ${PAPER[settings.paper].w}mm ${PAPER[settings.paper].h}mm; margin: 0; }`}</style>
-            <CvDocument data={data} settings={settings} t={t} />
+            <style>{`@page { size: ${(PAPER[settings.paper] ?? PAPER.a4).w}mm ${(PAPER[settings.paper] ?? PAPER.a4).h}mm; margin: 0; }`}</style>
+            <CvDocument data={data} settings={settings} />
           </>,
           printHost,
         )}

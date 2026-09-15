@@ -5,6 +5,31 @@
 import { useId, useState } from 'react'
 import UiIcon, { type UiIconName } from './UiIcon'
 
+/** Yumuşak uyarılar: tek metin ya da (koşullu üretilmiş) metin listesi. Boş/false öğeler atlanır. */
+type WarnProp = string | (string | false | null | undefined)[]
+
+function warnList(warn?: WarnProp): string[] {
+  if (!warn) return []
+  const list = Array.isArray(warn) ? warn : [warn]
+  return list.filter((w): w is string => typeof w === 'string' && w.length > 0)
+}
+
+/** Alan altındaki uyarı satırları — girişi engellemez, yalnızca yönlendirir. */
+export function Warnings({ warn }: { warn?: WarnProp }) {
+  const list = warnList(warn)
+  if (list.length === 0) return null
+  return (
+    <>
+      {list.map((w) => (
+        <small key={w} className="cvs-hint warn" role="status">
+          <UiIcon name="warn" />
+          <span>{w}</span>
+        </small>
+      ))}
+    </>
+  )
+}
+
 export function Field({
   label,
   value,
@@ -12,6 +37,8 @@ export function Field({
   placeholder,
   type = 'text',
   hint,
+  warn,
+  list,
   disabled,
 }: {
   label: string
@@ -20,6 +47,10 @@ export function Field({
   placeholder?: string
   type?: string
   hint?: string
+  /** Yumuşak uyarı(lar) — ör. tanınmayan tarih. */
+  warn?: WarnProp
+  /** Öneri listesi için `<datalist>` kimliği. */
+  list?: string
   disabled?: boolean
 }) {
   return (
@@ -30,9 +61,11 @@ export function Field({
         value={value}
         placeholder={placeholder}
         disabled={disabled}
+        list={list}
         onChange={(e) => onChange(e.target.value)}
       />
       {hint && <small className="cvs-hint">{hint}</small>}
+      <Warnings warn={warn} />
     </label>
   )
 }
@@ -43,6 +76,9 @@ export function Area({
   onChange,
   placeholder,
   hint,
+  warn,
+  meta,
+  metaWarn,
   rows = 4,
 }: {
   label: string
@@ -50,13 +86,26 @@ export function Area({
   onChange: (v: string) => void
   placeholder?: string
   hint?: string
+  warn?: WarnProp
+  /** Başlık satırının sağında gösterilen canlı sayaç (ör. "3 cümle · 52 kelime"). */
+  meta?: string
+  /** Sayaç önerilen aralığın dışındaysa uyarı rengine geçer. */
+  metaWarn?: boolean
   rows?: number
 }) {
   return (
     <label className="cvs-field">
-      <span>{label}</span>
+      <span className="cvs-field-head">
+        <span>{label}</span>
+        {meta && (
+          <small className="cvs-count" data-warn={metaWarn || undefined}>
+            {meta}
+          </small>
+        )}
+      </span>
       <textarea rows={rows} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
       {hint && <small className="cvs-hint">{hint}</small>}
+      <Warnings warn={warn} />
     </label>
   )
 }
@@ -121,22 +170,29 @@ export function Segmented<T extends string>({
   onChange,
   ariaLabel,
   wrap,
+  className,
 }: {
   value: T
-  options: { id: T; label: string; font?: string }[]
+  /** `title` → ipucu ve erişilebilir ad (ör. yalnızca "Aa" yazan font düğmeleri). */
+  options: { id: T; label: string; font?: string; title?: string }[]
   onChange: (v: T) => void
   ariaLabel?: string
   /** Seçenek çoksa tek satıra sığmaz; sarmalı düzene geçer. */
   wrap?: boolean
+  /** Ek sınıf — ör. font seçicinin 3 sütunlu ızgarası (`cvs-fontgrid`). */
+  className?: string
 }) {
+  const cls = ['cvs-seg', wrap ? 'wrap' : '', className ?? ''].filter(Boolean).join(' ')
   return (
-    <div className={wrap ? 'cvs-seg wrap' : 'cvs-seg'} role="group" aria-label={ariaLabel}>
+    <div className={cls} role="group" aria-label={ariaLabel}>
       {options.map((o) => (
         <button
           key={o.id}
           type="button"
           aria-pressed={value === o.id}
           onClick={() => onChange(o.id)}
+          title={o.title}
+          aria-label={o.title}
           style={o.font ? { fontFamily: o.font } : undefined}
         >
           {o.label}

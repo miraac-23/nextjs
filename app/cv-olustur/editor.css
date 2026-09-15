@@ -1,0 +1,410 @@
+/* ==========================================================================
+   CV Stüdyosu — editör ek stilleri (form uyarıları, sayaçlar, toplu ekleme,
+   font ızgarası, başlık uyarıları, ATS etkisi kartı, galeri filtre satırları,
+   ATS / görsel şablon rozetleri).
+   cv.css'teki `cvs-` bileşenlerinin üzerine eklenir; belge (.cv-doc) stillerine dokunmaz.
+   ========================================================================== */
+
+:root {
+  --cvs-warn: #fbbf24;
+  --cvs-warn-bg: rgba(251, 191, 36, 0.1);
+  --cvs-warn-border: rgba(251, 191, 36, 0.35);
+  --cvs-ok: #4ade80;
+  --cvs-ok-bg: rgba(74, 222, 128, 0.08);
+  --cvs-ok-border: rgba(74, 222, 128, 0.3);
+}
+
+:root[data-theme='light'] {
+  --cvs-warn: #b45309;
+  --cvs-warn-bg: rgba(217, 119, 6, 0.08);
+  --cvs-warn-border: rgba(217, 119, 6, 0.3);
+  --cvs-ok: #15803d;
+  --cvs-ok-bg: rgba(22, 163, 74, 0.07);
+  --cvs-ok-border: rgba(22, 163, 74, 0.28);
+}
+
+/* ------------------------------ form uyarıları ----------------------------- */
+
+.cvs-hint.warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  color: var(--cvs-warn);
+}
+
+.cvs-hint.warn svg {
+  flex: none;
+  width: 13px;
+  height: 13px;
+  margin-top: 0.12em;
+}
+
+/* Area başlığı: etiket solda, canlı sayaç sağda */
+.cvs-field-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.cvs-count {
+  flex: none;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  background: var(--cvs-input);
+  border: 1px solid var(--cvs-border-2);
+  font-size: 0.66rem;
+  font-weight: 650;
+  color: var(--cvs-dim);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.cvs-count[data-warn] {
+  color: var(--cvs-warn);
+  border-color: var(--cvs-warn-border);
+  background: var(--cvs-warn-bg);
+}
+
+/* ------------------------------- toplu ekleme ------------------------------ */
+
+.cvs-bulk {
+  display: grid;
+  gap: 0.7rem;
+  padding: 0.8rem 0.85rem;
+  border: 1px dashed var(--cvs-border);
+  border-radius: 12px;
+  background: var(--cvs-panel-2);
+}
+
+.cvs-bulk-head {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--cvs-text-2);
+}
+
+.cvs-bulk-head svg {
+  width: 14px;
+  height: 14px;
+  color: var(--cvs-accent);
+}
+
+.cvs-bulk-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 0.85rem;
+  align-items: start;
+}
+
+.cvs-bulk > .cvs-btn {
+  justify-self: start;
+}
+
+@media (max-width: 620px) {
+  .cvs-bulk-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* --------------------------- düzenleyici (3. adım) ------------------------- */
+
+/* "ATS uyumlu" güvence kutusu */
+.cvs-atsnote {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--cvs-ok-border);
+  border-radius: 12px;
+  background: var(--cvs-ok-bg);
+}
+
+.cvs-atsnote > svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 0.05rem;
+  color: var(--cvs-ok);
+}
+
+.cvs-atsnote b {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--cvs-ok);
+}
+
+.cvs-atsnote p {
+  margin: 0.15rem 0 0;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--cvs-text-2);
+}
+
+/* Görsel şablon seçiliyken "ATS etkisi" kartı */
+.cvs-impact {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--cvs-warn-border);
+  border-radius: 12px;
+  background: var(--cvs-warn-bg);
+}
+
+.cvs-impact-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.cvs-impact-head > svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 0.05rem;
+  color: var(--cvs-warn);
+}
+
+.cvs-impact b {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--cvs-warn);
+}
+
+.cvs-impact p {
+  margin: 0.15rem 0 0;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--cvs-text-2);
+}
+
+.cvs-impact > .cvs-btn {
+  justify-self: start;
+}
+
+/* Riskli kontrollerin yanındaki küçük skor uyarısı (fotoğraf, gösterge, ikon, font) */
+.cvs-hint.risk {
+  font-size: 0.68rem;
+}
+
+/* Font seçicide "Tasarım fontları" / "ATS standart fontları" alt başlıkları */
+.cvs-fontrow-label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.15rem;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cvs-dim);
+}
+
+.cvs-fontrow-label[data-ats] {
+  color: var(--cvs-ok);
+}
+
+.cvs-fontrow-label svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Önizleme çubuğundaki şablon adı + aile rozeti */
+.cvs-stage-tpl {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+/* Font seçici: 6 standart font, 3 sütun; her düğme kendi fontuyla yazılır */
+.cvs-seg.cvs-fontgrid {
+  display: grid;
+  grid-auto-flow: row;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.cvs-seg.cvs-fontgrid button {
+  font-size: 0.8rem;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 420px) {
+  .cvs-seg.cvs-fontgrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Bölüm listesindeki standart dışı başlık işareti */
+.cvs-order-warn {
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: var(--cvs-warn);
+}
+
+.cvs-order-warn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Başlık yeniden adlandırma */
+.cvs-rename {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.cvs-rename > span {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--cvs-text-2);
+}
+
+.cvs-rename-warn {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+}
+
+.cvs-chip-warn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid var(--cvs-warn-border);
+  border-radius: 999px;
+  background: var(--cvs-warn-bg);
+  color: var(--cvs-warn);
+  font-size: 0.68rem;
+  font-weight: 650;
+}
+
+.cvs-chip-warn svg {
+  width: 12px;
+  height: 12px;
+  flex: none;
+}
+
+/* -------------------------------- galeri ---------------------------------- */
+
+/* Tür / il / stil satırları: ilk satırın altına sıkıca dizilir */
+.cvs-filters-row {
+  margin-top: -0.6rem;
+}
+
+.cvs-filters-row .cvs-chipbar {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
+.cvs-chipcount {
+  display: inline-block;
+  margin-left: 0.35rem;
+  opacity: 0.7;
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* O an sonuç vermeyecek sekme soluklaşır ama tıklanabilir kalır */
+.cvs-tab[data-empty]:not([aria-pressed='true']) {
+  opacity: 0.5;
+}
+
+.cvs-famtab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.cvs-famtab svg {
+  width: 13px;
+  height: 13px;
+  flex: none;
+}
+
+.cvs-famtab[data-family='ats']:not([aria-pressed='true']) svg {
+  color: var(--cvs-ok);
+}
+
+.cvs-famtab[data-family='design']:not([aria-pressed='true']) svg {
+  color: var(--cvs-warn);
+}
+
+/* "Görsel tasarım" filtresi seçiliyken ATS uyarı satırı */
+.cvs-galnote {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  margin: -0.4rem 0 1rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--cvs-warn-border);
+  border-radius: 10px;
+  background: var(--cvs-warn-bg);
+  color: var(--cvs-text-2);
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+
+.cvs-galnote svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin-top: 0.15em;
+  color: var(--cvs-warn);
+}
+
+.cvs-tplname small.cvs-tplmeta {
+  color: var(--cvs-text-2);
+  font-weight: 600;
+}
+
+.cvs-atsbadge,
+.cvs-designbadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex: none;
+  padding: 0.08rem 0.4rem;
+  border-radius: 6px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.cvs-atsbadge {
+  border: 1px solid var(--cvs-ok-border);
+  background: var(--cvs-ok-bg);
+  color: var(--cvs-ok);
+}
+
+/* Görsel şablon: nötr rozet + küçük kehribar nokta (ATS skoru düşük olabilir) */
+.cvs-designbadge {
+  border: 1px solid var(--cvs-border);
+  background: var(--cvs-panel-2);
+  color: var(--cvs-dim);
+  cursor: help;
+}
+
+.cvs-designbadge > i {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--cvs-warn);
+  box-shadow: 0 0 0 2px var(--cvs-warn-bg);
+}
+
+/* 97 canlı küçük önizleme: ekran dışındaki kartların içeriği çizilmez.
+   Kutunun yüksekliği aspect-ratio'dan geldiği için kaydırma sırasında zıplama olmaz. */
+.cvs-thumb {
+  content-visibility: auto;
+}

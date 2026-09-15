@@ -6,6 +6,7 @@ export type UiIconName =
   | 'refresh' | 'user' | 'briefcase' | 'cap' | 'spark' | 'globe'
   | 'folder' | 'badge' | 'trophy' | 'heart' | 'users' | 'left' | 'right'
   | 'x' | 'palette' | 'layout' | 'printer' | 'shield' | 'pencil' | 'pageBreak'
+  | 'warn' | 'info' | 'target' | 'type' | 'shieldCheck'
 
 const P: Record<UiIconName, JSX.Element> = {
   check: <path d="M4.5 12.5l5 5 10-11" />,
@@ -97,6 +98,24 @@ const P: Record<UiIconName, JSX.Element> = {
       <path d="M3 12h3M9 12h2M14 12h2M19 12h2" />
     </>
   ),
+  // Uyarı üçgeni — yumuşak form uyarıları ve ATS bulguları
+  warn: <path d="M12 4.2L21 19.5H3L12 4.2zM12 10v4.2M12 17h.01" />,
+  info: (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 11v5.5M12 7.8h.01" />
+    </>
+  ),
+  // Hedef — ilandaki pozisyonla eşleşme, ATS skoru
+  target: (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <circle cx="12" cy="12" r="4.8" />
+      <path d="M12 12h.01" strokeWidth="2.6" />
+    </>
+  ),
+  type: <path d="M5 7V5h14v2M12 5v14M9 19h6" />,
+  shieldCheck: <path d="M12 3l7.5 3v5.5c0 4.3-3.1 8.1-7.5 9.5-4.4-1.4-7.5-5.2-7.5-9.5V6zM8.8 12.2l2.3 2.3 4.3-4.6" />,
 }
 
 export default function UiIcon({ name, className }: { name: UiIconName; className?: string }) {
