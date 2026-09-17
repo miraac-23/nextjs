@@ -216,10 +216,12 @@ export type CvSettings = {
   fontFamily: FontKey
   headingFont: FontKey
   lineHeight: number
-  /** Sayfa iç boşluğu (mm). Design: 0–24 · ATS: 18–25.4 (ATS_LIMITS). */
+  /** Sayfa iç boşluğu (mm). Design: DESIGN_LIMITS · ATS: ATS_LIMITS (önerilen 18–25.4). */
   margin: number
   /** Bölümler arası boşluk (mm). */
   sectionGap: number
+  /** Bölüm içindeki kayıtlar (deneyim, eğitim…) arasındaki boşluğun çarpanı; 1 = şablonun kendi aralığı. */
+  entryGap: number
   paper: 'a4' | 'letter'
   bulletStyle: BulletStyle
   /** Bölüm sırası; listede olmayan bölümler gizli sayılır. */
@@ -236,7 +238,7 @@ export type CvSettings = {
   paperTint: PaperTint
   inkTone: InkTone
   fontScale: number
-  /** Başlıkların gövdeye göre büyüklüğü (0.8–1.3). */
+  /** Başlıkların gövdeye göre büyüklüğü (DESIGN_LIMITS.headingScale). */
   headingScale: number
   /** Gövde harf aralığı (em). */
   letterSpacing: number
@@ -249,11 +251,11 @@ export type CvSettings = {
   showIcons: boolean
 
   /* ---------------- ATS ailesi ---------------- */
-  /** Gövde metni (pt) — 10–12. */
+  /** Gövde metni (pt) — önerilen 10–12. */
   bodySize: number
-  /** Bölüm başlıkları (pt) — 13–16. */
+  /** Bölüm başlıkları (pt) — önerilen 13–16. */
   headingSize: number
-  /** Ad Soyad (pt) — 18–24. */
+  /** Ad Soyad (pt) — önerilen 18–24. */
   nameSize: number
   headingStyle: HeadingStyle
   headerAlign: HeaderAlign
@@ -284,25 +286,31 @@ export const SECTION_KEYS: SectionKey[] = [
   'references',
 ]
 
-/** ATS standartlarının izin verdiği aralıklar — ATS ailesinin kaydırıcıları ve normalize bu sınırları kullanır. */
+/**
+ * ATS ailesinin kaydırıcı aralıkları. `min`/`max` kullanıcıya tanınan serbest (geniş) aralıktır;
+ * `rec` ATS standartlarının önerdiği aralıktır — dışına çıkılabilir, ancak editör uyarır ve
+ * ATS skoru (lib/ats/analyze.ts) gerçek değere göre düşer.
+ */
 export const ATS_LIMITS = {
-  bodySize: { min: 10, max: 12, step: 0.5 },
-  headingSize: { min: 13, max: 16, step: 0.5 },
-  nameSize: { min: 18, max: 24, step: 1 },
-  lineHeight: { min: 1.15, max: 1.5, step: 0.01 },
-  margin: { min: 18, max: 25.4, step: 0.2 },
-  sectionGap: { min: 3, max: 8, step: 0.5 },
+  bodySize: { min: 6, max: 16, step: 0.25, rec: [10, 12] },
+  headingSize: { min: 7, max: 26, step: 0.25, rec: [13, 16] },
+  nameSize: { min: 10, max: 40, step: 0.5, rec: [18, 24] },
+  lineHeight: { min: 0.9, max: 2.2, step: 0.01, rec: [1.15, 1.5] },
+  margin: { min: 0, max: 40, step: 0.1, rec: [18, 25.4] },
+  sectionGap: { min: 0, max: 20, step: 0.1, rec: [3, 8] },
+  entryGap: { min: 0, max: 3, step: 0.05, rec: [0.5, 1.6] },
 } as const
 
-/** Design ailesinin kaydırıcı aralıkları (özgün editörle aynı). */
+/** Design ailesinin kaydırıcı aralıkları — en sıkıdan en ferah düzene kadar serbest. */
 export const DESIGN_LIMITS = {
-  fontScale: { min: 0.85, max: 1.15, step: 0.01 },
-  headingScale: { min: 0.8, max: 1.3, step: 0.01 },
-  lineHeight: { min: 1.25, max: 1.7, step: 0.01 },
-  letterSpacing: { min: -0.02, max: 0.06, step: 0.005 },
-  margin: { min: 0, max: 24, step: 1 },
-  sectionGap: { min: 3, max: 11, step: 0.5 },
-  photoSize: { min: 16, max: 38, step: 1 },
+  fontScale: { min: 0.5, max: 1.6, step: 0.01 },
+  headingScale: { min: 0.5, max: 2, step: 0.01 },
+  lineHeight: { min: 0.9, max: 2.2, step: 0.01 },
+  letterSpacing: { min: -0.08, max: 0.2, step: 0.005 },
+  margin: { min: 0, max: 40, step: 0.1 },
+  sectionGap: { min: 0, max: 20, step: 0.1 },
+  entryGap: { min: 0, max: 3, step: 0.05 },
+  photoSize: { min: 8, max: 60, step: 1 },
 } as const
 
 /** Design ailesinde gövde yazısının punto tabanı (CvDesignDocument: `--cv-fs = BASE_PT × fontScale`). */

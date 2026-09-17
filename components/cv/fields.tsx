@@ -128,6 +128,18 @@ export function Switch({ label, checked, onChange }: { label: string; checked: b
   )
 }
 
+/** Adımın ondalık basamak sayısı — kayan nokta artıklarını (0.30000000004) temizlemek için. */
+function stepDecimals(step: number): number {
+  const txt = String(step)
+  const dot = txt.indexOf('.')
+  return dot < 0 ? 0 : txt.length - dot - 1
+}
+
+/**
+ * Sayısal ayar: kaydırıcı + ince ayar için −/+ düğmeleri + elle yazılabilen değer kutusu.
+ * Yazılan değer Enter/odak kaybında sınırlara kırpılır ve adıma yuvarlanır.
+ * `recommended` verilirse değer bu aralığın dışına çıktığında yumuşak bir uyarı basılır.
+ */
 export function Range({
   label,
   value,
@@ -136,6 +148,8 @@ export function Range({
   step,
   onChange,
   format,
+  recommended,
+  recommendedHint,
 }: {
   label: string
   value: number
@@ -144,22 +158,88 @@ export function Range({
   step: number
   onChange: (v: number) => void
   format?: (v: number) => string
+  recommended?: readonly [number, number]
+  /** Önerilen aralık dışındayken gösterilecek metin. */
+  recommendedHint?: string
 }) {
+  const decimals = stepDecimals(step)
+  const [draft, setDraft] = useState<string | null>(null)
+
+  const commit = (raw: number) => {
+    if (!Number.isFinite(raw)) return
+    const snapped = Math.round((raw - min) / step) * step + min
+    const next = Number(Math.min(max, Math.max(min, snapped)).toFixed(decimals))
+    if (next !== value) onChange(next)
+  }
+
+  const commitDraft = () => {
+    if (draft !== null) commit(Number(draft.replace(',', '.')))
+    setDraft(null)
+  }
+
+  const outOfRec = recommended !== undefined && (value < recommended[0] - 1e-9 || value > recommended[1] + 1e-9)
+
   return (
     <div className="cvs-range">
       <div className="cvs-range-top">
         <span>{label}</span>
         <b>{format ? format(value) : value}</b>
       </div>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        aria-label={label}
-      />
+      <div className="cvs-range-row">
+        <button
+          type="button"
+          className="cvs-range-btn"
+          onClick={() => commit(value - step)}
+          disabled={value <= min}
+          aria-label={`${label} −`}
+        >
+          −
+        </button>
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={value}
+          onChange={(e) => onChange(Number(e.target.value))}
+          aria-label={label}
+        />
+        <button
+          type="button"
+          className="cvs-range-btn"
+          onClick={() => commit(value + step)}
+          disabled={value >= max}
+          aria-label={`${label} +`}
+        >
+          +
+        </button>
+        <input
+          type="number"
+          className="cvs-range-num"
+          inputMode="decimal"
+          min={min}
+          max={max}
+          step={step}
+          value={draft ?? String(Number(value.toFixed(decimals)))}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commitDraft}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              commitDraft()
+            } else if (e.key === 'Escape') {
+              setDraft(null)
+            }
+          }}
+          aria-label={`${label} (${min}–${max})`}
+        />
+      </div>
+      {outOfRec && recommendedHint && (
+        <small className="cvs-hint warn cvs-range-rec" role="status">
+          <UiIcon name="warn" />
+          <span>{recommendedHint}</span>
+        </small>
+      )}
     </div>
   )
 }

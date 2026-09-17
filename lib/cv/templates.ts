@@ -4,6 +4,7 @@
 //                                   görsel/ikon/tablo yok. Render: CvAtsDocument.
 //   templates-legacy.ts  → design · Elazığ, Malatya, Kastamonu ilçeleri (özgün 40).
 //   templates-dogu.ts    → design · Bayburt (3), Erzurum (20), Artvin (9) ilçeleri (yeni 32).
+//   templates-nevsehir.ts → design · Nevşehir ilçeleri (8, Kapadokya temalı).
 //                                   Render: CvDesignDocument (shell/head/body iskeleti +
 //                                   `.cv-doc[data-tpl]` CSS varyantları).
 //
@@ -23,9 +24,10 @@ import type {
 import { ANKARA_TEMPLATES } from './templates-ankara'
 import { LEGACY_TEMPLATES } from './templates-legacy'
 import { DOGU_TEMPLATES } from './templates-dogu'
+import { NEVSEHIR_TEMPLATES } from './templates-nevsehir'
 
 export type TplFamily = 'ats' | 'design'
-export type TplRegion = 'ankara' | 'elazig' | 'malatya' | 'kastamonu' | 'bayburt' | 'erzurum' | 'artvin'
+export type TplRegion = 'ankara' | 'elazig' | 'malatya' | 'kastamonu' | 'bayburt' | 'erzurum' | 'artvin' | 'nevsehir'
 export type TplCategory = 'corporate' | 'modern' | 'minimal' | 'executive' | 'creative' | 'technical' | 'academic'
 
 /* ------------------------------- design ailesi ------------------------------- */
@@ -105,7 +107,7 @@ export type AtsTemplate = {
 export type CvTemplate = DesignTemplate | AtsTemplate
 
 /** Galeri sırası: önce ATS uyumlu Ankara şablonları, sonra görsel şablonlar. */
-export const TEMPLATES: CvTemplate[] = [...ANKARA_TEMPLATES, ...LEGACY_TEMPLATES, ...DOGU_TEMPLATES]
+export const TEMPLATES: CvTemplate[] = [...ANKARA_TEMPLATES, ...LEGACY_TEMPLATES, ...DOGU_TEMPLATES, ...NEVSEHIR_TEMPLATES]
 
 /** Yeni kullanıcılar ATS uyumlu bir şablonla başlar. */
 export const DEFAULT_TEMPLATE_ID = 'cankaya'
@@ -131,4 +133,4 @@ export const TPL_FAMILIES: TplFamily[] = ['ats', 'design']
 export const TPL_CATEGORIES: TplCategory[] = ['corporate', 'modern', 'minimal', 'executive', 'creative', 'technical', 'academic']
 
 /** İl filtreleri — sıra, galeride görünen sıradır. */
-export const TPL_REGIONS: TplRegion[] = ['ankara', 'elazig', 'malatya', 'kastamonu', 'bayburt', 'erzurum', 'artvin']
+export const TPL_REGIONS: TplRegion[] = ['ankara', 'elazig', 'malatya', 'kastamonu', 'bayburt', 'erzurum', 'artvin', 'nevsehir']

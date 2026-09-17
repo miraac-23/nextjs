@@ -403,7 +403,7 @@
   box-shadow: 0 0 0 2px var(--cvs-warn-bg);
 }
 
-/* 97 canlı küçük önizleme: ekran dışındaki kartların içeriği çizilmez.
+/* 105 canlı küçük önizleme: ekran dışındaki kartların içeriği çizilmez.
    Kutunun yüksekliği aspect-ratio'dan geldiği için kaydırma sırasında zıplama olmaz. */
 .cvs-thumb {
   content-visibility: auto;

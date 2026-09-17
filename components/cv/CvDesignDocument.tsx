@@ -455,6 +455,7 @@ function CvDesignDocument({ data, settings, t, static: isStatic }: Props) {
           '--cv-paper': paperColor,
           '--cv-pad': `${settings.margin}mm`,
           '--cv-sec-gap': `${settings.sectionGap}mm`,
+          '--cv-item-k': settings.entryGap,
           '--cv-lh': settings.lineHeight,
           '--cv-ls': `${settings.letterSpacing}em`,
           '--cv-fs': `${(BASE_PT * settings.fontScale).toFixed(2)}pt`,

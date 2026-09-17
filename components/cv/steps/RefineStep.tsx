@@ -402,7 +402,7 @@ function DesignControls({ t, data, settings, set, onTemplate, onReset, tpl }: Co
         max={DESIGN_LIMITS.margin.max}
         step={DESIGN_LIMITS.margin.step}
         onChange={(v) => set({ margin: v })}
-        format={(v) => `${v} mm`}
+        format={(v) => `${num(v, 2)} mm`}
       />
       <Range
         label={t.editor.sectionGap}
@@ -411,7 +411,16 @@ function DesignControls({ t, data, settings, set, onTemplate, onReset, tpl }: Co
         max={DESIGN_LIMITS.sectionGap.max}
         step={DESIGN_LIMITS.sectionGap.step}
         onChange={(v) => set({ sectionGap: v })}
-        format={(v) => `${num(v)} mm`}
+        format={(v) => `${num(v, 2)} mm`}
+      />
+      <Range
+        label={t.editor.entryGap}
+        value={settings.entryGap}
+        min={DESIGN_LIMITS.entryGap.min}
+        max={DESIGN_LIMITS.entryGap.max}
+        step={DESIGN_LIMITS.entryGap.step}
+        onChange={(v) => set({ entryGap: v })}
+        format={(v) => `${Math.round(v * 100)}%`}
       />
 
       <PaperField t={t} settings={settings} set={set} />
@@ -445,7 +454,7 @@ function DesignControls({ t, data, settings, set, onTemplate, onReset, tpl }: Co
         max={DESIGN_LIMITS.photoSize.max}
         step={DESIGN_LIMITS.photoSize.step}
         onChange={(v) => set({ photoSize: v })}
-        format={(v) => `${v} mm`}
+        format={(v) => `${num(v, 2)} mm`}
       />
 
       {/* ---------------------------- ayrıntılar -------------------------- */}
@@ -579,8 +588,10 @@ function AtsControls({ t, settings, set, onReset, tpl }: ControlProps & { tpl: A
         min={ATS_LIMITS.bodySize.min}
         max={ATS_LIMITS.bodySize.max}
         step={ATS_LIMITS.bodySize.step}
+        recommended={ATS_LIMITS.bodySize.rec}
+        recommendedHint={t.editor.outOfRec(num(ATS_LIMITS.bodySize.rec[0], 2) + ' pt', num(ATS_LIMITS.bodySize.rec[1], 2) + ' pt')}
         onChange={(v) => set({ bodySize: v })}
-        format={(v) => `${num(v)} pt`}
+        format={(v) => `${num(v, 2)} pt`}
       />
       <Range
         label={t.editor.headingSize}
@@ -588,8 +599,10 @@ function AtsControls({ t, settings, set, onReset, tpl }: ControlProps & { tpl: A
         min={ATS_LIMITS.headingSize.min}
         max={ATS_LIMITS.headingSize.max}
         step={ATS_LIMITS.headingSize.step}
+        recommended={ATS_LIMITS.headingSize.rec}
+        recommendedHint={t.editor.outOfRec(num(ATS_LIMITS.headingSize.rec[0], 2) + ' pt', num(ATS_LIMITS.headingSize.rec[1], 2) + ' pt')}
         onChange={(v) => set({ headingSize: v })}
-        format={(v) => `${num(v)} pt`}
+        format={(v) => `${num(v, 2)} pt`}
       />
       <Range
         label={t.editor.nameSize}
@@ -597,8 +610,10 @@ function AtsControls({ t, settings, set, onReset, tpl }: ControlProps & { tpl: A
         min={ATS_LIMITS.nameSize.min}
         max={ATS_LIMITS.nameSize.max}
         step={ATS_LIMITS.nameSize.step}
+        recommended={ATS_LIMITS.nameSize.rec}
+        recommendedHint={t.editor.outOfRec(num(ATS_LIMITS.nameSize.rec[0], 2) + ' pt', num(ATS_LIMITS.nameSize.rec[1], 2) + ' pt')}
         onChange={(v) => set({ nameSize: v })}
-        format={(v) => `${num(v)} pt`}
+        format={(v) => `${num(v, 2)} pt`}
       />
       <Range
         label={t.editor.lineHeight}
@@ -606,6 +621,8 @@ function AtsControls({ t, settings, set, onReset, tpl }: ControlProps & { tpl: A
         min={ATS_LIMITS.lineHeight.min}
         max={ATS_LIMITS.lineHeight.max}
         step={ATS_LIMITS.lineHeight.step}
+        recommended={ATS_LIMITS.lineHeight.rec}
+        recommendedHint={t.editor.outOfRec(num(ATS_LIMITS.lineHeight.rec[0], 2) + '', num(ATS_LIMITS.lineHeight.rec[1], 2) + '')}
         onChange={(v) => set({ lineHeight: v })}
         format={(v) => v.toFixed(2)}
       />
@@ -619,8 +636,10 @@ function AtsControls({ t, settings, set, onReset, tpl }: ControlProps & { tpl: A
         min={ATS_LIMITS.margin.min}
         max={ATS_LIMITS.margin.max}
         step={ATS_LIMITS.margin.step}
+        recommended={ATS_LIMITS.margin.rec}
+        recommendedHint={t.editor.outOfRec(num(ATS_LIMITS.margin.rec[0], 2) + ' mm', num(ATS_LIMITS.margin.rec[1], 2) + ' mm')}
         onChange={(v) => set({ margin: v })}
-        format={(v) => `${num(v)} mm · ${(v / 25.4).toFixed(2)} in`}
+        format={(v) => `${num(v, 2)} mm · ${(v / 25.4).toFixed(2)} in`}
       />
       <Range
         label={t.editor.sectionGap}
@@ -628,8 +647,19 @@ function AtsControls({ t, settings, set, onReset, tpl }: ControlProps & { tpl: A
         min={ATS_LIMITS.sectionGap.min}
         max={ATS_LIMITS.sectionGap.max}
         step={ATS_LIMITS.sectionGap.step}
+        recommended={ATS_LIMITS.sectionGap.rec}
+        recommendedHint={t.editor.outOfRec(num(ATS_LIMITS.sectionGap.rec[0], 2) + ' mm', num(ATS_LIMITS.sectionGap.rec[1], 2) + ' mm')}
         onChange={(v) => set({ sectionGap: v })}
-        format={(v) => `${num(v)} mm`}
+        format={(v) => `${num(v, 2)} mm`}
+      />
+      <Range
+        label={t.editor.entryGap}
+        value={settings.entryGap}
+        min={ATS_LIMITS.entryGap.min}
+        max={ATS_LIMITS.entryGap.max}
+        step={ATS_LIMITS.entryGap.step}
+        onChange={(v) => set({ entryGap: v })}
+        format={(v) => `${Math.round(v * 100)}%`}
       />
 
       <PaperField t={t} settings={settings} set={set} />

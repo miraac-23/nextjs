@@ -1,0 +1,423 @@
+/* ==========================================================================
+   ŞABLON VARYANTLARI — NEVŞEHİR (8)
+   Nevşehir ilçeleri; sıra lib/cv/templates-nevsehir.ts ile aynıdır.
+   Kapadokya'dan ilham alan motifler yalnızca CvDesignDocument DOM'u üzerinde CSS
+   ile çizilir (degrade, clip-path, sözde öğe): dış görsel/font yoktur.
+   Renkler `--cv-accent/--cv-ink/--cv-rail/--cv-paper` üzerinden türetilir ki
+   kullanıcının renk seçimleri desenlere de yansısın.
+   ========================================================================== */
+
+/* 81 — Nevşehir · şafak göğü bandı, süzülen sıcak hava balonları */
+.cv-doc.cv-design[data-tpl='nevsehir'] .cv-head {
+  position: relative;
+  padding-top: 17mm;
+  padding-bottom: 11mm;
+  background:
+    /* ufuk: vadi tepeleri */
+    radial-gradient(ellipse 50% 100% at 50% 100%, color-mix(in srgb, var(--cv-accent) 55%, var(--cv-ink)) 0 97%, transparent 100%) left bottom / 38mm 3.2mm repeat-x,
+    radial-gradient(ellipse 50% 100% at 50% 100%, color-mix(in srgb, var(--cv-accent) 30%, var(--cv-ink)) 0 97%, transparent 100%) 17mm bottom / 52mm 5mm repeat-x,
+    linear-gradient(180deg, var(--cv-ink) 0%, color-mix(in srgb, var(--cv-ink) 72%, var(--cv-accent)) 100%);
+}
+.cv-doc.cv-design[data-tpl='nevsehir'] .cv-head > * { position: relative; z-index: 1; }
+.cv-doc.cv-design[data-tpl='nevsehir'] .cv-head::before,
+.cv-doc.cv-design[data-tpl='nevsehir'] .cv-head::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  width: 8mm;
+  height: 11.5mm;
+  background:
+    linear-gradient(color-mix(in srgb, var(--cv-accent) 35%, #3b2410) 0 0) 50% 100% / 2.2mm 1.7mm no-repeat,
+    linear-gradient(rgba(255, 255, 255, 0.5) 0 0) 36% 86% / 0.2mm 2.4mm no-repeat,
+    linear-gradient(rgba(255, 255, 255, 0.5) 0 0) 64% 86% / 0.2mm 2.4mm no-repeat,
+    radial-gradient(closest-side at 50% 42%, color-mix(in srgb, var(--cv-accent) 45%, #fff) 0, var(--cv-accent) 62%, color-mix(in srgb, var(--cv-accent) 70%, #000) 96%, transparent 100%) 50% 0 / 8mm 9mm no-repeat;
+}
+.cv-doc.cv-design[data-tpl='nevsehir'] .cv-head::before { top: 3mm; left: 44%; }
+.cv-doc.cv-design[data-tpl='nevsehir'] .cv-head::after { top: 4.5mm; right: 18%; transform: scale(0.62); opacity: 0.85; }
+.cv-doc.cv-design[data-tpl='nevsehir'] .cv-name { letter-spacing: -0.02em; }
+.cv-doc.cv-design[data-tpl='nevsehir'] .cv-photo { border: 0.8mm solid color-mix(in srgb, var(--cv-accent) 60%, #fff); }
+.cv-doc.cv-design[data-tpl='nevsehir'] .cv-h2 { color: var(--cv-ink); align-items: flex-end; }
+.cv-doc.cv-design[data-tpl='nevsehir'][data-tone='dark'] .cv-h2 { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='nevsehir'] .cv-h2::before {
+  content: '';
+  flex: none;
+  width: 2.8mm;
+  height: 3.8mm;
+  background:
+    linear-gradient(color-mix(in srgb, var(--cv-accent) 40%, #3b2410) 0 0) 50% 100% / 1mm 0.8mm no-repeat,
+    radial-gradient(closest-side, var(--cv-accent) 0 94%, transparent 100%) 50% 0 / 2.8mm 3mm no-repeat;
+}
+.cv-doc.cv-design[data-tpl='nevsehir'] .cv-h2::after {
+  content: '';
+  flex: 1;
+  height: 0.35mm;
+  margin-bottom: 0.9mm;
+  background: repeating-linear-gradient(90deg, color-mix(in srgb, var(--cv-accent) 55%, transparent) 0 1.1mm, transparent 1.1mm 2.3mm);
+}
+.cv-doc.cv-design[data-tpl='nevsehir'] .cv-item-date { color: var(--cv-accent); }
+
+/* 82 — Acıgöl · obsidyen: yontu yüzeyli koyu ray, krater halkalı portre, cam kıymığı işaretler */
+.cv-doc.cv-design[data-tpl='acigol'] {
+  --cv-aside-w: 64mm;
+  background-image:
+    linear-gradient(118deg, transparent 0 28%, rgba(255, 255, 255, 0.06) 28% 28.8%, transparent 28.8% 57%, rgba(255, 255, 255, 0.05) 57% 57.5%, transparent 57.5%),
+    linear-gradient(64deg, transparent 0 41%, rgba(255, 255, 255, 0.07) 41% 41.7%, transparent 41.7% 74%, rgba(255, 255, 255, 0.04) 74% 74.6%, transparent 74.6%),
+    conic-gradient(from 210deg at 32% 16%, rgba(255, 255, 255, 0.08), transparent 22%, color-mix(in srgb, var(--cv-accent) 22%, transparent) 38%, transparent 58%, rgba(255, 255, 255, 0.05) 80%, transparent),
+    linear-gradient(to right, var(--cv-rail) 0 var(--cv-aside-w), var(--cv-paper) var(--cv-aside-w));
+  background-size: var(--cv-aside-w) 100%, var(--cv-aside-w) 100%, var(--cv-aside-w) 100%, 100% 100%;
+  background-position: left top;
+  background-repeat: no-repeat;
+}
+.cv-doc.cv-design[data-tpl='acigol'] .cv-aside-id { text-align: center; }
+.cv-doc.cv-design[data-tpl='acigol'] .cv-aside-id .cv-photo {
+  margin-top: 3mm;
+  margin-bottom: 7mm;
+  box-shadow:
+    0 0 0 1mm var(--cv-rail),
+    0 0 0 1.35mm var(--cv-rail-accent),
+    0 0 0 2.9mm var(--cv-rail),
+    0 0 0 3.15mm rgba(255, 255, 255, 0.22);
+}
+.cv-doc.cv-design[data-tpl='acigol'] .cv-aside .cv-name { --cv-name-fs: 1.55em; letter-spacing: 0.01em; }
+.cv-doc.cv-design[data-tpl='acigol'] .cv-aside .cv-role { text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.78em; }
+.cv-doc.cv-design[data-tpl='acigol'] .cv-h2::before {
+  content: '';
+  flex: none;
+  width: 3mm;
+  height: 3.8mm;
+  clip-path: polygon(38% 0, 100% 30%, 78% 100%, 0 72%);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--cv-accent) 55%, #fff), var(--cv-accent) 45%, color-mix(in srgb, var(--cv-ink) 80%, var(--cv-accent)));
+}
+.cv-doc.cv-design[data-tpl='acigol'] .cv-aside .cv-h2::before { background: linear-gradient(135deg, #fff, var(--cv-rail-accent)); }
+.cv-doc.cv-design[data-tpl='acigol'] .cv-col-main .cv-h2 { color: var(--cv-ink); }
+.cv-doc.cv-design[data-tpl='acigol'][data-tone='dark'] .cv-col-main .cv-h2 { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='acigol'] .cv-col-main .cv-h2::after {
+  content: '';
+  flex: 1;
+  height: 0.3mm;
+  background: linear-gradient(90deg, var(--cv-ink), color-mix(in srgb, var(--cv-accent) 40%, transparent) 60%, transparent);
+}
+.cv-doc.cv-design[data-tpl='acigol'][data-tone='dark'] .cv-col-main .cv-h2::after { background: linear-gradient(90deg, var(--cv-text), transparent); }
+.cv-doc.cv-design[data-tpl='acigol'] .cv-item { padding-left: 3mm; border-left: 0.35mm solid var(--cv-line); }
+
+/* 83 — Avanos · çömlek: kil tonlu sağ ray, çark halkaları, Kızılırmak dalgalı başlıklar */
+.cv-doc.cv-design[data-tpl='avanos'] {
+  --cv-aside-w: 62mm;
+  background-image:
+    /* ray kenarında akan ırmak */
+    radial-gradient(circle at 100% 50%, transparent 0 1.2mm, color-mix(in srgb, var(--cv-accent) 55%, transparent) 1.25mm 1.55mm, transparent 1.6mm),
+    radial-gradient(circle at 0 50%, transparent 0 1.2mm, color-mix(in srgb, var(--cv-accent) 55%, transparent) 1.25mm 1.55mm, transparent 1.6mm),
+    /* çömlek çarkı */
+    repeating-radial-gradient(circle at 50% 100%, transparent 0 3.2mm, color-mix(in srgb, var(--cv-accent) 16%, transparent) 3.2mm 3.55mm),
+    linear-gradient(to left, var(--cv-rail) 0 var(--cv-aside-w), var(--cv-paper) var(--cv-aside-w));
+  background-size: 1.6mm 6mm, 1.6mm 6mm, var(--cv-aside-w) 58mm, 100% 100%;
+  background-position:
+    calc(100% - var(--cv-aside-w) + 1.6mm) 0,
+    calc(100% - var(--cv-aside-w) + 1.6mm) 3mm,
+    right bottom,
+    left top;
+  background-repeat: repeat-y, repeat-y, no-repeat, no-repeat;
+}
+.cv-doc.cv-design[data-tpl='avanos'] .cv-aside { border-top: 3.2mm solid var(--cv-accent); }
+.cv-doc.cv-design[data-tpl='avanos'] .cv-aside-id { text-align: center; }
+.cv-doc.cv-design[data-tpl='avanos'] .cv-aside-id .cv-photo {
+  border: 0.8mm solid var(--cv-accent);
+  box-shadow: 0 0 0 1.3mm var(--cv-rail), 0 0 0 1.6mm color-mix(in srgb, var(--cv-accent) 40%, transparent);
+}
+.cv-doc.cv-design[data-tpl='avanos'] .cv-aside .cv-name { --cv-name-fs: 1.65em; font-weight: 650; }
+.cv-doc.cv-design[data-tpl='avanos'] .cv-aside .cv-role { font-style: italic; }
+.cv-doc.cv-design[data-tpl='avanos'] .cv-h2 {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.1mm;
+  --cv-h2-fs: 1.12em;
+  text-transform: none;
+  letter-spacing: 0.01em;
+  font-weight: 650;
+}
+.cv-doc.cv-design[data-tpl='avanos'] .cv-col-main .cv-h2 { color: var(--cv-ink); }
+.cv-doc.cv-design[data-tpl='avanos'][data-tone='dark'] .cv-col-main .cv-h2 { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='avanos'] .cv-h2::after {
+  content: '';
+  width: 15mm;
+  height: 1.5mm;
+  background:
+    radial-gradient(circle at 50% 0, transparent 0 0.85mm, var(--cv-accent) 0.9mm 1.2mm, transparent 1.25mm) 0 0 / 3mm 1.5mm repeat-x,
+    radial-gradient(circle at 50% 100%, transparent 0 0.85mm, var(--cv-accent) 0.9mm 1.2mm, transparent 1.25mm) 1.5mm 0 / 3mm 1.5mm repeat-x;
+}
+.cv-doc.cv-design[data-tpl='avanos'] .cv-item-date { font-style: italic; color: var(--cv-accent); }
+.cv-doc.cv-design[data-tpl='avanos'] .cv-item-sub { color: color-mix(in srgb, var(--cv-accent) 75%, var(--cv-text)); }
+
+/* 84 — Derinkuyu · yeraltı şehri: kat numaralı derinlik cetveli, sürgü taşı işaretleri */
+.cv-doc.cv-design[data-tpl='derinkuyu'] .cv-head {
+  border-bottom: 0;
+  padding-bottom: 7mm;
+  background:
+    linear-gradient(var(--cv-accent) 0 0) left bottom 2.4mm / 100% 0.5mm no-repeat,
+    repeating-linear-gradient(-45deg, color-mix(in srgb, var(--cv-ink) 30%, transparent) 0 0.3mm, transparent 0.3mm 1.6mm) left bottom / 100% 2.4mm no-repeat;
+}
+.cv-doc.cv-design[data-tpl='derinkuyu'] .cv-name { text-transform: uppercase; letter-spacing: 0.03em; --cv-name-fs: 1.85em; color: var(--cv-ink); }
+.cv-doc.cv-design[data-tpl='derinkuyu'][data-tone='dark'] :is(.cv-name, .cv-h2) { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='derinkuyu'] .cv-photo { outline: 0.35mm solid var(--cv-ink); outline-offset: 0.8mm; }
+.cv-doc.cv-design[data-tpl='derinkuyu'] .cv-col-main {
+  counter-reset: dk-kat;
+  padding-left: 11mm;
+  background:
+    linear-gradient(color-mix(in srgb, var(--cv-ink) 45%, transparent) 0 0) 3.6mm 0 / 0.35mm 100% no-repeat,
+    repeating-linear-gradient(180deg, color-mix(in srgb, var(--cv-ink) 35%, transparent) 0 0.25mm, transparent 0.25mm 5mm) 2.6mm 0 / 1mm 100% no-repeat,
+    repeating-linear-gradient(180deg, color-mix(in srgb, var(--cv-ink) 60%, transparent) 0 0.35mm, transparent 0.35mm 25mm) 1.4mm 0 / 2.2mm 100% no-repeat;
+}
+.cv-doc.cv-design[data-tpl='derinkuyu'] .cv-col-main .cv-h2 { position: relative; color: var(--cv-ink); letter-spacing: 0.08em; }
+.cv-doc.cv-design[data-tpl='derinkuyu'] .cv-col-main .cv-h2::before {
+  counter-increment: dk-kat;
+  content: '-' counter(dk-kat);
+  position: absolute;
+  left: -11mm;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 7.2mm;
+  padding: 0.3mm 0;
+  border-radius: 0.8mm;
+  background: var(--cv-accent);
+  color: #fff;
+  font-size: 0.8em;
+  letter-spacing: 0;
+  text-align: center;
+}
+.cv-doc.cv-design[data-tpl='derinkuyu'] .cv-h2::after {
+  content: '';
+  flex: 1;
+  height: 2.6mm;
+  background:
+    radial-gradient(circle, var(--cv-paper) 0 0.45mm, var(--cv-accent) 0.5mm 1.25mm, transparent 1.3mm) right center / 2.6mm 2.6mm no-repeat,
+    linear-gradient(color-mix(in srgb, var(--cv-ink) 35%, transparent) 0 0) left center / calc(100% - 3.2mm) 0.3mm no-repeat;
+}
+.cv-doc.cv-design[data-tpl='derinkuyu'] .cv-item-date { font-weight: 700; color: var(--cv-accent); }
+.cv-doc.cv-design[data-tpl='derinkuyu'] .cv-meter { border-radius: 0; height: 1.5mm; }
+.cv-doc.cv-design[data-tpl='derinkuyu'] .cv-meter-fill { border-radius: 0; }
+
+/* 85 — Gülşehir · Açıksaray: kemerli künye, kemer pencereli şerit, kemer tepeli yan kart */
+.cv-doc.cv-design[data-tpl='gulsehir'] .cv-head {
+  position: relative;
+  padding: 7mm 0 9mm;
+  margin-bottom: 6mm;
+  background:
+    radial-gradient(ellipse 1.7mm 2.5mm at 50% 100%, var(--cv-paper) 0 96%, transparent 100%) left bottom / 5mm 3.2mm repeat-x,
+    linear-gradient(color-mix(in srgb, var(--cv-accent) 32%, var(--cv-paper)) 0 0) left bottom / 100% 3.2mm no-repeat;
+}
+.cv-doc.cv-design[data-tpl='gulsehir'] .cv-head > * { position: relative; z-index: 1; }
+.cv-doc.cv-design[data-tpl='gulsehir'] .cv-head::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 3.2mm;
+  width: min(128mm, 90%);
+  transform: translateX(-50%);
+  border: 0.45mm solid color-mix(in srgb, var(--cv-accent) 45%, transparent);
+  border-bottom: 0;
+  border-radius: 50% 50% 0 0 / 34mm 34mm 0 0;
+  background: color-mix(in srgb, var(--cv-accent) 5%, var(--cv-paper));
+}
+.cv-doc.cv-design[data-tpl='gulsehir'] .cv-name { color: var(--cv-ink); }
+.cv-doc.cv-design[data-tpl='gulsehir'][data-tone='dark'] :is(.cv-name, .cv-h2) { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='gulsehir'] .cv-photo { border: 0.9mm solid var(--cv-paper); outline: 0.35mm solid var(--cv-accent); }
+.cv-doc.cv-design[data-tpl='gulsehir'] .cv-h2 { color: var(--cv-ink); align-items: flex-end; }
+.cv-doc.cv-design[data-tpl='gulsehir'] .cv-h2::before {
+  content: '';
+  flex: none;
+  width: 3mm;
+  height: 4mm;
+  border-radius: 1.5mm 1.5mm 0 0;
+  background:
+    radial-gradient(ellipse 0.55mm 0.9mm at 50% 100%, var(--cv-paper) 0 95%, transparent 100%) 50% 100% / 1.4mm 1.5mm no-repeat,
+    var(--cv-accent);
+}
+.cv-doc.cv-design[data-tpl='gulsehir'] .cv-col-main .cv-h2::after {
+  content: '';
+  flex: 1;
+  height: 0.3mm;
+  margin-bottom: 0.3mm;
+  background: color-mix(in srgb, var(--cv-accent) 30%, transparent);
+}
+.cv-doc.cv-design[data-tpl='gulsehir'] .cv-col-side {
+  padding: 9mm 4mm 4mm;
+  border: 0.3mm solid color-mix(in srgb, var(--cv-accent) 28%, transparent);
+  border-radius: 50% 50% 1.5mm 1.5mm / 14mm 14mm 1.5mm 1.5mm;
+  background: color-mix(in srgb, var(--cv-accent) 5%, var(--cv-paper));
+}
+
+/* 86 — Hacıbektaş · çift çizgili sayfa çerçevesi, on iki dilimli rozet, simetrik başlıklar */
+.cv-doc.cv-design[data-tpl='hacibektas'] {
+  --hb-o: calc(var(--cv-pad) * 0.36);
+  --hb-i: calc(var(--cv-pad) * 0.36 + 1.6mm);
+  --hb-ic: color-mix(in srgb, var(--cv-accent) 55%, transparent);
+  background-image:
+    linear-gradient(var(--cv-accent) 0 0), linear-gradient(var(--cv-accent) 0 0),
+    linear-gradient(var(--cv-accent) 0 0), linear-gradient(var(--cv-accent) 0 0),
+    linear-gradient(var(--hb-ic) 0 0), linear-gradient(var(--hb-ic) 0 0),
+    linear-gradient(var(--hb-ic) 0 0), linear-gradient(var(--hb-ic) 0 0);
+  background-size:
+    calc(100% - var(--hb-o) * 2) 0.6mm, calc(100% - var(--hb-o) * 2) 0.6mm,
+    0.6mm calc(100% - var(--hb-o) * 2), 0.6mm calc(100% - var(--hb-o) * 2),
+    calc(100% - var(--hb-i) * 2) 0.25mm, calc(100% - var(--hb-i) * 2) 0.25mm,
+    0.25mm calc(100% - var(--hb-i) * 2), 0.25mm calc(100% - var(--hb-i) * 2);
+  background-position:
+    var(--hb-o) var(--hb-o), var(--hb-o) calc(100% - var(--hb-o)),
+    var(--hb-o) var(--hb-o), calc(100% - var(--hb-o)) var(--hb-o),
+    var(--hb-i) var(--hb-i), var(--hb-i) calc(100% - var(--hb-i)),
+    var(--hb-i) var(--hb-i), calc(100% - var(--hb-i)) var(--hb-i);
+  background-repeat: no-repeat;
+  --hb-rosette:
+    radial-gradient(circle, var(--cv-paper) 0 22%, var(--cv-accent) 23% 34%, transparent 35%),
+    radial-gradient(circle, transparent 0 62%, var(--cv-paper) 63%),
+    repeating-conic-gradient(var(--cv-accent) 0 15deg, transparent 15deg 30deg);
+}
+.cv-doc.cv-design[data-tpl='hacibektas'] .cv-head {
+  padding-bottom: 4mm;
+  border-bottom: 1.1mm double color-mix(in srgb, var(--cv-accent) 65%, transparent);
+}
+.cv-doc.cv-design[data-tpl='hacibektas'] .cv-head::before {
+  content: '';
+  display: block;
+  width: 7mm;
+  height: 7mm;
+  margin: 0 auto 3mm;
+  border-radius: 50%;
+  background: var(--hb-rosette);
+}
+.cv-doc.cv-design[data-tpl='hacibektas'] .cv-name { font-variant: small-caps; letter-spacing: 0.05em; font-weight: 600; --cv-name-fs: 2.2em; color: var(--cv-ink); }
+.cv-doc.cv-design[data-tpl='hacibektas'] .cv-role { font-style: italic; font-weight: 500; }
+.cv-doc.cv-design[data-tpl='hacibektas'][data-tone='dark'] :is(.cv-name, .cv-h2) { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='hacibektas'] .cv-h2 {
+  justify-content: center;
+  gap: 3mm;
+  color: var(--cv-ink);
+  font-variant: small-caps;
+  text-transform: none;
+  letter-spacing: 0.1em;
+  --cv-h2-fs: 1.1em;
+  font-weight: 650;
+}
+.cv-doc.cv-design[data-tpl='hacibektas'] .cv-h2::before,
+.cv-doc.cv-design[data-tpl='hacibektas'] .cv-h2::after {
+  content: '';
+  flex: 1;
+  height: 0.25mm;
+  background: color-mix(in srgb, var(--cv-accent) 45%, transparent);
+}
+.cv-doc.cv-design[data-tpl='hacibektas'] .cv-h2 span { display: inline-flex; align-items: center; gap: 2mm; }
+.cv-doc.cv-design[data-tpl='hacibektas'] .cv-h2 span::before,
+.cv-doc.cv-design[data-tpl='hacibektas'] .cv-h2 span::after {
+  content: '';
+  width: 2.6mm;
+  height: 2.6mm;
+  border-radius: 50%;
+  background: var(--hb-rosette);
+}
+.cv-doc.cv-design[data-tpl='hacibektas'] .cv-item-sub { font-style: italic; }
+
+/* 87 — Kozaklı · termal: yükselen buhar kabarcıkları, yumuşak hap başlıklar, havuz yan sütun */
+.cv-doc.cv-design[data-tpl='kozakli'] .cv-head { position: relative; padding-bottom: 5mm; }
+.cv-doc.cv-design[data-tpl='kozakli'] .cv-head > * { position: relative; z-index: 1; }
+.cv-doc.cv-design[data-tpl='kozakli'] .cv-head::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  right: calc(var(--cv-pad) * -0.4);
+  top: calc(var(--cv-pad) * -0.6);
+  width: 48mm;
+  height: 34mm;
+  background:
+    radial-gradient(circle at 82% 22%, color-mix(in srgb, var(--cv-accent) 22%, transparent) 0 5.5mm, transparent 5.6mm),
+    radial-gradient(circle at 58% 12%, transparent 0 2.2mm, color-mix(in srgb, var(--cv-accent) 40%, transparent) 2.25mm 2.55mm, transparent 2.6mm),
+    radial-gradient(circle at 66% 48%, color-mix(in srgb, var(--cv-accent) 14%, transparent) 0 3.4mm, transparent 3.5mm),
+    radial-gradient(circle at 92% 62%, transparent 0 1.5mm, color-mix(in srgb, var(--cv-accent) 45%, transparent) 1.55mm 1.8mm, transparent 1.85mm),
+    radial-gradient(circle at 40% 30%, color-mix(in srgb, var(--cv-accent) 30%, transparent) 0 1.2mm, transparent 1.3mm),
+    radial-gradient(circle at 76% 80%, color-mix(in srgb, var(--cv-accent) 20%, transparent) 0 1.8mm, transparent 1.9mm),
+    radial-gradient(circle at 30% 8%, transparent 0 1mm, color-mix(in srgb, var(--cv-accent) 35%, transparent) 1.05mm 1.3mm, transparent 1.35mm);
+}
+.cv-doc.cv-design[data-tpl='kozakli'] .cv-name { color: var(--cv-ink); font-weight: 700; letter-spacing: -0.02em; }
+.cv-doc.cv-design[data-tpl='kozakli'][data-tone='dark'] :is(.cv-name, .cv-h2) { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='kozakli'] .cv-photo { box-shadow: 0 0 0 1.1mm color-mix(in srgb, var(--cv-accent) 18%, var(--cv-paper)); }
+.cv-doc.cv-design[data-tpl='kozakli'] .cv-h2 { color: var(--cv-ink); letter-spacing: 0.1em; }
+.cv-doc.cv-design[data-tpl='kozakli'] .cv-h2 span {
+  padding: 0.7mm 3mm;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--cv-accent) 13%, var(--cv-paper));
+}
+.cv-doc.cv-design[data-tpl='kozakli'] .cv-h2::after {
+  content: '';
+  flex: 1;
+  height: 0.3mm;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--cv-accent) 45%, transparent), transparent);
+}
+.cv-doc.cv-design[data-tpl='kozakli'] .cv-col-side {
+  padding: 5mm 4mm;
+  border-radius: 5mm;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--cv-accent) 10%, var(--cv-paper)), color-mix(in srgb, var(--cv-accent) 2%, var(--cv-paper)));
+}
+.cv-doc.cv-design[data-tpl='kozakli'] .cv-item-date {
+  padding: 0.2mm 2mm;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--cv-accent) 9%, transparent);
+  color: color-mix(in srgb, var(--cv-accent) 80%, var(--cv-text));
+}
+
+/* 88 — Ürgüp · peribacaları: künye altında iki katmanlı şapkalı kaya silueti */
+.cv-doc.cv-design[data-tpl='urgup'] .cv-head { position: relative; padding-bottom: 21mm; margin-bottom: 5mm; }
+.cv-doc.cv-design[data-tpl='urgup'] .cv-head > * { position: relative; z-index: 1; }
+.cv-doc.cv-design[data-tpl='urgup'] .cv-head::before,
+.cv-doc.cv-design[data-tpl='urgup'] .cv-head::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  left: calc(var(--cv-pad) * -1);
+  right: calc(var(--cv-pad) * -1);
+  bottom: 0;
+}
+/* arka sıra: açık tonlu, alçak kayalar */
+.cv-doc.cv-design[data-tpl='urgup'] .cv-head::before {
+  height: 18mm;
+  background: color-mix(in srgb, var(--cv-accent) 22%, var(--cv-paper));
+  clip-path: polygon(
+    0 100%, 0 70%, 4% 62%,
+    8% 30%, 7% 30%, 8% 18%, 12% 18%, 13% 30%, 12% 30%, 15% 64%,
+    24% 58%, 27% 40%, 26.2% 40%, 27% 30%, 30% 30%, 30.8% 40%, 30% 40%, 33% 60%,
+    46% 66%, 50% 44%, 49.2% 44%, 50% 34%, 53% 34%, 53.8% 44%, 53% 44%, 57% 66%,
+    68% 58%, 72% 26%, 71% 26%, 72% 14%, 76% 14%, 77% 26%, 76% 26%, 80% 62%,
+    90% 66%, 93% 42%, 92.4% 42%, 93% 34%, 96% 34%, 96.6% 42%, 96% 42%, 99% 64%, 100% 66%, 100% 100%);
+}
+/* ön sıra: koyu, yüksek peribacaları */
+.cv-doc.cv-design[data-tpl='urgup'] .cv-head::after {
+  height: 15mm;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--cv-accent) 80%, var(--cv-paper)), color-mix(in srgb, var(--cv-accent) 55%, var(--cv-ink)));
+  clip-path: polygon(
+    0 100%, 0 82%,
+    14% 78%, 17% 26%, 15.8% 26%, 16.6% 8%, 21.4% 8%, 22.2% 26%, 21% 26%, 24% 80%,
+    36% 84%, 38.5% 50%, 37.7% 50%, 38.3% 36%, 41.7% 36%, 42.3% 50%, 41.5% 50%, 44% 84%,
+    58% 80%, 61% 20%, 59.8% 20%, 60.6% 0, 65.4% 0, 66.2% 20%, 65% 20%, 68% 80%,
+    82% 82%, 84.5% 44%, 83.7% 44%, 84.3% 30%, 87.7% 30%, 88.3% 44%, 87.5% 44%, 90% 82%,
+    100% 80%, 100% 100%);
+}
+.cv-doc.cv-design[data-tpl='urgup'] .cv-name { color: var(--cv-ink); }
+.cv-doc.cv-design[data-tpl='urgup'][data-tone='dark'] :is(.cv-name, .cv-h2) { color: var(--cv-text); }
+.cv-doc.cv-design[data-tpl='urgup'] .cv-role { color: var(--cv-accent); text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.82em; }
+.cv-doc.cv-design[data-tpl='urgup'] .cv-photo { border: 1mm solid var(--cv-paper); outline: 0.4mm solid var(--cv-accent); }
+.cv-doc.cv-design[data-tpl='urgup'] .cv-h2 { color: var(--cv-ink); align-items: flex-end; }
+.cv-doc.cv-design[data-tpl='urgup'] .cv-h2::before {
+  content: '';
+  flex: none;
+  width: 3.2mm;
+  height: 4.2mm;
+  clip-path: polygon(18% 100%, 36% 32%, 22% 32%, 26% 0, 74% 0, 78% 32%, 64% 32%, 82% 100%);
+  background: linear-gradient(180deg, var(--cv-accent), color-mix(in srgb, var(--cv-accent) 55%, var(--cv-ink)));
+}
+.cv-doc.cv-design[data-tpl='urgup'] .cv-h2::after {
+  content: '';
+  flex: 1;
+  height: 0.3mm;
+  margin-bottom: 0.2mm;
+  background: color-mix(in srgb, var(--cv-accent) 35%, transparent);
+}
+.cv-doc.cv-design[data-tpl='urgup'] .cv-col-side { padding-left: 5mm; border-left: 0.4mm solid color-mix(in srgb, var(--cv-accent) 30%, transparent); }

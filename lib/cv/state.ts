@@ -125,6 +125,7 @@ export function settingsForTemplate(templateId: string, prev?: CvSettings, docLa
       lineHeight: tpl.lineHeight,
       margin: tpl.margin,
       sectionGap: tpl.sectionGap,
+      entryGap: 1,
       bulletStyle: tpl.bulletStyle,
       fontScale: 1,
       // ATS şablonu fotoğraf basmaz; tercih yalnızca design şablonuna dönüldüğünde anlamlıdır.
@@ -146,6 +147,7 @@ export function settingsForTemplate(templateId: string, prev?: CvSettings, docLa
     lineHeight: tpl.lineHeight,
     margin: tpl.margin,
     sectionGap: 5.5,
+    entryGap: 1,
     bulletStyle: 'dot',
     // Fotoğrafın gösterilip gösterilmeyeceği kullanıcı tercihidir; şablon yalnızca
     // varsayılan çerçeveyi belirler.
@@ -333,6 +335,7 @@ function overlayDesign(out: CvSettings, s: Obj): void {
   setClamped(out, s, 'letterSpacing', DESIGN_LIMITS.letterSpacing)
   setClamped(out, s, 'margin', DESIGN_LIMITS.margin)
   setClamped(out, s, 'sectionGap', DESIGN_LIMITS.sectionGap)
+  setClamped(out, s, 'entryGap', DESIGN_LIMITS.entryGap)
   if (typeof s.justify === 'boolean') out.justify = s.justify
   out.skillStyle = oneOf(s.skillStyle, SKILL_STYLES) ?? out.skillStyle
   out.bulletStyle = oneOf(s.bulletStyle, DESIGN_BULLETS) ?? out.bulletStyle
@@ -369,6 +372,7 @@ function overlayAtsCommon(out: CvSettings, s: Obj): void {
   setClamped(out, s, 'lineHeight', ATS_LIMITS.lineHeight)
   setClamped(out, s, 'margin', ATS_LIMITS.margin)
   setClamped(out, s, 'sectionGap', ATS_LIMITS.sectionGap)
+  setClamped(out, s, 'entryGap', ATS_LIMITS.entryGap)
   out.bulletStyle = oneOf(s.bulletStyle, ATS_BULLETS) ?? out.bulletStyle
 }
 

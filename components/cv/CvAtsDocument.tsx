@@ -55,6 +55,7 @@ function CvAtsDocument({ data, settings, static: isStatic }: Props) {
     '--cv-lh': settings.lineHeight,
     '--cv-pad': `${settings.margin}mm`,
     '--cv-gap': `${settings.sectionGap}mm`,
+    '--cv-item-k': settings.entryGap,
     width: `${paper.w}mm`,
     minHeight: `${paper.h}mm`,
   } as React.CSSProperties

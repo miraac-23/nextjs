@@ -44,7 +44,7 @@ const TR = {
   gallery: {
     title: 'Bir şablonla başla',
     desc: (n: number, ats = 25) =>
-      `${n} şablon: Ankara ilçelerinden ${ats} ATS uyumlu şablon (tek kolon, standart font ve başlıklar — en yüksek ATS skoru) ve Elazığ, Malatya, Kastamonu, Bayburt, Erzurum ve Artvin ilçelerinden ${n - ats} görsel şablon. Son adımdaki ATS skoru seçtiğin şablonun gerçek yerleşimine göre hesaplanır; şablonu istediğin an değiştirebilirsin.`,
+      `${n} şablon: Ankara ilçelerinden ${ats} ATS uyumlu şablon (tek kolon, standart font ve başlıklar — en yüksek ATS skoru) ve Elazığ, Malatya, Kastamonu, Bayburt, Erzurum, Artvin ve Nevşehir ilçelerinden ${n - ats} görsel şablon. Son adımdaki ATS skoru seçtiğin şablonun gerçek yerleşimine göre hesaplanır; şablonu istediğin an değiştirebilirsin.`,
     search: 'Şablon, il, stil ya da tür ara…',
     all: 'Tümü',
     allFamilies: 'Tüm şablonlar',
@@ -202,6 +202,8 @@ const TR = {
     groupLayout: 'Yerleşim',
     margin: 'Kenar boşluğu',
     sectionGap: 'Bölüm aralığı',
+    entryGap: 'Kayıt aralığı',
+    outOfRec: (lo: string, hi: string) => `Önerilen aralık ${lo}–${hi}; bu değer ATS skorunu düşürebilir.`,
     paper: 'Kâğıt',
     justify: 'Özeti iki yana yasla',
     headingStyle: 'Başlık biçimi',
@@ -318,6 +320,7 @@ const TR = {
     bayburt: 'Bayburt',
     erzurum: 'Erzurum',
     artvin: 'Artvin',
+    nevsehir: 'Nevşehir',
   } as Record<TplRegion, string>,
 
   f: {
@@ -403,7 +406,7 @@ const EN: typeof TR = {
   gallery: {
     title: 'Start with a template',
     desc: (n: number, ats = 25) =>
-      `${n} templates: ${ats} ATS-compliant templates named after districts of Ankara (single column, standard fonts and headings — the highest ATS score) and ${n - ats} visual templates named after districts of Elazığ, Malatya, Kastamonu, Bayburt, Erzurum and Artvin. The ATS score in the last step is calculated for the real layout of the template you choose, and you can switch templates at any time.`,
+      `${n} templates: ${ats} ATS-compliant templates named after districts of Ankara (single column, standard fonts and headings — the highest ATS score) and ${n - ats} visual templates named after districts of Elazığ, Malatya, Kastamonu, Bayburt, Erzurum, Artvin and Nevşehir. The ATS score in the last step is calculated for the real layout of the template you choose, and you can switch templates at any time.`,
     search: 'Search by template, province, style or type…',
     all: 'All',
     allFamilies: 'All templates',
@@ -561,6 +564,8 @@ const EN: typeof TR = {
     groupLayout: 'Layout',
     margin: 'Page margin',
     sectionGap: 'Section spacing',
+    entryGap: 'Entry spacing',
+    outOfRec: (lo: string, hi: string) => `Recommended range is ${lo}–${hi}; this value may lower the ATS score.`,
     paper: 'Paper',
     justify: 'Justify the summary',
     headingStyle: 'Heading style',
@@ -676,6 +681,7 @@ const EN: typeof TR = {
     bayburt: 'Bayburt',
     erzurum: 'Erzurum',
     artvin: 'Artvin',
+    nevsehir: 'Nevşehir',
   },
 
   f: {

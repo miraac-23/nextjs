@@ -569,8 +569,55 @@
   font-variant-numeric: tabular-nums;
 }
 
-.cvs-range input {
-  width: 100%;
+.cvs-range-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.cvs-range-row input[type='range'] { flex: 1; min-width: 0; }
+
+.cvs-range-btn {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  border: 1px solid var(--cvs-border-2);
+  background: var(--cvs-input);
+  color: var(--cvs-text);
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.cvs-range-btn:hover:not(:disabled) { border-color: var(--cvs-accent); }
+.cvs-range-btn:disabled { opacity: 0.4; cursor: default; }
+
+.cvs-range .cvs-range-num {
+  flex: none;
+  width: 4.1rem;
+  height: 24px;
+  padding: 0 0.35rem;
+  appearance: textfield;
+  border-radius: 7px;
+  border: 1px solid var(--cvs-border-2);
+  background: var(--cvs-input);
+  color: var(--cvs-text);
+  font: inherit;
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  cursor: text;
+}
+
+.cvs-range .cvs-range-num:focus { outline: none; border-color: var(--cvs-accent); }
+.cvs-range .cvs-range-num::-webkit-inner-spin-button,
+.cvs-range .cvs-range-num::-webkit-outer-spin-button { appearance: none; margin: 0; }
+.cvs-range .cvs-range-num { -moz-appearance: textfield; }
+
+.cvs-range-row input[type='range'] {
   height: 20px;
   appearance: none;
   background: transparent;
@@ -2153,7 +2200,7 @@
   color: var(--cv-soft);
 }
 
-.cv-design .cv-group + .cv-group { margin-top: 3mm; }
+.cv-design .cv-group + .cv-group { margin-top: calc(3mm * var(--cv-item-k, 1)); }
 
 .cv-design .cv-summary { color: var(--cv-muted); text-align: justify; hyphens: auto; }
 .cv-doc.cv-design[data-justify='off'] .cv-summary { text-align: left; hyphens: manual; }
@@ -2161,7 +2208,8 @@
 /* --------------------------------- kayıtlar ------------------------------- */
 
 .cv-design .cv-item { break-inside: avoid; page-break-inside: avoid; }
-.cv-design .cv-item + .cv-item { margin-top: 3.8mm; }
+/* --cv-item-k: editördeki "kayıt aralığı" çarpanı (1 = şablonun kendi aralığı). */
+.cv-design .cv-item + .cv-item { margin-top: calc(3.8mm * var(--cv-item-k, 1)); }
 
 .cv-design .cv-item-top {
   display: flex;
@@ -2600,7 +2648,7 @@
 /* 14 — Arapgir · yoğun, ATS dostu */
 .cv-doc.cv-design[data-tpl='arapgir'] .cv-name { --cv-name-fs: 1.95em; font-weight: 700; }
 .cv-doc.cv-design[data-tpl='arapgir'] .cv-sec + .cv-sec { margin-top: 4.2mm; }
-.cv-doc.cv-design[data-tpl='arapgir'] .cv-item + .cv-item { margin-top: 3mm; }
+.cv-doc.cv-design[data-tpl='arapgir'] .cv-item + .cv-item { margin-top: calc(3mm * var(--cv-item-k, 1)); }
 .cv-doc.cv-design[data-tpl='arapgir'] .cv-h2 {
   --cv-h2-fs: 0.86em;
   letter-spacing: 0.14em;
@@ -2973,7 +3021,7 @@
 /* 36 — İnebolu · sıkı iki sütun */
 .cv-doc.cv-design[data-tpl='inebolu'] .cv-name { --cv-name-fs: 1.8em; font-weight: 700; }
 .cv-doc.cv-design[data-tpl='inebolu'] .cv-sec + .cv-sec { margin-top: calc(var(--cv-sec-gap) * 0.72); }
-.cv-doc.cv-design[data-tpl='inebolu'] .cv-item + .cv-item { margin-top: 2.6mm; }
+.cv-doc.cv-design[data-tpl='inebolu'] .cv-item + .cv-item { margin-top: calc(2.6mm * var(--cv-item-k, 1)); }
 .cv-doc.cv-design[data-tpl='inebolu'] .cv-head { padding-bottom: 3mm; }
 .cv-doc.cv-design[data-tpl='inebolu'] .cv-h2 {
   --cv-h2-fs: 0.8em;
@@ -3011,7 +3059,7 @@
   padding-left: 4mm;
   border-left: 0.8mm solid color-mix(in srgb, var(--cv-accent) 35%, transparent);
 }
-.cv-doc.cv-design[data-tpl='pinarbasi'] .cv-item + .cv-item { margin-top: 3.2mm; }
+.cv-doc.cv-design[data-tpl='pinarbasi'] .cv-item + .cv-item { margin-top: calc(3.2mm * var(--cv-item-k, 1)); }
 .cv-doc.cv-design[data-tpl='pinarbasi'] .cv-h2 { color: var(--cv-ink); }
 .cv-doc.cv-design[data-tpl='pinarbasi'] .cv-h2 span {
   padding: 0.8mm 2.6mm;
@@ -3229,11 +3277,11 @@
 
 /* --------------------------------- kayıtlar ------------------------------- */
 
-.cv-ats .cv-entry + .cv-entry { margin-top: calc(var(--cv-gap) * 0.55); }
+.cv-ats .cv-entry + .cv-entry { margin-top: calc(var(--cv-gap) * 0.55 * var(--cv-item-k, 1)); }
 
 /* Sertifika / ödül / referans kısa kayıtlardır; aralarında daha az boşluk yeter. */
 .cv-ats .cv-sec:is([data-sec='certificates'], [data-sec='awards'], [data-sec='references']) .cv-entry + .cv-entry {
-  margin-top: calc(var(--cv-gap) * 0.3);
+  margin-top: calc(var(--cv-gap) * 0.3 * var(--cv-item-k, 1));
 }
 
 /* Başlık satırı: kalın başlık solda, tarih (datePosition 'right') aynı satırda sağda.

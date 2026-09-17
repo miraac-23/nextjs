@@ -5,7 +5,7 @@
  * Kartlardaki önizlemeler sahte görseller değil, gerçek `CvDocument`in kart
  * genişliğine göre küçültülmüş halidir; seçilen tasarım birebir odur.
  * Ölçek tek bir ResizeObserver ile ölçülüp tüm kartlara uygulanır (tüm kartlar
- * aynı genişlikte olduğu için 97 ayrı gözlemciye gerek yoktur).
+ * aynı genişlikte olduğu için 105 ayrı gözlemciye gerek yoktur).
  *
  * BOŞ KART UYARISI — gözlemci bir KARTA bağlanmamalıdır. Filtre değişince
  * "ilk kart" başka bir şablon olur ve eski düğüm DOM'dan kalkar: gözlemci o
@@ -14,13 +14,13 @@
  * Bu yüzden gözlemci hiç sökülmeyen ızgara kapsayıcısına bağlanır ve geçersiz
  * (0 / NaN) ölçümler yok sayılır — son geçerli genişlik korunur.
  *
- * PERFORMANS — 97 canlı küçük önizleme vardır. Ekran dışındaki kartların içeriği
+ * PERFORMANS — 105 canlı küçük önizleme vardır. Ekran dışındaki kartların içeriği
  * `content-visibility: auto` ile (editor.css → `.cvs-thumb`) çizilmez; kutunun
  * boyutu aspect-ratio'dan geldiği için kaydırmada zıplama olmaz ve ölçüm yine
  * kutunun kendi genişliğinden okunabilir.
  *
  * İKİ AİLE — ATS (Ankara, 25) ve görsel (Elazığ, Malatya, Kastamonu, Bayburt,
- * Erzurum, Artvin; 72). Üç filtre satırı vardır: tür, il, stil. Tür ve il
+ * Erzurum, Artvin, Nevşehir; 80). Üç filtre satırı vardır: tür, il, stil. Tür ve il
  * sekmelerindeki sayılar diğer filtrelere göre canlı hesaplanır. Görsel kartlarda
  * "ATS skoru düşük olabilir" ipuçlu nötr bir rozet durur.
  */
@@ -144,8 +144,8 @@ export default function TemplateStep({ t, lang, preview, settings, onSelect, onC
 
   /**
    * Kart ayarları şablon başına bir kez kurulur. Render sırasında üretilseydi
-   * üst bileşenin her render'ında 97 yeni nesne doğar ve `CvDocument` ağacının
-   * 97 kopyası birden yeniden render edilirdi.
+   * üst bileşenin her render'ında 105 yeni nesne doğar ve `CvDocument` ağacının
+   * 105 kopyası birden yeniden render edilirdi.
    */
   const cardSettings = useMemo(() => {
     const map: Record<string, CvSettings> = {}
