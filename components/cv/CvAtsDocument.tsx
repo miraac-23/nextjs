@@ -30,6 +30,7 @@ type Props = {
   static?: boolean
 }
 
+
 type ContactItem = CvModel['contactPrimary'][number]
 
 function CvAtsDocument({ data, settings, static: isStatic }: Props) {
