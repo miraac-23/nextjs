@@ -154,9 +154,18 @@ const TR = {
     subtitle: 'Terminal bilmene gerek yok — adımları sırayla takip et.',
     open: 'Kurulum sihirbazı',
     close: 'Kapat',
-    step1: '1. Ollama’yı kur',
-    step2: '2. Tarayıcıya izin ver',
+    step1: '1. Ollama’yı indir',
+    step2: '2. Ollama’yı başlat',
     step3: '3. Modeli indir',
+    needsDownload: 'Bu cihazda Ollama kurulu değil. Önce indir — tek tık, terminal yok.',
+    downloadHint: 'İndir, kur ve bir kez aç. Başka bir şey yapman gerekmiyor.',
+    autoDetect: (s: number) => `Ollama açıldığı an kendiliğinden devam edilecek · ${s} sn`,
+    autoDetectIdle: 'Ollama açıldığı an kendiliğinden devam edilecek.',
+    hostedNote:
+      'Bu site bir sunucuda çalışıyor, bu yüzden Ollama’yı senin cihazına buradan kuramıyoruz. Tek yapman gereken indirip açmak — açıldığı an bağlantıyı biz kuruyoruz.',
+    hostedAlt:
+      'Hiç kurulumla uğraşmak istemiyorsan “Anahtarsız” sağlayıcı zaten hazır geliyor; hiçbir şey kurman gerekmiyor.',
+    advanced: 'Terminali tercih ediyorum',
     checking: 'Ollama aranıyor…',
     found: 'Ollama çalışıyor',
     notFound: 'Ollama bulunamadı',
@@ -170,7 +179,8 @@ const TR = {
     startingService: 'Ollama başlatılıyor…',
     serviceStarted: 'Ollama başlatıldı.',
     serviceNotInstalled: 'Ollama bu makinede bulunamadı. Önce 1. adımdaki kurulumu tamamla.',
-    serviceFailed: 'Ollama başlatılamadı. Kurulumu tamamladıysan uygulamayı bir kez elle açmayı dene.',
+    serviceFailed:
+      'Ollama başlatılamadı. İndirip açtıysan birkaç saniye içinde kendiliğinden bağlanacağız — bir şey yapmana gerek yok.',
     startWaiting: 'Kurdum, kontrol et',
     stopWaiting: 'Beklemeyi durdur',
     installed: 'Kurulu',
@@ -186,7 +196,8 @@ const TR = {
     },
     done: (name: string) => `${name} kuruldu ve seçildi.`,
     errors: {
-      unreachable: 'Ollama’ya ulaşılamadı. Aşağıdaki “Ollama’yı başlat” düğmesini dene.',
+      unreachable:
+        'Ollama’ya ulaşılamadı. Uygulamanın açık olduğundan emin ol — açıldığı an kendiliğinden bağlanıyoruz.',
       'not-found': 'Bu model Ollama kütüphanesinde bulunamadı.',
       failed: 'İndirme tamamlanamadı.',
     },
@@ -883,9 +894,18 @@ const EN: typeof TR = {
     subtitle: 'No terminal knowledge needed — just follow the steps.',
     open: 'Setup wizard',
     close: 'Close',
-    step1: '1. Install Ollama',
-    step2: '2. Allow the browser',
+    step1: '1. Download Ollama',
+    step2: '2. Start Ollama',
     step3: '3. Download a model',
+    needsDownload: 'Ollama is not installed on this device. Download it first — one click, no terminal.',
+    downloadHint: 'Download, install and open it once. Nothing else is needed.',
+    autoDetect: (s: number) => `We will continue automatically once Ollama opens · ${s}s`,
+    autoDetectIdle: 'We will continue automatically once Ollama opens.',
+    hostedNote:
+      'This site runs on a server, so we cannot install Ollama on your device from here. Just download and open it — we connect on our own once it is running.',
+    hostedAlt:
+      'If you would rather not install anything, the “keyless” provider is already set up and needs nothing.',
+    advanced: 'I prefer the terminal',
     checking: 'Looking for Ollama…',
     found: 'Ollama is running',
     notFound: 'Ollama not found',
@@ -898,7 +918,8 @@ const EN: typeof TR = {
     startingService: 'Starting Ollama…',
     serviceStarted: 'Ollama started.',
     serviceNotInstalled: 'Ollama was not found on this machine. Finish step 1 first.',
-    serviceFailed: 'Could not start Ollama. If it is installed, try opening the app once manually.',
+    serviceFailed:
+      'Could not start Ollama. If you downloaded and opened it, we will connect within a few seconds — nothing for you to do.',
     startWaiting: 'I installed it, check',
     stopWaiting: 'Stop waiting',
     installed: 'Installed',
@@ -914,7 +935,8 @@ const EN: typeof TR = {
     },
     done: (name: string) => `${name} installed and selected.`,
     errors: {
-      unreachable: 'Could not reach Ollama. Try the “Start Ollama” button below.',
+      unreachable:
+        'Could not reach Ollama. Make sure the app is open — we connect on our own once it is running.',
       'not-found': 'That model was not found in the Ollama library.',
       failed: 'The download could not be completed.',
     },

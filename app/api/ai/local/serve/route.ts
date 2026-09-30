@@ -12,9 +12,12 @@
 //     Ollama yapılandırılmışsa süreç başlatmanın anlamı yok ve reddedilir.
 //   • Süreç `detached` başlatılır ve `unref` edilir: sunucu isteği biterken
 //     servis ayakta kalır.
-//   • Barındırılan bir dağıtımda (Vercel vb.) `ollama` ikilisi yoktur; bu durum
-//     hata olarak değil "bulunamadı" olarak raporlanır ve arayüz elle kurulum
-//     adımlarını gösterir.
+//   • BARINDIRILAN dağıtımda (Vercel vb.) bu uç HİÇ denenmemelidir. Oradaki
+//     sunucu kullanıcının makinesi DEĞİLDİR: `ollama serve` çalıştırılsa bile
+//     Vercel'in kabında çalışırdı, ziyaretçinin cihazında değil. Bu yüzden GET
+//     bir YETENEK yanıtı döndürür (`hosted`, `canServe`) ve arayüz barındırılan
+//     dağıtımda başlatma düğmesini hiç göstermez — kullanıcıya çalışmayacak bir
+//     düğme sunmak, ardından "uygulamayı elle aç" demek en kötü sonuçtu.
 
 import { spawn } from 'node:child_process'
 import { failureResponse, guard } from '@/lib/sunum/api-guard'
@@ -22,6 +25,28 @@ import { failureResponse, guard } from '@/lib/sunum/api-guard'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30
+
+/**
+ * Bu sunucu barındırılan (serverless/PaaS) bir ortamda mı çalışıyor?
+ *
+ * Böyle bir ortamda süreç başlatmanın kullanıcı açısından hiçbir karşılığı yok:
+ * sunucu ziyaretçinin makinesi değil. Yeteneği baştan bildirmek, arayüzün
+ * anlamsız bir düğme göstermesini engelliyor.
+ */
+function isHosted(): boolean {
+  const env = process.env
+  if (env.SUNUM_HOSTED === '1') return true
+  if (env.SUNUM_HOSTED === '0') return false
+  return Boolean(
+    env.VERCEL ||
+      env.NETLIFY ||
+      env.AWS_LAMBDA_FUNCTION_NAME ||
+      env.RENDER ||
+      env.FLY_APP_NAME ||
+      env.RAILWAY_ENVIRONMENT ||
+      env.CF_PAGES,
+  )
+}
 
 /** Yapılandırılan Ollama adresi bu makinede mi? */
 function isLoopback(url: string): boolean {
@@ -61,9 +86,36 @@ async function up(): Promise<boolean> {
   return false
 }
 
+/**
+ * GET — bu uç ne yapabilir?
+ *
+ * Arayüz başlatma düğmesini göstermeden ÖNCE bunu sorar. `canServe` yanlışsa
+ * düğme hiç çizilmez; kullanıcı, bastığında çalışmayacak bir düğmeyle ve
+ * ardından gelen "elle aç" mesajıyla hiç karşılaşmaz.
+ */
+export async function GET(req: Request): Promise<Response> {
+  const failure = guard(req, 'refine')
+  if (failure) return failureResponse(failure)
+
+  const hosted = isHosted()
+  const local = isLoopback(baseUrl())
+  return Response.json({
+    ok: true,
+    hosted,
+    canServe: !hosted && local,
+    running: local ? await up() : false,
+  })
+}
+
 export async function POST(req: Request): Promise<Response> {
   const failure = guard(req, 'refine')
   if (failure) return failureResponse(failure)
+
+  // Barındırılan dağıtımda süreç başlatmak anlamsız: bu sunucu kullanıcının
+  // makinesi değil. Denemek yerine durum olduğu gibi bildirilir.
+  if (isHosted()) {
+    return Response.json({ ok: false, code: 'hosted' }, { status: 400 })
+  }
 
   if (!isLoopback(baseUrl())) {
     return Response.json({ ok: false, code: 'not-local' }, { status: 400 })
@@ -80,6 +132,10 @@ export async function POST(req: Request): Promise<Response> {
       env: {
         ...process.env,
         PATH: [process.env.PATH, '/usr/local/bin', '/opt/homebrew/bin', '/usr/bin'].filter(Boolean).join(':'),
+        // Servisi BİZ başlattığımıza göre tarayıcının da erişebileceği şekilde
+        // başlatılır. Aksi halde kullanıcı, kendi bastığı düğmeyle açılan
+        // servise tarayıcıdan ulaşamayıp CORS'a takılıyordu.
+        OLLAMA_ORIGINS: process.env.OLLAMA_ORIGINS || '*',
       },
     })
     child.unref()

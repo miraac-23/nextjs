@@ -84,13 +84,17 @@ export const INSTALL_RECIPES: Record<Platform, InstallRecipe> = {
  * ancak `OLLAMA_ORIGINS` ayarlıysa çalışıyor; sunucuda böyle bir kısıt yok.
  * Tek başına tarayıcıya bakmak, çalışan bir Ollama'yı "kapalı" saydırıyordu.
  */
-async function reachable(baseUrl: string, signal?: AbortSignal): Promise<boolean> {
+async function reachable(baseUrl: string, signal?: AbortSignal, serverFallback = true): Promise<boolean> {
   try {
     const res = await fetch(`${baseUrl}/api/tags`, { signal, cache: 'no-store' })
     if (res.ok) return true
   } catch {
     /* CORS ya da kapalı — sunucudan bakılır. */
   }
+  // Barındırılan dağıtımda sunucu yoklaması anlamsız: oradaki `localhost`
+  // Vercel'in kabı, kullanıcının makinesi değil. Her 2,5 saniyede bir boşuna
+  // fonksiyon çağırmamak için bu yol kapatılabiliyor.
+  if (!serverFallback) return false
   try {
     const res = await fetch('/api/ai/local', { signal, cache: 'no-store' })
     return res.ok
@@ -100,7 +104,41 @@ async function reachable(baseUrl: string, signal?: AbortSignal): Promise<boolean
 }
 
 /** Sunucudan Ollama servisini başlatma sonucu. */
-export type ServeResult = 'started' | 'already-running' | 'not-installed' | 'not-local' | 'failed'
+export type ServeResult =
+  | 'started'
+  | 'already-running'
+  | 'not-installed'
+  | 'not-local'
+  | 'hosted'
+  | 'failed'
+
+/**
+ * Bu dağıtım Ollama'yı SUNUCUDAN başlatabilir mi?
+ *
+ * Neden sorulması gerekiyor: uygulama Vercel gibi barındırılan bir ortamdaysa
+ * sunucu ziyaretçinin makinesi DEĞİLDİR. Orada başlatma düğmesi göstermek,
+ * kullanıcıyı çalışmayacak bir düğmeye ve ardından "uygulamayı elle aç"
+ * mesajına götürüyordu. Yetenek önden okunup düğme hiç çizilmiyor.
+ *
+ * Ağ hatasında `canServe: false` dönülür: emin olunamayan durumda kullanıcıya
+ * çalışmayabilecek bir düğme göstermemek daha doğru.
+ */
+export type ServeCapability = { canServe: boolean; hosted: boolean; running: boolean }
+
+export async function serveCapability(signal?: AbortSignal): Promise<ServeCapability> {
+  try {
+    const res = await fetch('/api/ai/local/serve', { signal, cache: 'no-store' })
+    if (!res.ok) return { canServe: false, hosted: true, running: false }
+    const data = (await res.json()) as Partial<ServeCapability>
+    return {
+      canServe: data.canServe === true,
+      hosted: data.hosted !== false,
+      running: data.running === true,
+    }
+  } catch {
+    return { canServe: false, hosted: true, running: false }
+  }
+}
 
 /**
  * Servisi SUNUCUDAN başlatır (bkz. /api/ai/local/serve).
@@ -116,6 +154,7 @@ export async function startOllama(signal?: AbortSignal): Promise<ServeResult> {
     if (res.ok && data.ok) return data.alreadyRunning ? 'already-running' : 'started'
     if (data.code === 'not-installed') return 'not-installed'
     if (data.code === 'not-local') return 'not-local'
+    if (data.code === 'hosted') return 'hosted'
     return 'failed'
   } catch {
     return 'failed'
@@ -124,7 +163,14 @@ export async function startOllama(signal?: AbortSignal): Promise<ServeResult> {
 
 export async function waitForOllama(
   baseUrl: string,
-  options: { signal?: AbortSignal; intervalMs?: number; timeoutMs?: number; onTick?: (elapsedMs: number) => void } = {},
+  options: {
+    signal?: AbortSignal
+    intervalMs?: number
+    timeoutMs?: number
+    onTick?: (elapsedMs: number) => void
+    /** Barındırılan dağıtımda kapatılır: sunucunun `localhost`u kullanıcının makinesi değil. */
+    serverFallback?: boolean
+  } = {},
 ): Promise<boolean> {
   const interval = options.intervalMs ?? 2500
   const timeout = options.timeoutMs ?? 10 * 60 * 1000
@@ -136,7 +182,7 @@ export async function waitForOllama(
 
     // Doğrudan yol CORS'a takılabilir (`OLLAMA_ORIGINS` yoksa); sunucudan
     // bakmak servisin gerçekten ayakta olup olmadığını söyler.
-    if (await reachable(baseUrl, options.signal)) return true
+    if (await reachable(baseUrl, options.signal, options.serverFallback ?? true)) return true
 
     options.onTick?.(Date.now() - started)
     await new Promise((resolve) => setTimeout(resolve, interval))

@@ -307,6 +307,49 @@ kalite kontrolü yerel motorla çalışmaya devam eder.
 | `TYPESAFE_API_KEY` | *(boş)* | Jev karar katmanı. Tanımsızsa `AI_GATEWAY_API_KEY`, o da yoksa yerel sezgi motoru kullanılır |
 | `TYPESAFE_MODEL` | `jev-latest` | Jev model kimliği |
 
+### Barındırılan dağıtımda yerel model kurulumu
+
+`/api/ai/local/serve` Ollama'yı **sunucudan** başlatır. Bu, uygulama kullanıcının
+kendi makinesinde çalışırken anlamlı. Vercel gibi barındırılan bir dağıtımda o
+sunucu ziyaretçinin makinesi **değildir**: orada `ollama serve` çalıştırılsa bile
+Vercel'in kabında çalışırdı.
+
+Eskiden uç bunu yine de deniyor, `ENOENT` alıyor ve arayüz "Ollama başlatılamadı,
+uygulamayı bir kez elle açmayı dene" diyordu — yani kullanıcıyı çalışmayacak bir
+düğmeye, ardından elle kuruluma gönderiyordu.
+
+Artık uç bir **yetenek yanıtı** veriyor:
+
+```
+GET /api/ai/local/serve → { ok, hosted, canServe, running }
+```
+
+`hosted`, platform ortam değişkenlerinden anlaşılıyor (`VERCEL`, `NETLIFY`,
+`AWS_LAMBDA_FUNCTION_NAME`, `RENDER`, `FLY_APP_NAME`, `RAILWAY_ENVIRONMENT`,
+`CF_PAGES`); `SUNUM_HOSTED=0|1` ile elle de ayarlanabilir. `canServe` yanlışsa
+arayüz başlatma düğmesini **hiç çizmez**, POST da süreç başlatmayı denemeden
+`{ code: 'hosted' }` döner.
+
+Sihirbazın barındırılan dağıtımdaki davranışı:
+
+1. **İndirme** ilk ve tek birincil eylem — işletim sistemine uygun tek tıklık
+   bağlantı. Terminal komutu `<details>` içinde, isteyene.
+2. Başlatma adımı gösterilmez; yerine bu sitenin bir sunucuda çalıştığını ve
+   Ollama'nın kullanıcının kendi cihazında açılması gerektiğini söyleyen bir not
+   çıkar, ayrıca kurulum istemeyen "anahtarsız" seçenek hatırlatılır.
+3. Servis **panel açılır açılmaz** arka planda yoklanır; kullanıcı Ollama'yı
+   açtığı an akış kendiliğinden ilerler, hiçbir düğmeye basması gerekmez.
+   Barındırılan dağıtımda sunucu yoklaması atlanır (oradaki `localhost` boşuna
+   çağrı olurdu), yalnızca tarayıcıdan bakılır.
+
+Yerel dağıtımda ayrıca başlatma düğmesi `ollama`yı bulamazsa (`not-installed`)
+2. adım **kilitlenir** ve 1. adım (indirme) vurgulanır: kurulu olmayan bir
+cihazda "başlat" düğmesinin yapabileceği bir şey yok.
+
+Servis bu uçtan başlatıldığında `OLLAMA_ORIGINS` de ayarlanır; aksi halde
+kullanıcı kendi bastığı düğmeyle açılan servise tarayıcıdan ulaşamayıp CORS'a
+takılıyordu.
+
 ### Vercel'de fonksiyon süresi (`maxDuration`)
 
 Her `/api/ai/*` rotası `export const maxDuration = 60` bildirir. Bu değer
