@@ -1,0 +1,3031 @@
+/* ==========================================================================
+   AI SUNUM STÜDYOSU — Slide Engine + editör arayüzü
+   --------------------------------------------------------------------------
+   İki ayrı görsel dünya vardır ve bilinçli olarak karıştırılmaz:
+
+   1) SİTE KABUĞU (.sn-app ve altındaki paneller, butonlar, listeler)
+      Projenin mevcut tasarım sistemini kullanır: Tailwind semantic token'ları
+      (page/surface/line/fg/fg2/accent) ve koyu/açık tema otomatik döner.
+
+   2) SLAYT KÂĞIDI (.sn-slide)
+      Sunumun KENDİ temasını taşır (lib/sunum/themes.ts). Site koyu temada olsa
+      bile slayt kendi zeminini korur — çünkü o kâğıt perdeye/PDF'e basılacak.
+      Renkler satır içi CSS değişkeniyle (--sn-*) gelir; buradaki kurallar
+      yalnızca yerleşim ve tipografiyi belirler.
+
+   Slayt 1280 × 720 px (16:9) sabit ölçüde render edilir ve kapsayıcıya CSS
+   transform ile ölçeklenir (bkz. components/sunum/SlideCanvas.tsx). Böylece
+   ekranda, PDF'te ve PPTX'te aynı oranlar korunur.
+   ========================================================================== */
+
+.sn-app {
+  --sn-radius: 14px;
+}
+
+/* ============================== ölçekleme kabı ============================== */
+
+.sn-fit {
+  position: relative;
+  width: 100%;
+  /* Ölçüm gelmeden önce de doğru yüksekliği tutar; yerleşim zıplamaz. */
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.sn-fit-scale {
+  transform-origin: top left;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.sn-shadow {
+  box-shadow: 0 24px 60px -24px rgba(2, 6, 23, 0.55), 0 2px 8px rgba(2, 6, 23, 0.18);
+}
+
+/* Yatay kaydırma çubuğunun ölçüm döngüsüne girmesini engeller (bkz. CvPaper notu). */
+.sn-scroll {
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+/* ================================== SLAYT ================================== */
+
+.sn-slide {
+  /* Varsayılanlar; gerçek değerler bileşenden satır içi gelir. */
+  --sn-bg: #ffffff;
+  --sn-panel: #f1f6fd;
+  --sn-line: #d7e3f4;
+  --sn-fg: #0f1b2d;
+  --sn-fg2: #4a5a70;
+  --sn-accent: #1f6fd0;
+  --sn-accent2: #0d4f9e;
+  --sn-on-accent: #ffffff;
+  --sn-hero-from: #0b3a73;
+  --sn-hero-to: #1f6fd0;
+  --sn-on-hero: #ffffff;
+  --sn-font: var(--font-sans), system-ui, sans-serif;
+
+  /* ------------------------ kullanıcı metin biçimi (§Word) ------------------------
+     Gerçek değerleri `slides/parts.tsx → textVars` slayt KÖKÜNE yazar; buradaki
+     değerler NÖTR varsayılanlardır, yani "biçim yok" hâli.
+
+     Yalnızca iki ÇARPAN tanımlanır. Ağırlık, renk, hiza, yazı tipi ve alt çizgi
+     BİLİNÇLİ olarak tanımsız bırakıldı: her metin kuralı kendi özgün değerini
+     `var(--sn-tx-*, <özgün>)` yedeğiyle koruyor. Böylece biçim seçilmediğinde
+     tek bir piksel bile değişmiyor — tema hâlâ tek doğruluk kaynağı. */
+  --sn-tx-scale: 1;
+  --sn-tx-lh: 1;
+  /* Renk SERBEST değil: kullanıcı yalnızca temanın şu iki rolünü seçebiliyor
+     ("varsayılan" hiç değişken basmaz, öğe kendi rengiyle kalır). */
+  --sn-tx-accent: var(--sn-accent);
+  --sn-tx-muted: var(--sn-fg2);
+
+  width: 1280px;
+  height: 720px;
+  position: relative;
+  overflow: hidden;
+  background: var(--sn-bg);
+  color: var(--sn-tx-color, var(--sn-fg));
+  /* Hiza/eğim/alt çizgi MİRAS yoluyla yayılır: kökte bir kez tanımlamak, her
+     metin kuralını tek tek dolaşmaktan hem kısa hem de bozulmaya kapalı. Kendi
+     hizasını açıkça veren yapısal kutular (istatistik kartı, süreç adımı)
+     etkilenmez — orada ortalama TASARIMIN parçası, kullanıcı tercihi değil. */
+  text-align: var(--sn-tx-align, left);
+  font-style: var(--sn-tx-style, normal);
+  text-decoration: var(--sn-tx-decoration, none);
+  font-family: var(--sn-tx-font, var(--sn-font));
+  /* Slayt kâğıdı site temasından etkilenmez. */
+  color-scheme: light;
+  display: flex;
+  flex-direction: column;
+  padding: 64px 72px 56px;
+  box-sizing: border-box;
+}
+
+.sn-slide * {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+/* Kapak/kapanış/alıntı bandı: gradyan zemin, kenar boşluğu yok. */
+.sn-slide.sn-hero {
+  background: linear-gradient(140deg, var(--sn-hero-from) 0%, var(--sn-hero-to) 100%);
+  color: var(--sn-tx-color, var(--sn-on-hero));
+  justify-content: center;
+  /* Gradyan zeminde tema vurgusu (koyu mavi) okunmaz; ton rolleri ters kontrasta
+     taşınır. Kullanıcı "vurgu"yu seçtiğinde kontrast garantisi böyle korunuyor —
+     seçim aynı kalır, karşılığı zemine göre değişir. */
+  --sn-tx-accent: var(--sn-on-hero);
+  --sn-tx-muted: color-mix(in srgb, var(--sn-on-hero) 78%, transparent);
+}
+
+/* -------------------------------- başlık alanı -------------------------------- */
+
+/* Alt boşluk 30 → 24: başlık bloğu yoğun slaytlarda gövdeden gereksiz yer
+   çalıyordu. Değer components/sunum/slides/parts.tsx → HEAD_GAP ile AYNI olmalı;
+   ölçü motoru kalan yüksekliği buradan hesaplıyor. */
+.sn-head {
+  flex: 0 0 auto;
+  margin-bottom: 24px;
+}
+
+/*
+ * Başlık satırı: konu simgesi + başlık.
+ * `align-items: flex-start` — iki satırlık başlıklarda rozet ilk satıra hizalanır,
+ * ortalanınca aşağı kayıp boşluk açıyordu.
+ */
+.sn-head-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.sn-head-icon {
+  flex: 0 0 auto;
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--sn-accent) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--sn-accent) 30%, transparent);
+  color: var(--sn-accent);
+}
+
+.sn-head-icon svg {
+  width: 30px;
+  height: 30px;
+}
+
+/* Gradyan zeminde aynı rozet ters kontrastla çizilir. */
+.sn-hero .sn-head-icon {
+  background: color-mix(in srgb, var(--sn-on-hero) 16%, transparent);
+  border-color: color-mix(in srgb, var(--sn-on-hero) 34%, transparent);
+  color: var(--sn-on-hero);
+}
+
+.sn-title {
+  font-size: calc((40px) * var(--sn-tx-scale, 1));
+  line-height: calc((1.15) * var(--sn-tx-lh, 1));
+  font-weight: var(--sn-tx-weight, 700);
+  letter-spacing: -0.015em;
+  margin: 0;
+  color: var(--sn-tx-color, var(--sn-fg));
+}
+
+.sn-title.sn-title-long {
+  font-size: calc((33px) * var(--sn-tx-scale, 1));
+}
+
+/* Üçüncü kademe: 85+ karakterlik başlıklar 33px'te üç satıra çıkıp gövdeyi
+   eziyordu. Eşikler parts.tsx → titleSize() ile aynı. */
+.sn-title.sn-title-xlong {
+  font-size: calc((28px) * var(--sn-tx-scale, 1));
+}
+
+.sn-rule {
+  width: 72px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--sn-accent);
+  margin-top: 16px;
+}
+
+.sn-subtitle {
+  font-size: calc((18px) * var(--sn-tx-scale, 1));
+  line-height: calc((1.5) * var(--sn-tx-lh, 1));
+  color: var(--sn-tx-color, var(--sn-fg2));
+  margin: 14px 0 0;
+  max-width: 62ch;
+}
+
+/*
+ * Gövde.
+ *
+ * `overflow: hidden` SON GÜVENLİK AĞIDIR. Asıl çözüm şablonların kalan alanı
+ * hesaplayıp punto kademesi seçmesi (parts.tsx → bodyHeight/bulletClass); ama
+ * tahmin ±%3 hata payıyla çalıştığı için, sınır durumda içerik birkaç piksel
+ * taşarsa örnek/vurgu bandının ÜSTÜNE BİNMESİN diye burada kırpılır.
+ */
+.sn-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* --------------------------------- maddeler --------------------------------- */
+
+/*
+ * Punto ve satır aralığı değişken üzerinden verilir: böylece `.sn-two` gibi
+ * kapsayıcılar listeyi yeniden tanımlamak zorunda kalmıyor. Eski kodda
+ * `.sn-two .sn-bullets li { font-size: 18px }` kuralı yoğunluk sınıflarını
+ * eziyordu ve panellerdeki uzun listeler hiç küçülmüyordu.
+ * Değerler parts.tsx → BULLET_TIERS ile BİREBİR aynı olmalı.
+ */
+.sn-bullets {
+  --sn-b-size: 22px;
+  --sn-b-lh: 1.45;
+  --sn-b-gap: 18px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sn-b-gap);
+}
+
+.sn-bullets li {
+  position: relative;
+  padding-left: 30px;
+  font-size: calc((var(--sn-b-size)) * var(--sn-tx-scale, 1));
+  line-height: calc((var(--sn-b-lh)) * var(--sn-tx-lh, 1));
+  color: var(--sn-tx-color, var(--sn-fg));
+}
+
+/* İşaret ilk satırın ortasına hizalanır; punto küçüldüğünde birlikte yükselir.
+   Kullanıcının punto/satır aralığı çarpanları da bu denkleme girmek ZORUNDA:
+   girmezse metin büyürken işaret yerinde kalıyor ve satırın üstünde asılı duruyor. */
+.sn-bullets li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: calc(var(--sn-b-size) * var(--sn-tx-scale, 1) * var(--sn-b-lh) * var(--sn-tx-lh, 1) / 2 - 4.5px);
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  background: var(--sn-accent);
+}
+
+/* Yoğun slaytlarda tipografi küçülür — taşma yerine okunur sıkışma. */
+.sn-bullets.sn-dense {
+  --sn-b-size: 19px;
+  --sn-b-lh: 1.42;
+  --sn-b-gap: 13px;
+}
+.sn-bullets.sn-tight {
+  --sn-b-size: 17px;
+  --sn-b-lh: 1.38;
+  --sn-b-gap: 10px;
+}
+.sn-bullets.sn-tighter {
+  --sn-b-size: 15px;
+  --sn-b-lh: 1.35;
+  --sn-b-gap: 8px;
+}
+.sn-bullets.sn-micro {
+  --sn-b-size: 13px;
+  --sn-b-lh: 1.32;
+  --sn-b-gap: 6px;
+}
+.sn-bullets.sn-tighter li::before,
+.sn-bullets.sn-micro li::before {
+  width: 7px;
+  height: 7px;
+  top: calc(var(--sn-b-size) * var(--sn-tx-scale, 1) * var(--sn-b-lh) * var(--sn-tx-lh, 1) / 2 - 3.5px);
+}
+
+/* ---------------------------------- kapak ---------------------------------- */
+
+.sn-cover-rule {
+  width: 84px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--sn-accent);
+  margin-bottom: 28px;
+}
+
+.sn-cover-title {
+  font-size: calc((62px) * var(--sn-tx-scale, 1));
+  line-height: calc((1.08) * var(--sn-tx-lh, 1));
+  font-weight: var(--sn-tx-weight, 700);
+  letter-spacing: -0.02em;
+  margin: 0;
+  max-width: 22ch;
+}
+
+.sn-cover-title.sn-title-long {
+  font-size: calc((48px) * var(--sn-tx-scale, 1));
+  max-width: 26ch;
+}
+
+.sn-cover-sub {
+  font-size: calc((22px) * var(--sn-tx-scale, 1));
+  line-height: calc((1.5) * var(--sn-tx-lh, 1));
+  margin: 26px 0 0;
+  max-width: 48ch;
+  opacity: 0.82;
+}
+
+.sn-cover-meta {
+  position: absolute;
+  left: 72px;
+  bottom: 52px;
+  font-size: calc((15px) * var(--sn-tx-scale, 1));
+  letter-spacing: 0.02em;
+  opacity: 0.7;
+}
+
+/* Bölünmüş kapak (title-02): solda metin, sağda vurgu paneli. */
+.sn-slide.sn-cover-split {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 0;
+  padding: 0;
+  align-items: stretch;
+}
+
+.sn-cover-split .sn-cover-main {
+  padding: 84px 56px 84px 72px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.sn-cover-split .sn-cover-side {
+  background: linear-gradient(200deg, var(--sn-accent) 0%, var(--sn-hero-from) 120%);
+  position: relative;
+  overflow: hidden;
+}
+
+.sn-cover-split .sn-cover-side::after {
+  content: '';
+  position: absolute;
+  inset: -20% -40% auto auto;
+  width: 420px;
+  height: 420px;
+  border-radius: 999px;
+  border: 40px solid rgba(255, 255, 255, 0.14);
+}
+
+/* --------------------------------- paneller --------------------------------- */
+
+/*
+ * `overflow: hidden` burada da güvenlik ağı: panel içeriği kestirimden birkaç
+ * piksel uzun çıkarsa listenin panelden taşıp ALTINDAKİ sonuç satırının
+ * üstüne binmesini engeller. Taşan içerik kırpılır — üst üste binmez.
+ */
+.sn-panel {
+  background: var(--sn-panel);
+  border: 1px solid var(--sn-line);
+  border-radius: 16px;
+  padding: 26px 28px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sn-panel-accent {
+  /* color-mix desteklenmeyen tarayıcıda panel rengine düşer. */
+  background: var(--sn-panel);
+  background: color-mix(in srgb, var(--sn-accent) 12%, var(--sn-bg));
+  border-color: var(--sn-line);
+  border-color: color-mix(in srgb, var(--sn-accent) 32%, var(--sn-bg));
+}
+
+.sn-panel-head {
+  font-size: calc((19px) * var(--sn-tx-scale, 1));
+  font-weight: var(--sn-tx-weight, 700);
+  color: var(--sn-tx-color, var(--sn-accent));
+  margin: 0 0 16px;
+}
+
+.sn-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Panel listeleri artık kendi kademesini parts.tsx'ten alır; buradaki eski
+   sabit punto kuralı yoğunluk sınıflarını eziyordu, kaldırıldı. */
+
+.sn-verdict {
+  flex: 0 0 auto;
+  margin-top: 18px;
+  text-align: center;
+  font-size: calc((18px) * var(--sn-tx-scale, 1));
+  font-style: var(--sn-tx-style, italic);
+  color: var(--sn-tx-color, var(--sn-fg));
+}
+
+/* Karşılaştırma — satır düzeni (comparison-02).
+   Kademeler parts/ColumnsSlide → ROW_TIERS ile aynı. */
+.sn-compare-rows {
+  --sn-r-padY: 14px;
+  --sn-r-padX: 18px;
+  --sn-r-size: 17px;
+  --sn-r-lh: 1.4;
+  --sn-r-gap: 10px;
+  --sn-r-head: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sn-r-gap);
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sn-compare-rows.sn-compact {
+  --sn-r-padY: 11px;
+  --sn-r-padX: 15px;
+  --sn-r-size: 15px;
+  --sn-r-lh: 1.38;
+  --sn-r-gap: 8px;
+  --sn-r-head: 16px;
+}
+.sn-compare-rows.sn-compact-2 {
+  --sn-r-padY: 8px;
+  --sn-r-padX: 12px;
+  --sn-r-size: 13px;
+  --sn-r-lh: 1.32;
+  --sn-r-gap: 6px;
+  --sn-r-head: 14px;
+}
+.sn-compare-rows.sn-compact-3 {
+  --sn-r-padY: 6px;
+  --sn-r-padX: 10px;
+  --sn-r-size: 12px;
+  --sn-r-lh: 1.3;
+  --sn-r-gap: 4px;
+  --sn-r-head: 13px;
+}
+
+.sn-compare-head {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  font-size: calc((var(--sn-r-head)) * var(--sn-tx-scale, 1));
+  font-weight: var(--sn-tx-weight, 700);
+}
+
+.sn-compare-head span:first-child {
+  color: var(--sn-tx-color, var(--sn-accent));
+}
+.sn-compare-head span:last-child {
+  color: var(--sn-tx-color, var(--sn-accent2));
+}
+
+/* `min-height: 0` satırların ORANTILI daralmasını sağlar: yer 15px eksikse
+   son satır yarıdan kesilmek yerine sekiz satır ikişer piksel sıkışır. */
+.sn-compare-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  min-height: 0;
+}
+
+.sn-compare-row > div {
+  overflow: hidden;
+  background: var(--sn-panel);
+  border: 1px solid var(--sn-line);
+  border-radius: 12px;
+  padding: var(--sn-r-padY) var(--sn-r-padX);
+  font-size: calc((var(--sn-r-size)) * var(--sn-tx-scale, 1));
+  line-height: calc((var(--sn-r-lh)) * var(--sn-tx-lh, 1));
+}
+
+/* -------------------------------- istatistik -------------------------------- */
+
+/* Kademeler StatisticsSlide → STAT_TIERS ile BİREBİR aynı olmalı. */
+.sn-stats {
+  --sn-s-padY: 26px;
+  --sn-s-padX: 22px;
+  --sn-s-gap: 10px;
+  --sn-s-value: 54px;
+  --sn-s-label: 17px;
+  --sn-s-cap: 14px;
+  --sn-s-grid: 20px;
+  display: grid;
+  gap: var(--sn-s-grid);
+  flex: 1 1 auto;
+  min-height: 0;
+  align-content: center;
+}
+
+.sn-stats.sn-compact {
+  --sn-s-padY: 18px;
+  --sn-s-padX: 18px;
+  --sn-s-gap: 8px;
+  --sn-s-value: 40px;
+  --sn-s-label: 15px;
+  --sn-s-cap: 13px;
+  --sn-s-grid: 14px;
+}
+.sn-stats.sn-compact-2,
+.sn-stats.sn-compact-3 {
+  --sn-s-padY: 13px;
+  --sn-s-padX: 14px;
+  --sn-s-gap: 6px;
+  --sn-s-value: 31px;
+  --sn-s-label: 14px;
+  --sn-s-cap: 12px;
+  --sn-s-grid: 10px;
+}
+
+.sn-stat {
+  overflow: hidden;
+  background: var(--sn-panel);
+  border: 1px solid var(--sn-line);
+  border-radius: 16px;
+  padding: var(--sn-s-padY) var(--sn-s-padX);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--sn-s-gap);
+}
+
+.sn-stat-value {
+  font-size: calc((var(--sn-s-value)) * var(--sn-tx-scale, 1));
+  font-weight: var(--sn-tx-weight, 700);
+  line-height: calc((1) * var(--sn-tx-lh, 1));
+  letter-spacing: -0.02em;
+  color: var(--sn-tx-color, var(--sn-accent));
+}
+
+/* Uzun değerler (“1.284.000”) %70 punto ile yazılır — kestirim de aynı oranı kullanır. */
+.sn-stat-value.sn-stat-long {
+  font-size: calc((var(--sn-s-value) * 0.7) * var(--sn-tx-scale, 1));
+}
+
+.sn-stat-label {
+  font-size: calc((var(--sn-s-label)) * var(--sn-tx-scale, 1));
+  font-weight: var(--sn-tx-weight, 600);
+  color: var(--sn-tx-color, var(--sn-fg));
+  line-height: calc((1.35) * var(--sn-tx-lh, 1));
+}
+
+.sn-stat-caption {
+  font-size: calc((var(--sn-s-cap)) * var(--sn-tx-scale, 1));
+  color: var(--sn-tx-color, var(--sn-fg2));
+  line-height: calc((1.4) * var(--sn-tx-lh, 1));
+}
+
+.sn-footnote {
+  flex: 0 0 auto;
+  margin-top: 16px;
+  font-size: calc((14px) * var(--sn-tx-scale, 1));
+  color: var(--sn-tx-color, var(--sn-fg2));
+  text-align: center;
+}
+
+/* ---------------------------------- grafik ---------------------------------- */
+
+.sn-chart-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  gap: 24px;
+  align-items: center;
+}
+
+/* Kademeler ChartSlide → VALUE_TIERS ile aynı. 12 kategorili bir grafikte
+   17px'lik liste 420px tutuyor ve bantların üstüne biniyordu. */
+.sn-chart-values {
+  --sn-cv-size: 17px;
+  --sn-cv-lh: 1.4;
+  --sn-cv-gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sn-cv-gap);
+}
+
+.sn-chart-values.sn-compact {
+  --sn-cv-size: 15px;
+  --sn-cv-lh: 1.35;
+  --sn-cv-gap: 8px;
+}
+.sn-chart-values.sn-compact-2,
+.sn-chart-values.sn-compact-3 {
+  --sn-cv-size: 13px;
+  --sn-cv-lh: 1.3;
+  --sn-cv-gap: 5px;
+}
+
+.sn-chart-values li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: calc((var(--sn-cv-size)) * var(--sn-tx-scale, 1));
+  line-height: calc((var(--sn-cv-lh)) * var(--sn-tx-lh, 1));
+  color: var(--sn-tx-color, var(--sn-fg));
+}
+
+.sn-chart-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex: 0 0 auto;
+}
+
+.sn-chart-values b {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.sn-caption {
+  flex: 0 0 auto;
+  margin-top: 14px;
+  font-size: calc((14px) * var(--sn-tx-scale, 1));
+  color: var(--sn-tx-color, var(--sn-fg2));
+}
+
+/* SVG grafik — eksen ve ızgara geri planda kalır. */
+.sn-axis {
+  stroke: var(--sn-line);
+  stroke-width: 1;
+}
+
+.sn-grid {
+  stroke: var(--sn-line);
+  stroke-width: 1;
+  opacity: 0.7;
+}
+
+.sn-tick {
+  fill: var(--sn-fg2);
+  font-size: 13px;
+}
+
+.sn-value-label {
+  fill: var(--sn-fg);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sn-slice-label {
+  fill: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* ------------------------------ zaman çizelgesi ------------------------------ */
+
+.sn-timeline {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  min-height: 0;
+}
+
+/* Yatay şerit — kademeler TimelineSlide → H_TIERS ile aynı. */
+.sn-timeline-h {
+  --sn-tl-label-h: 56px;
+  --sn-tl-dot-top: 14px;
+  --sn-tl-dot-bottom: 18px;
+  --sn-tl-dot: 16px;
+  --sn-tl-title: 18px;
+  --sn-tl-tlh: 1.35;
+  --sn-tl-desc: 14px;
+  --sn-tl-dlh: 1.4;
+  --sn-tl-desc-gap: 8px;
+  display: grid;
+  width: 100%;
+  position: relative;
+  padding-top: 8px;
+}
+
+.sn-timeline-h.sn-compact {
+  --sn-tl-label-h: 44px;
+  --sn-tl-dot-top: 11px;
+  --sn-tl-dot-bottom: 13px;
+  --sn-tl-dot: 14px;
+  --sn-tl-title: 16px;
+  --sn-tl-tlh: 1.3;
+  --sn-tl-desc: 13px;
+  --sn-tl-dlh: 1.35;
+  --sn-tl-desc-gap: 6px;
+}
+.sn-timeline-h.sn-compact-2 {
+  --sn-tl-label-h: 36px;
+  --sn-tl-dot-top: 9px;
+  --sn-tl-dot-bottom: 9px;
+  --sn-tl-dot: 12px;
+  --sn-tl-title: 14px;
+  --sn-tl-tlh: 1.28;
+  --sn-tl-desc: 12px;
+  --sn-tl-dlh: 1.3;
+  --sn-tl-desc-gap: 5px;
+}
+.sn-timeline-h.sn-compact-3 {
+  --sn-tl-label-h: 30px;
+  --sn-tl-dot-top: 7px;
+  --sn-tl-dot-bottom: 7px;
+  --sn-tl-dot: 10px;
+  --sn-tl-title: 13px;
+  --sn-tl-tlh: 1.25;
+  --sn-tl-desc: 11px;
+  --sn-tl-dlh: 1.28;
+  --sn-tl-desc-gap: 4px;
+}
+
+/* Çizgi noktaların MERKEZİNDEN geçer: üst boşluk + etiket + nokta üstü + yarı nokta.
+   Kademe değiştiğinde konum kendiliğinden kayar. */
+.sn-timeline-h::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(8px + var(--sn-tl-label-h) + var(--sn-tl-dot-top) + var(--sn-tl-dot) / 2);
+  height: 2px;
+  background: var(--sn-line);
+}
+
+.sn-tl-col {
+  position: relative;
+  padding: 0 10px;
+  text-align: center;
+}
+
+.sn-tl-label {
+  font-size: calc((var(--sn-tl-title) - 2px) * var(--sn-tx-scale, 1));
+  font-weight: var(--sn-tx-weight, 700);
+  color: var(--sn-tx-color, var(--sn-accent));
+  height: var(--sn-tl-label-h);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.sn-tl-dot {
+  width: var(--sn-tl-dot);
+  height: var(--sn-tl-dot);
+  border-radius: 999px;
+  background: var(--sn-accent);
+  border: 3px solid var(--sn-bg);
+  margin: var(--sn-tl-dot-top) auto var(--sn-tl-dot-bottom);
+}
+
+.sn-tl-title {
+  font-size: calc((var(--sn-tl-title, 18px)) * var(--sn-tx-scale, 1));
+  font-weight: var(--sn-tx-weight, 600);
+  line-height: calc((var(--sn-tl-tlh, 1.35)) * var(--sn-tx-lh, 1));
+}
+
+.sn-tl-desc {
+  font-size: calc((var(--sn-tl-desc, 14px)) * var(--sn-tx-scale, 1));
+  color: var(--sn-tx-color, var(--sn-fg2));
+  line-height: calc((var(--sn-tl-dlh, 1.4)) * var(--sn-tx-lh, 1));
+  margin-top: var(--sn-tl-desc-gap, 8px);
+}
+
+/* Dikey ray — kademeler TimelineSlide → V_TIERS ile aynı. */
+.sn-timeline-v {
+  --sn-tl-title: 18px;
+  --sn-tl-tlh: 1.35;
+  --sn-tl-desc: 14px;
+  --sn-tl-dlh: 1.4;
+  --sn-tl-desc-gap: 8px;
+  --sn-tl-pad: 18px;
+  --sn-tl-when: 16px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.sn-timeline-v.sn-compact {
+  --sn-tl-title: 16px;
+  --sn-tl-tlh: 1.3;
+  --sn-tl-desc: 13px;
+  --sn-tl-dlh: 1.35;
+  --sn-tl-desc-gap: 6px;
+  --sn-tl-pad: 12px;
+  --sn-tl-when: 15px;
+}
+.sn-timeline-v.sn-compact-2 {
+  --sn-tl-title: 14px;
+  --sn-tl-tlh: 1.28;
+  --sn-tl-desc: 12px;
+  --sn-tl-dlh: 1.3;
+  --sn-tl-desc-gap: 5px;
+  --sn-tl-pad: 8px;
+  --sn-tl-when: 14px;
+}
+.sn-timeline-v.sn-compact-3 {
+  --sn-tl-title: 13px;
+  --sn-tl-tlh: 1.25;
+  --sn-tl-desc: 11px;
+  --sn-tl-dlh: 1.28;
+  --sn-tl-desc-gap: 4px;
+  --sn-tl-pad: 5px;
+  --sn-tl-when: 13px;
+}
+
+.sn-tl-row {
+  display: grid;
+  grid-template-columns: 120px 28px 1fr;
+  gap: 16px;
+  align-items: start;
+  padding-bottom: var(--sn-tl-pad);
+  position: relative;
+}
+
+.sn-tl-row:last-child {
+  padding-bottom: 0;
+}
+
+.sn-tl-rail {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding-top: 7px;
+}
+
+.sn-tl-rail span {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--sn-accent);
+  z-index: 1;
+}
+
+.sn-tl-row:not(:last-child) .sn-tl-rail::after {
+  content: '';
+  position: absolute;
+  top: 18px;
+  bottom: calc(-1 * var(--sn-tl-pad));
+  width: 2px;
+  background: var(--sn-line);
+}
+
+.sn-tl-when {
+  text-align: right;
+  font-size: calc((var(--sn-tl-when, 16px)) * var(--sn-tx-scale, 1));
+  font-weight: var(--sn-tx-weight, 700);
+  color: var(--sn-tx-color, var(--sn-accent));
+  padding-top: 3px;
+}
+
+/* ---------------------------------- süreç ---------------------------------- */
+
+/* Yatay zincir — kademeler ProcessSlide → H_TIERS ile aynı. */
+.sn-process-h {
+  --sn-p-padY: 24px;
+  --sn-p-padX: 20px;
+  --sn-p-gap: 12px;
+  --sn-p-num: 15px;
+  --sn-p-title: 19px;
+  --sn-p-tlh: 1.3;
+  --sn-p-desc: 14px;
+  --sn-p-dlh: 1.4;
+  --sn-p-arrow: 44px;
+  display: flex;
+  /* Kartlar içeriğe göre yükselir ve dikeyde ortalanır: az metinli bir adım
+     slaytın tamamını kaplayan boş bir kutu hâline gelmesin. */
+  align-items: center;
+  gap: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.sn-process-h.sn-compact {
+  --sn-p-padY: 18px;
+  --sn-p-padX: 16px;
+  --sn-p-gap: 9px;
+  --sn-p-num: 14px;
+  --sn-p-title: 17px;
+  --sn-p-tlh: 1.28;
+  --sn-p-desc: 13px;
+  --sn-p-dlh: 1.35;
+  --sn-p-arrow: 34px;
+}
+.sn-process-h.sn-compact-2 {
+  --sn-p-padY: 13px;
+  --sn-p-padX: 13px;
+  --sn-p-gap: 7px;
+  --sn-p-num: 13px;
+  --sn-p-title: 15px;
+  --sn-p-tlh: 1.26;
+  --sn-p-desc: 12px;
+  --sn-p-dlh: 1.3;
+  --sn-p-arrow: 28px;
+}
+.sn-process-h.sn-compact-3 {
+  --sn-p-padY: 10px;
+  --sn-p-padX: 11px;
+  --sn-p-gap: 5px;
+  --sn-p-num: 12px;
+  --sn-p-title: 14px;
+  --sn-p-tlh: 1.24;
+  --sn-p-desc: 11px;
+  --sn-p-dlh: 1.28;
+  --sn-p-arrow: 24px;
+}
+
+/* Kart + ok ikilisini taşıyan kutu (eski satır içi stilin yerine). */
+.sn-step-slot {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.sn-step-card {
+  overflow: hidden;
+  flex: 1 1 0;
+  background: var(--sn-panel);
+  border: 1px solid var(--sn-line);
+  border-radius: 16px;
+  padding: var(--sn-p-padY, 24px) var(--sn-p-padX, 20px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sn-p-gap, 12px);
+  text-align: center;
+  justify-content: center;
+}
+
+.sn-step-num {
+  font-size: calc((var(--sn-p-num, 15px)) * var(--sn-tx-scale, 1));
+  font-weight: var(--sn-tx-weight, 700);
+  color: var(--sn-tx-color, var(--sn-accent));
+  letter-spacing: 0.06em;
+}
+
+.sn-step-title {
+  font-size: calc((var(--sn-p-title, 19px)) * var(--sn-tx-scale, 1));
+  font-weight: var(--sn-tx-weight, 600);
+  line-height: calc((var(--sn-p-tlh, 1.3)) * var(--sn-tx-lh, 1));
+}
+
+.sn-step-desc {
+  font-size: calc((var(--sn-p-desc, 14px)) * var(--sn-tx-scale, 1));
+  color: var(--sn-tx-color, var(--sn-fg2));
+  line-height: calc((var(--sn-p-dlh, 1.4)) * var(--sn-tx-lh, 1));
+}
+
+.sn-arrow {
+  flex: 0 0 var(--sn-p-arrow, 44px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sn-accent);
+}
+
+/* Dikey adımlar — kademeler ProcessSlide → V_TIERS ile aynı. */
+.sn-process-v {
+  --sn-p-padY: 16px;
+  --sn-p-padX: 22px;
+  --sn-p-badge: 40px;
+  --sn-p-gap: 18px;
+  --sn-p-title: 18px;
+  --sn-p-tlh: 1.3;
+  --sn-p-desc: 14px;
+  --sn-p-dlh: 1.4;
+  --sn-p-row: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sn-p-row);
+  flex: 1 1 auto;
+  min-height: 0;
+  justify-content: center;
+}
+
+.sn-process-v.sn-compact {
+  --sn-p-padY: 12px;
+  --sn-p-padX: 18px;
+  --sn-p-badge: 34px;
+  --sn-p-gap: 14px;
+  --sn-p-title: 16px;
+  --sn-p-tlh: 1.28;
+  --sn-p-desc: 13px;
+  --sn-p-dlh: 1.35;
+  --sn-p-row: 9px;
+}
+.sn-process-v.sn-compact-2 {
+  --sn-p-padY: 9px;
+  --sn-p-padX: 15px;
+  --sn-p-badge: 29px;
+  --sn-p-gap: 12px;
+  --sn-p-title: 15px;
+  --sn-p-tlh: 1.26;
+  --sn-p-desc: 12px;
+  --sn-p-dlh: 1.3;
+  --sn-p-row: 7px;
+}
+.sn-process-v.sn-compact-3 {
+  --sn-p-padY: 7px;
+  --sn-p-padX: 12px;
+  --sn-p-badge: 25px;
+  --sn-p-gap: 10px;
+  --sn-p-title: 13px;
+  --sn-p-tlh: 1.24;
+  --sn-p-desc: 11px;
+  --sn-p-dlh: 1.28;
+  --sn-p-row: 5px;
+}
+
+/* 6'dan fazla adımda iki kolon: aynı adımlar okunur puntoda kalır. */
+.sn-process-v.sn-process-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sn-p-row) 16px;
+  align-content: center;
+}
+
+.sn-step-row {
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: var(--sn-p-gap, 18px);
+  background: var(--sn-panel);
+  border: 1px solid var(--sn-line);
+  border-radius: 14px;
+  padding: var(--sn-p-padY, 16px) var(--sn-p-padX, 22px);
+}
+
+.sn-step-badge {
+  flex: 0 0 auto;
+  width: var(--sn-p-badge, 40px);
+  height: var(--sn-p-badge, 40px);
+  border-radius: 12px;
+  background: var(--sn-accent);
+  color: var(--sn-on-accent);
+  font-size: calc(var(--sn-p-badge, 40px) * 0.42);
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
+
+.sn-step-row .sn-step-title,
+.sn-step-row .sn-step-desc {
+  text-align: left;
+}
+
+/* ---------------------------------- mimari ---------------------------------- */
+
+/* Kademeler ArchitectureSlide → LAYER_TIERS ile BİREBİR aynı olmalı;
+   düğüm rozetlerinin kaç satır saracağı oradan kestiriliyor. */
+.sn-layers,
+.sn-flow,
+.sn-layer-cols {
+  --sn-a-padY: 16px;
+  --sn-a-padX: 20px;
+  --sn-a-name: 17px;
+  --sn-a-node: 15px;
+  --sn-a-nodeY: 9px;
+  --sn-a-nodeX: 14px;
+  --sn-a-nodeGap: 10px;
+  --sn-a-gap: 12px;
+  --sn-a-nameW: 210px;
+}
+
+.sn-layers.sn-compact,
+.sn-flow.sn-compact,
+.sn-layer-cols.sn-compact {
+  --sn-a-padY: 12px;
+  --sn-a-padX: 16px;
+  --sn-a-name: 15px;
+  --sn-a-node: 13px;
+  --sn-a-nodeY: 7px;
+  --sn-a-nodeX: 11px;
+  --sn-a-nodeGap: 8px;
+  --sn-a-gap: 9px;
+  --sn-a-nameW: 180px;
+}
+.sn-layers.sn-compact-2,
+.sn-flow.sn-compact-2,
+.sn-layer-cols.sn-compact-2 {
+  --sn-a-padY: 9px;
+  --sn-a-padX: 13px;
+  --sn-a-name: 14px;
+  --sn-a-node: 12px;
+  --sn-a-nodeY: 5px;
+  --sn-a-nodeX: 9px;
+  --sn-a-nodeGap: 6px;
+  --sn-a-gap: 7px;
+  --sn-a-nameW: 160px;
+}
+.sn-layers.sn-compact-3,
+.sn-flow.sn-compact-3,
+.sn-layer-cols.sn-compact-3 {
+  --sn-a-padY: 7px;
+  --sn-a-padX: 11px;
+  --sn-a-name: 13px;
+  --sn-a-node: 11px;
+  --sn-a-nodeY: 4px;
+  --sn-a-nodeX: 8px;
+  --sn-a-nodeGap: 5px;
+  --sn-a-gap: 5px;
+  --sn-a-nameW: 140px;
+}
+
+.sn-layers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sn-a-gap);
+  flex: 1 1 auto;
+  min-height: 0;
+  justify-content: center;
+}
+
+.sn-layer {
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: var(--sn-a-nameW) 1fr;
+  gap: 18px;
+  align-items: center;
+  background: var(--sn-panel);
+  border: 1px solid var(--sn-line);
+  border-radius: 14px;
+  padding: var(--sn-a-padY) var(--sn-a-padX);
+}
+
+.sn-layer-name {
+  font-size: calc((var(--sn-a-name, 17px)) * var(--sn-tx-scale, 1));
+  font-weight: var(--sn-tx-weight, 700);
+  color: var(--sn-tx-color, var(--sn-accent));
+  line-height: calc((1.3) * var(--sn-tx-lh, 1));
+}
+
+.sn-nodes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sn-a-nodeGap, 10px);
+}
+
+.sn-node {
+  background: var(--sn-bg);
+  background: color-mix(in srgb, var(--sn-accent) 14%, var(--sn-bg));
+  border: 1px solid var(--sn-line);
+  border: 1px solid color-mix(in srgb, var(--sn-accent) 40%, var(--sn-bg));
+  border-radius: 10px;
+  padding: var(--sn-a-nodeY, 9px) var(--sn-a-nodeX, 14px);
+  font-size: calc((var(--sn-a-node, 15px)) * var(--sn-tx-scale, 1));
+  line-height: calc((1.25) * var(--sn-tx-lh, 1));
+  font-weight: var(--sn-tx-weight, 500);
+  color: var(--sn-tx-color, var(--sn-fg));
+}
+
+/* ---------------------------------- görsel ---------------------------------- */
+
+.sn-image-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  flex: 1 1 auto;
+  align-items: center;
+  min-height: 0;
+  /* Madde sütunu kestirimden uzun çıkarsa satır yükselip görsel çerçevesini de
+     büyütüyordu; kırpma ikisini de kutuda tutar. */
+  overflow: hidden;
+}
+
+/* image-02: görsel kalan alanın tamamını alır, alt yazı altında kalır. */
+.sn-image-full {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+}
+
+.sn-image-frame {
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid var(--sn-line);
+  background: var(--sn-panel);
+  background: color-mix(in srgb, var(--sn-accent) 8%, var(--sn-bg));
+  display: grid;
+  place-items: center;
+}
+
+.sn-image-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.sn-glyph {
+  width: 180px;
+  height: 180px;
+  color: var(--sn-accent);
+  opacity: 0.85;
+}
+
+/* ---------------------------------- alıntı ---------------------------------- */
+
+.sn-quote {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 24px;
+  max-width: 34ch;
+}
+
+.sn-quote-mark {
+  font-size: 96px;
+  line-height: 0.6;
+  font-weight: 700;
+  color: var(--sn-accent);
+  height: 52px;
+}
+
+.sn-quote-text {
+  font-size: calc((34px) * var(--sn-tx-scale, 1));
+  line-height: calc((1.32) * var(--sn-tx-lh, 1));
+  font-style: var(--sn-tx-style, italic);
+  margin: 0;
+}
+
+.sn-quote-text.sn-quote-long {
+  font-size: calc((26px) * var(--sn-tx-scale, 1));
+}
+
+/* 320+ karakterlik alıntılar 26px'te on satırı geçip slayttan taşıyordu. */
+.sn-quote-text.sn-quote-xlong {
+  font-size: calc((20px) * var(--sn-tx-scale, 1));
+  line-height: calc((1.38) * var(--sn-tx-lh, 1));
+}
+
+.sn-quote-by {
+  font-size: calc((17px) * var(--sn-tx-scale, 1));
+  opacity: 0.78;
+}
+
+/* Alıntı slaytı hero zemininde metin rengini devralır. */
+.sn-hero .sn-quote-text,
+.sn-hero .sn-title,
+.sn-hero .sn-bullets li,
+.sn-hero .sn-subtitle {
+  color: var(--sn-tx-color, inherit);
+}
+
+.sn-hero .sn-bullets li::before {
+  background: var(--sn-accent);
+}
+
+.sn-hero-cta {
+  flex: 0 0 auto;
+  margin-top: 28px;
+  font-size: calc((20px) * var(--sn-tx-scale, 1));
+  font-weight: var(--sn-tx-weight, 600);
+  color: var(--sn-tx-color, var(--sn-accent));
+}
+
+/* Gradyan zeminde vurgu rengi (koyu mavi üstüne koyu mavi) okunmuyordu;
+   kapanış çağrısı zemin karşıtı renge çekilir. */
+.sn-hero .sn-hero-cta {
+  color: var(--sn-tx-color, var(--sn-on-hero));
+}
+
+/* ================================== EDİTÖR ================================== */
+
+.sn-editor {
+  display: grid;
+  grid-template-columns: 208px minmax(0, 1fr) 360px;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 1280px) {
+  .sn-editor {
+    grid-template-columns: 176px minmax(0, 1fr) 320px;
+  }
+}
+
+@media (max-width: 1080px) {
+  .sn-editor {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.sn-rail {
+  max-height: calc(100vh - 220px);
+}
+
+@media (max-width: 1080px) {
+  .sn-rail {
+    max-height: 320px;
+  }
+}
+
+.sn-panel-col {
+  max-height: calc(100vh - 220px);
+}
+
+@media (max-width: 1080px) {
+  .sn-panel-col {
+    max-height: none;
+  }
+}
+
+/* Küçük resimlerde slayt yalnızca görüntüdür; tıklama dış butona gider. */
+.sn-rail .sn-fit,
+.sn-thumb-fit {
+  pointer-events: none;
+  border-radius: 10px 10px 0 0;
+}
+
+/* ============================ YAZDIRMA — PDF çıktısı ============================
+   `<html>` üzerine `sunum-printing` sınıfı eklenir; sayfada yalnızca
+   #sunum-print-root (slaytların 1:1 kopyası) kalır. Her slayt bir yatay sayfa.
+   ============================================================================= */
+
+#sunum-print-root {
+  display: none;
+}
+
+@media print {
+  /* Site koyu temadayken color-scheme: dark, Chrome'un kanvasını koyu boyuyor;
+     bu katman slaytın altına girip çıktıyı bozuyor. Yazdırmada açık moda çekilir. */
+  :root,
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    color-scheme: light !important;
+  }
+
+  /* Site kabuğunun tamamı (navbar, footer, editör arayüzü) çıktıdan çıkar. */
+  body > *:not(#sunum-print-root) {
+    display: none !important;
+  }
+
+  #sunum-print-root {
+    display: block !important;
+    position: static !important;
+  }
+
+  #sunum-print-root .sn-slide {
+    transform: none !important;
+    box-shadow: none !important;
+    break-after: page;
+    break-inside: avoid;
+  }
+
+  #sunum-print-root .sn-slide:last-child {
+    break-after: auto;
+  }
+}
+
+/* 1280 × 720 px = 13.333in × 7.5in — PowerPoint'in 16:9 sayfa ölçüsü. */
+@page {
+  size: 13.333in 7.5in;
+  margin: 0;
+}
+
+/* ============================== ARKA PLAN MOTİFİ ==============================
+   components/sunum/SunumBackdrop.tsx tarafından kullanılır. Değerler site
+   temasıyla birlikte döner (koyu temada daha silik).
+   ============================================================================= */
+
+.sn-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  --snb-sheet: rgba(148, 163, 184, 0.05);
+  --snb-line: rgba(148, 163, 184, 0.16);
+  --snb-accent: rgba(34, 211, 238, 0.35);
+}
+
+[data-theme='light'] .sn-backdrop {
+  --snb-sheet: rgba(15, 23, 42, 0.03);
+  --snb-line: rgba(15, 23, 42, 0.1);
+  --snb-accent: rgba(8, 145, 178, 0.32);
+}
+
+.sn-backdrop-grid {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(to right, rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(70% 60% at 50% 30%, #000 30%, transparent 100%);
+  -webkit-mask-image: radial-gradient(70% 60% at 50% 30%, #000 30%, transparent 100%);
+}
+
+.sn-backdrop-glow {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+}
+
+.sn-backdrop-glow.a {
+  top: -14%;
+  left: -8%;
+  width: 46vw;
+  height: 46vw;
+  background: rgba(34, 211, 238, 0.14);
+}
+
+.sn-backdrop-glow.b {
+  bottom: -18%;
+  right: -10%;
+  width: 42vw;
+  height: 42vw;
+  background: rgba(129, 140, 248, 0.13);
+}
+
+[data-theme='light'] .sn-backdrop-glow.a {
+  background: rgba(8, 145, 178, 0.1);
+}
+
+[data-theme='light'] .sn-backdrop-glow.b {
+  background: rgba(99, 102, 241, 0.09);
+}
+
+.sn-backdrop-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 720px) {
+  /* Küçük ekranda motif içerikle çakışıyor; yalnızca ışımalar kalır. */
+  .sn-backdrop-art {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   ANİMASYONLAR
+   --------------------------------------------------------------------------
+   Kural (§16): animasyon gösteriş için değil, ANLATIMI GÜÇLENDİRMEK için.
+   Bu yüzden slayt içeriği yalnızca İKİ durumda canlanır:
+     · sunum modunda (slayt ilk kez gösterildiğinde),
+     · üretim ekranında (slayt oluştuğu anda).
+   Editörde animasyon YOK: her tuş vuruşunda yeniden oynayan bir slayt
+   düzenlemeyi imkânsız kılar.
+
+   Tetikleyici `.sn-animate` sınıfıdır; SlideRenderer `animate` prop'uyla ekler.
+   Yeni bir paket eklenmedi — hepsi CSS keyframe'i (bkz. §22).
+   ========================================================================== */
+
+@keyframes sn-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sn-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sn-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes sn-rule-in {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes sn-grow-y {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes sn-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* --------------------------- slayt içi sahneleme --------------------------- */
+
+.sn-animate .sn-title,
+.sn-animate .sn-cover-title {
+  animation: sn-fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.sn-animate .sn-rule,
+.sn-animate .sn-cover-rule {
+  transform-origin: left center;
+  animation: sn-rule-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+}
+
+.sn-animate .sn-subtitle,
+.sn-animate .sn-cover-sub {
+  animation: sn-fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
+}
+
+/* Maddeler kademeli gelir; 8. maddeden sonrası birlikte (gecikme uzamasın). */
+.sn-animate .sn-bullets li {
+  animation: sn-fade-up 0.44s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.sn-animate .sn-bullets li:nth-child(1) { animation-delay: 0.18s; }
+.sn-animate .sn-bullets li:nth-child(2) { animation-delay: 0.25s; }
+.sn-animate .sn-bullets li:nth-child(3) { animation-delay: 0.32s; }
+.sn-animate .sn-bullets li:nth-child(4) { animation-delay: 0.39s; }
+.sn-animate .sn-bullets li:nth-child(5) { animation-delay: 0.46s; }
+.sn-animate .sn-bullets li:nth-child(6) { animation-delay: 0.53s; }
+.sn-animate .sn-bullets li:nth-child(n + 7) { animation-delay: 0.58s; }
+
+.sn-animate .sn-panel,
+.sn-animate .sn-stat,
+.sn-animate .sn-step-card,
+.sn-animate .sn-step-row,
+.sn-animate .sn-layer,
+.sn-animate .sn-compare-row,
+.sn-animate .sn-image-frame {
+  animation: sn-fade-up 0.46s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.sn-animate .sn-panel:nth-child(2),
+.sn-animate .sn-stat:nth-child(2),
+.sn-animate .sn-step-card:nth-child(2),
+.sn-animate .sn-step-row:nth-child(2),
+.sn-animate .sn-layer:nth-child(2),
+.sn-animate .sn-compare-row:nth-child(2) { animation-delay: 0.08s; }
+.sn-animate .sn-stat:nth-child(3),
+.sn-animate .sn-step-row:nth-child(3),
+.sn-animate .sn-layer:nth-child(3),
+.sn-animate .sn-compare-row:nth-child(3) { animation-delay: 0.16s; }
+.sn-animate .sn-stat:nth-child(4),
+.sn-animate .sn-step-row:nth-child(4),
+.sn-animate .sn-layer:nth-child(4),
+.sn-animate .sn-compare-row:nth-child(4) { animation-delay: 0.24s; }
+.sn-animate .sn-step-row:nth-child(n + 5),
+.sn-animate .sn-layer:nth-child(n + 5),
+.sn-animate .sn-compare-row:nth-child(n + 5) { animation-delay: 0.3s; }
+
+/* Yatay süreç zincirinde kartlar ok yönünde sırayla belirir. */
+.sn-animate .sn-process-h > div:nth-child(2) .sn-step-card { animation-delay: 0.1s; }
+.sn-animate .sn-process-h > div:nth-child(3) .sn-step-card { animation-delay: 0.2s; }
+.sn-animate .sn-process-h > div:nth-child(4) .sn-step-card { animation-delay: 0.3s; }
+.sn-animate .sn-process-h > div:nth-child(n + 5) .sn-step-card { animation-delay: 0.36s; }
+.sn-animate .sn-arrow {
+  animation: sn-fade 0.3s ease 0.34s both;
+}
+
+.sn-animate .sn-quote-text {
+  animation: sn-fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+}
+.sn-animate .sn-quote-mark {
+  animation: sn-scale-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.sn-animate .sn-tl-col,
+.sn-animate .sn-tl-row {
+  animation: sn-fade-up 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.sn-animate .sn-tl-col:nth-child(2), .sn-animate .sn-tl-row:nth-child(2) { animation-delay: 0.08s; }
+.sn-animate .sn-tl-col:nth-child(3), .sn-animate .sn-tl-row:nth-child(3) { animation-delay: 0.16s; }
+.sn-animate .sn-tl-col:nth-child(4), .sn-animate .sn-tl-row:nth-child(4) { animation-delay: 0.24s; }
+.sn-animate .sn-tl-col:nth-child(n + 5), .sn-animate .sn-tl-row:nth-child(n + 5) { animation-delay: 0.3s; }
+
+/* ------------------------------ grafik büyümesi ------------------------------ */
+
+/* Çubuklar tabandan yukarı büyür. `transform-box: fill-box` olmadan SVG
+   dönüşümünün orijini yanlış yerde kalır. */
+.sn-animate .sn-bar {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: sn-grow-y 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
+}
+.sn-animate .sn-bar:nth-of-type(2) { animation-delay: 0.19s; }
+.sn-animate .sn-bar:nth-of-type(3) { animation-delay: 0.26s; }
+.sn-animate .sn-bar:nth-of-type(4) { animation-delay: 0.33s; }
+
+/* Çizgi soldan sağa çizilir; uzunluk JS'siz bilinemediği için cömert bir
+   dash değeri kullanılır (fazlası görsel olarak fark edilmez). */
+.sn-animate .sn-line-path {
+  stroke-dasharray: 4000;
+  stroke-dashoffset: 4000;
+  animation: sn-draw 0.9s ease-out 0.1s forwards;
+}
+
+.sn-animate .sn-slice {
+  animation: sn-fade 0.45s ease both;
+}
+.sn-animate .sn-slice:nth-of-type(2) { animation-delay: 0.08s; }
+.sn-animate .sn-slice:nth-of-type(3) { animation-delay: 0.16s; }
+.sn-animate .sn-slice:nth-of-type(4) { animation-delay: 0.24s; }
+.sn-animate .sn-slice:nth-of-type(n + 5) { animation-delay: 0.3s; }
+
+.sn-animate .sn-value-label,
+.sn-animate .sn-tick,
+.sn-animate .sn-slice-label {
+  animation: sn-fade 0.35s ease 0.5s both;
+}
+
+/* --------------------------- slayt geçişi (§18) --------------------------- */
+
+.sn-transition-fade {
+  animation: sn-fade 0.32s ease both;
+}
+
+.sn-transition-slide {
+  animation: sn-slide-in 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes sn-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(var(--sn-dir, 28px));
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ------------------------------ arayüz hareketi ------------------------------ */
+
+.sn-enter {
+  animation: sn-fade-up 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.sn-pop {
+  animation: sn-scale-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Üretim ekranında sırası gelen adımın nabzı. */
+@keyframes sn-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(0.82);
+  }
+}
+
+.sn-pulse {
+  animation: sn-pulse 1.4s ease-in-out infinite;
+}
+
+/* Sürükle-bırak sırasında bırakılacak yer. */
+.sn-drop-target {
+  outline: 2px dashed rgb(var(--c-accent) / 0.7);
+  outline-offset: 2px;
+}
+
+.sn-dragging {
+  opacity: 0.45;
+}
+
+/* Erişilebilirlik: hareket azaltma tercihi her şeyi kapatır. */
+@media (prefers-reduced-motion: reduce) {
+  .sn-animate *,
+  .sn-enter,
+  .sn-pop,
+  .sn-pulse,
+  .sn-transition-fade,
+  .sn-transition-slide {
+    animation: none !important;
+  }
+}
+
+/* ==========================================================================
+   GÖRSEL YOĞUNLUK — dekoratif katmanlar
+   --------------------------------------------------------------------------
+   Üç seviye var ve hiçbiri İÇERİĞİ değiştirmez; yalnızca sunuluşu değiştirir:
+
+     clean  → dekor yok. Akademik ve kurumsal bağlamlarda en güvenli.
+     modern → köşede yumuşak bir ışıma + sol kenarda ince vurgu şeridi.
+     bold   → ışıma güçlenir, ikinci bir renk lekesi ve ince ızgara eklenir.
+
+   Dekor `::before`/`::after` ile çizilir ve içeriğin ALTINDA kalır; metin
+   kontrastı hiçbir seviyede düşmez (lekeler zeminle karıştırılmış düşük
+   alfa değerleridir, metnin altına gelmez).
+   ========================================================================== */
+
+.sn-slide > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* --------------------------------- modern --------------------------------- */
+
+.sn-v-modern:not(.sn-hero)::before {
+  content: '';
+  position: absolute;
+  top: -180px;
+  right: -140px;
+  width: 460px;
+  height: 460px;
+  border-radius: 999px;
+  background: var(--sn-accent);
+  opacity: 0.07;
+  filter: blur(40px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.sn-v-modern:not(.sn-hero)::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 64px;
+  bottom: 56px;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+  background: linear-gradient(180deg, var(--sn-accent), transparent);
+  opacity: 0.55;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ---------------------------------- bold ---------------------------------- */
+
+.sn-v-bold:not(.sn-hero)::before {
+  content: '';
+  position: absolute;
+  top: -220px;
+  right: -180px;
+  width: 620px;
+  height: 620px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 30% 30%, var(--sn-accent), transparent 68%);
+  opacity: 0.16;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.sn-v-bold:not(.sn-hero)::after {
+  content: '';
+  position: absolute;
+  left: -160px;
+  bottom: -200px;
+  width: 520px;
+  height: 520px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 60% 40%, var(--sn-accent2), transparent 70%);
+  opacity: 0.13;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Kapak/kapanış gradyanında lekeler yerine ince bir ızgara dokusu. */
+.sn-v-bold.sn-hero::after,
+.sn-v-modern.sn-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.055) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(90% 70% at 80% 10%, #000, transparent 72%);
+  -webkit-mask-image: radial-gradient(90% 70% at 80% 10%, #000, transparent 72%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Yoğunluk arttıkça sahneleme biraz daha belirgin olur. */
+.sn-v-bold.sn-animate .sn-title,
+.sn-v-bold.sn-animate .sn-cover-title {
+  animation-duration: 0.62s;
+}
+
+/* ------------------------------ vurgu bandı ------------------------------ */
+
+/* AI'nın belirlediği "akılda kalacak tek cümle". İçerikten görsel olarak
+   ayrılır ki slayt okunduğunda gözün son durağı o olsun. */
+/* -------------------------------- örnek bandı -------------------------------- */
+
+/*
+ * `margin-top: auto` örnek bandını slaydın altına iter; vurgu bandı da aynısını
+ * yapıyor, ikisi birlikte olduğunda ilki boşluğu alıp ikincisi hemen altına
+ * yapışıyor — istenen sıralama tam olarak bu.
+ */
+.sn-example {
+  /* `flex: 0 0 auto` kritik: varsayılan `0 1 auto` ile bant, gövde büyüdüğünde
+     sıkışıyor ve içindeki metin bandın dışına taşıyordu (kullanıcının gördüğü
+     "kayma"). Bant artık asla küçülmez; yer açma işi gövdenin. */
+  flex: 0 0 auto;
+  margin-top: auto;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  border-left: 4px solid var(--sn-accent);
+  background: color-mix(in srgb, var(--sn-accent) 8%, transparent);
+}
+
+.sn-example-label {
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sn-tx-color, var(--sn-accent));
+}
+
+.sn-example-text {
+  margin: 0;
+  font-size: calc((17px) * var(--sn-tx-scale, 1));
+  line-height: calc((1.45) * var(--sn-tx-lh, 1));
+  color: var(--sn-tx-color, var(--sn-fg2));
+}
+
+.sn-hero .sn-example {
+  border-left-color: var(--sn-on-hero);
+  background: color-mix(in srgb, var(--sn-on-hero) 12%, transparent);
+}
+
+.sn-hero .sn-example-label,
+.sn-hero .sn-example-text {
+  color: var(--sn-tx-color, var(--sn-on-hero));
+}
+
+/* Örnek bandı varsa vurgu bandı ona yapışır; iki kez "auto" boşluk açılmaz. */
+.sn-example + .sn-highlight {
+  margin-top: 14px;
+  padding-top: 0;
+}
+
+.sn-highlight {
+  flex: 0 0 auto;
+  margin-top: auto;
+  padding-top: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: calc((17px) * var(--sn-tx-scale, 1));
+  line-height: calc((1.4) * var(--sn-tx-lh, 1));
+  font-weight: var(--sn-tx-weight, 600);
+  color: var(--sn-tx-color, var(--sn-accent));
+}
+
+.sn-highlight::before {
+  content: '';
+  flex: 0 0 auto;
+  width: 26px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--sn-accent);
+}
+
+.sn-hero .sn-highlight {
+  color: var(--sn-tx-color, var(--sn-on-hero));
+  opacity: 0.9;
+}
+
+.sn-animate .sn-highlight {
+  animation: sn-fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.55s both;
+}
+
+.sn-animate .sn-example {
+  animation: sn-fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.45s both;
+}
+
+/* Simge rozeti başlıkla birlikte, hafif bir ölçek artışıyla girer. */
+.sn-animate .sn-head-icon {
+  animation: sn-pop 0.45s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
+}
+
+@keyframes sn-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ==========================================================================
+   YENİ ŞABLON YERLEŞİMLERİ
+   --------------------------------------------------------------------------
+   Bu blok bilinçli olarak dosyanın SONUNDA duruyor: yukarıdaki
+   `.sn-slide > * { position: relative }` kuralı, mutlak konumlanan kapak
+   parçalarını eziyor. Aynı özgüllükte sonra gelen kural kazandığı için burada
+   `.sn-slide > .sn-…` biçimi kullanılıyor.
+
+   Kural değişmedi: burada YALNIZCA yerleşim ve tipografi var; renkler tema
+   değişkenlerinden (--sn-*) geliyor.
+   ========================================================================== */
+
+/* -------------------------------- kapaklar -------------------------------- */
+
+/* 90+ karakterlik kapak başlıkları 48px'te dört satıra çıkıp taşıyordu. */
+.sn-cover-title.sn-title-xlong {
+  font-size: calc((38px) * var(--sn-tx-scale, 1));
+  max-width: 32ch;
+}
+
+/* Kapak künyesi gerçekten sol alta sabitlenir (yukarıdaki `position: relative`
+   kuralı bunu eziyordu; künye akışta kalıp başlığı aşağı itiyordu). */
+.sn-slide > .sn-cover-meta {
+  position: absolute;
+}
+
+/* title-02 / title-04 künyesi akış içinde kalır. */
+.sn-cover-meta-inline {
+  font-size: calc((16px) * var(--sn-tx-scale, 1));
+  line-height: calc((1.5) * var(--sn-tx-lh, 1));
+  margin: 30px 0 0;
+  opacity: 0.6;
+}
+
+/* title-03 — üstte dev başlık, altta tam genişlik bilgi şeridi. */
+.sn-slide > .sn-cover-strip {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sn-cover-strip-main {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 72px 72px 34px;
+}
+
+.sn-cover-strip-band {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 26px 72px 30px;
+  background: color-mix(in srgb, var(--sn-on-hero) 12%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--sn-on-hero) 28%, transparent);
+}
+
+.sn-cover-strip-sub {
+  margin: 0;
+  font-size: calc((19px) * var(--sn-tx-scale, 1));
+  line-height: calc((1.45) * var(--sn-tx-lh, 1));
+  max-width: 62ch;
+  opacity: 0.88;
+}
+
+.sn-cover-strip-meta {
+  flex: 0 0 auto;
+  font-size: calc((15px) * var(--sn-tx-scale, 1));
+  letter-spacing: 0.02em;
+  opacity: 0.7;
+}
+
+/* title-04 — asimetrik: metin sol altta, sağ üstte köşe bloğu. */
+.sn-slide > .sn-cover-block {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 380px;
+  height: 340px;
+  border-bottom-left-radius: 28px;
+  background: color-mix(in srgb, var(--sn-on-hero) 10%, transparent);
+  border-left: 1px solid color-mix(in srgb, var(--sn-on-hero) 26%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--sn-on-hero) 26%, transparent);
+  pointer-events: none;
+}
+
+.sn-slide > .sn-cover-anchor {
+  position: absolute;
+  left: 72px;
+  right: 380px;
+  bottom: 72px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --------------------------- içerik: kart ızgarası --------------------------- */
+
+/* Kademeler ContentSlide → CARD_TIERS ile BİREBİR aynı olmalı. */
+.sn-cards {
+  --sn-k-padY: 26px;
+  --sn-k-padX: 28px;
+  --sn-k-gap: 10px;
+  --sn-k-num: 15px;
+  --sn-k-size: 19px;
+  --sn-k-lh: 1.4;
+  --sn-k-grid: 18px;
+  display: grid;
+  gap: var(--sn-k-grid);
+  align-content: center;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.sn-cards.sn-compact {
+  --sn-k-padY: 18px;
+  --sn-k-padX: 22px;
+  --sn-k-gap: 8px;
+  --sn-k-num: 14px;
+  --sn-k-size: 16px;
+  --sn-k-lh: 1.38;
+  --sn-k-grid: 14px;
+}
+.sn-cards.sn-compact-2,
+.sn-cards.sn-compact-3 {
+  --sn-k-padY: 13px;
+  --sn-k-padX: 18px;
+  --sn-k-gap: 6px;
+  --sn-k-num: 13px;
+  --sn-k-size: 14px;
+  --sn-k-lh: 1.35;
+  --sn-k-grid: 10px;
+}
+
+.sn-card {
+  overflow: hidden;
+  background: var(--sn-panel);
+  border: 1px solid var(--sn-line);
+  border-radius: 16px;
+  padding: var(--sn-k-padY) var(--sn-k-padX);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sn-k-gap);
+  min-height: 0;
+}
+
+.sn-card .sn-step-num {
+  font-size: calc((var(--sn-k-num)) * var(--sn-tx-scale, 1));
+}
+
+.sn-card-text {
+  margin: 0;
+  font-size: calc((var(--sn-k-size)) * var(--sn-tx-scale, 1));
+  line-height: calc((var(--sn-k-lh)) * var(--sn-tx-lh, 1));
+}
+
+/* ------------------------ içerik: iki kolonlu madde ------------------------ */
+
+.sn-bullet-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 44px;
+  align-content: center;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* -------------------------- içerik: öne çıkan madde -------------------------- */
+
+.sn-lead {
+  display: grid;
+  grid-template-columns: 430px minmax(0, 1fr);
+  gap: 26px;
+  align-items: center;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.sn-lead-main {
+  overflow: hidden;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  padding: 28px;
+  border-radius: 18px;
+  background: var(--sn-panel);
+  background: color-mix(in srgb, var(--sn-accent) 12%, var(--sn-bg));
+  border: 1px solid var(--sn-line);
+  border-color: color-mix(in srgb, var(--sn-accent) 32%, var(--sn-bg));
+}
+
+.sn-lead-text {
+  margin: 0;
+  font-weight: var(--sn-tx-weight, 600);
+  line-height: calc((1.3) * var(--sn-tx-lh, 1));
+  letter-spacing: -0.01em;
+}
+
+/* --------------------------- içerik: işaretli liste --------------------------- */
+
+/* Kademeler ContentSlide → CHECK_TIERS ile aynı. */
+.sn-check-list {
+  --sn-c-padY: 14px;
+  --sn-c-size: 19px;
+  --sn-c-lh: 1.4;
+  --sn-c-gap: 12px;
+  --sn-c-badge: 36px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sn-c-gap);
+  justify-content: center;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.sn-check-list.sn-compact {
+  --sn-c-padY: 11px;
+  --sn-c-size: 17px;
+  --sn-c-lh: 1.38;
+  --sn-c-gap: 9px;
+  --sn-c-badge: 30px;
+}
+.sn-check-list.sn-compact-2 {
+  --sn-c-padY: 8px;
+  --sn-c-size: 15px;
+  --sn-c-lh: 1.35;
+  --sn-c-gap: 7px;
+  --sn-c-badge: 26px;
+}
+.sn-check-list.sn-compact-3 {
+  --sn-c-padY: 5px;
+  --sn-c-size: 13px;
+  --sn-c-lh: 1.3;
+  --sn-c-gap: 5px;
+  --sn-c-badge: 22px;
+}
+
+.sn-check-row {
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: var(--sn-c-padY) 22px;
+  border-radius: 14px;
+  background: var(--sn-panel);
+  border: 1px solid var(--sn-line);
+}
+
+.sn-check-row p {
+  margin: 0;
+  font-size: calc((var(--sn-c-size)) * var(--sn-tx-scale, 1));
+  line-height: calc((var(--sn-c-lh)) * var(--sn-tx-lh, 1));
+}
+
+.sn-check-badge {
+  flex: 0 0 auto;
+  width: var(--sn-c-badge);
+  height: var(--sn-c-badge);
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  color: var(--sn-on-accent);
+  background: var(--sn-accent);
+}
+
+.sn-check-badge svg {
+  width: 58%;
+  height: 58%;
+}
+
+/* ----------------------- sütunlar: ayraçlı ve VS düzeni ----------------------- */
+
+/* Zeminsiz panel — two-column-03 kullanır. */
+.sn-panel-plain {
+  background: none;
+  border: 0;
+  padding: 0;
+}
+
+.sn-two-divided {
+  gap: 56px;
+  position: relative;
+}
+
+/* Ortadaki dikey ayraç: iki sütun panel kutusu olmadan da ayrışsın. */
+.sn-two-divided::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 4px;
+  bottom: 4px;
+  width: 1px;
+  transform: translateX(-0.5px);
+  background: var(--sn-line);
+}
+
+.sn-two-divided .sn-panel-head {
+  padding-bottom: 12px;
+  border-bottom: 3px solid var(--sn-accent);
+  display: inline-block;
+}
+
+.sn-two-versus {
+  grid-template-columns: minmax(0, 1fr) 96px minmax(0, 1fr);
+  gap: 0;
+  align-items: stretch;
+}
+
+.sn-vs {
+  align-self: center;
+  justify-self: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--sn-on-accent);
+  background: var(--sn-accent);
+  box-shadow: 0 0 0 10px color-mix(in srgb, var(--sn-accent) 14%, transparent);
+}
+
+/* ---------------------------- istatistik: dev sayı ---------------------------- */
+
+.sn-stat-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 32px;
+  align-items: center;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.sn-stat-hero-main {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sn-stat-hero-value {
+  font-weight: var(--sn-tx-weight, 800);
+  line-height: calc((0.95) * var(--sn-tx-lh, 1));
+  letter-spacing: -0.03em;
+  color: var(--sn-tx-color, var(--sn-accent));
+}
+
+.sn-stat-hero-label {
+  font-size: calc((21px) * var(--sn-tx-scale, 1));
+  font-weight: var(--sn-tx-weight, 600);
+  line-height: calc((1.35) * var(--sn-tx-lh, 1));
+}
+
+.sn-stat-side {
+  --sn-h-padY: 12px;
+  --sn-h-value: 26px;
+  --sn-h-label: 15px;
+  --sn-h-cap: 13px;
+  --sn-h-gap: 12px;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--sn-h-gap);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sn-stat-side.sn-compact {
+  --sn-h-padY: 9px;
+  --sn-h-value: 22px;
+  --sn-h-label: 14px;
+  --sn-h-cap: 12px;
+  --sn-h-gap: 9px;
+}
+.sn-stat-side.sn-compact-2,
+.sn-stat-side.sn-compact-3 {
+  --sn-h-padY: 7px;
+  --sn-h-value: 19px;
+  --sn-h-label: 13px;
+  --sn-h-cap: 11px;
+  --sn-h-gap: 7px;
+}
+
+.sn-stat-side-row {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  min-height: 0;
+  overflow: hidden;
+  padding: var(--sn-h-padY) 18px;
+  border-radius: 12px;
+  background: var(--sn-panel);
+  border: 1px solid var(--sn-line);
+}
+
+.sn-stat-side-row b {
+  flex: 0 0 auto;
+  min-width: 96px;
+  font-size: calc((var(--sn-h-value)) * var(--sn-tx-scale, 1));
+  font-weight: var(--sn-tx-weight, 700);
+  color: var(--sn-tx-color, var(--sn-accent));
+  font-variant-numeric: tabular-nums;
+}
+
+.sn-stat-side-row span {
+  font-size: calc((var(--sn-h-label)) * var(--sn-tx-scale, 1));
+  line-height: calc((1.35) * var(--sn-tx-lh, 1));
+}
+
+.sn-stat-side-row em {
+  display: block;
+  font-style: var(--sn-tx-style, normal);
+  font-size: calc((var(--sn-h-cap)) * var(--sn-tx-scale, 1));
+  color: var(--sn-tx-color, var(--sn-fg2));
+}
+
+/* ------------------------------ grafik: çıkarım ------------------------------ */
+
+.sn-chart-takeaway {
+  display: grid;
+  grid-template-columns: 520px minmax(0, 1fr);
+  gap: 32px;
+  align-items: center;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.sn-chart-takeaway-plot {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
+
+.sn-chart-takeaway-note {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-height: 0;
+}
+
+.sn-takeaway-text {
+  margin: 0;
+  font-weight: var(--sn-tx-weight, 600);
+  line-height: calc((1.3) * var(--sn-tx-lh, 1));
+  letter-spacing: -0.01em;
+  border-left: 4px solid var(--sn-accent);
+  padding-left: 18px;
+}
+
+/* -------------------------- zaman çizelgesi: kartlar -------------------------- */
+
+/* Kademeler TimelineSlide → CARD_TIERS ile aynı. */
+.sn-tl-cards {
+  --sn-tc-padY: 20px;
+  --sn-tc-padX: 20px;
+  --sn-tc-chip: 15px;
+  --sn-tc-gap: 10px;
+  --sn-tc-grid: 16px;
+  --sn-tl-title: 18px;
+  --sn-tl-tlh: 1.35;
+  --sn-tl-desc: 14px;
+  --sn-tl-dlh: 1.4;
+  --sn-tl-desc-gap: 10px;
+  display: grid;
+  gap: var(--sn-tc-grid);
+  align-content: center;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.sn-tl-cards.sn-compact {
+  --sn-tc-padY: 15px;
+  --sn-tc-padX: 16px;
+  --sn-tc-chip: 14px;
+  --sn-tc-gap: 8px;
+  --sn-tc-grid: 12px;
+  --sn-tl-title: 16px;
+  --sn-tl-tlh: 1.3;
+  --sn-tl-desc: 13px;
+  --sn-tl-dlh: 1.35;
+  --sn-tl-desc-gap: 8px;
+}
+.sn-tl-cards.sn-compact-2 {
+  --sn-tc-padY: 11px;
+  --sn-tc-padX: 13px;
+  --sn-tc-chip: 13px;
+  --sn-tc-gap: 6px;
+  --sn-tc-grid: 9px;
+  --sn-tl-title: 14px;
+  --sn-tl-tlh: 1.28;
+  --sn-tl-desc: 12px;
+  --sn-tl-dlh: 1.3;
+  --sn-tl-desc-gap: 6px;
+}
+.sn-tl-cards.sn-compact-3 {
+  --sn-tc-padY: 8px;
+  --sn-tc-padX: 11px;
+  --sn-tc-chip: 12px;
+  --sn-tc-gap: 5px;
+  --sn-tc-grid: 7px;
+  --sn-tl-title: 13px;
+  --sn-tl-tlh: 1.25;
+  --sn-tl-desc: 11px;
+  --sn-tl-dlh: 1.28;
+  --sn-tl-desc-gap: 5px;
+}
+
+.sn-tl-card {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sn-tc-gap);
+  padding: var(--sn-tc-padY) var(--sn-tc-padX);
+  border-radius: 14px;
+  background: var(--sn-panel);
+  border: 1px solid var(--sn-line);
+  border-top: 3px solid var(--sn-accent);
+  min-height: 0;
+}
+
+.sn-tl-chip {
+  align-self: flex-start;
+  font-size: calc((var(--sn-tc-chip)) * var(--sn-tx-scale, 1));
+  font-weight: var(--sn-tx-weight, 700);
+  letter-spacing: 0.04em;
+  color: var(--sn-tx-color, var(--sn-accent));
+}
+
+.sn-tl-card .sn-tl-desc {
+  margin-top: 0;
+}
+
+/* ------------------------------ süreç: döngü ------------------------------ */
+
+.sn-cycle {
+  position: relative;
+  flex: 0 0 auto;
+  align-self: center;
+  width: 100%;
+  margin: auto 0;
+}
+
+.sn-cycle-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px dashed var(--sn-line);
+  pointer-events: none;
+}
+
+.sn-cycle-step {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 212px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: var(--sn-panel);
+  border: 1px solid var(--sn-line);
+  text-align: left;
+}
+
+.sn-cycle-step .sn-step-badge {
+  --sn-p-badge: 30px;
+  border-radius: 999px;
+}
+
+.sn-cycle-step .sn-step-title {
+  font-size: calc((15px) * var(--sn-tx-scale, 1));
+  line-height: calc((1.28) * var(--sn-tx-lh, 1));
+}
+
+.sn-cycle-step .sn-step-desc {
+  font-size: calc((12px) * var(--sn-tx-scale, 1));
+  line-height: calc((1.3) * var(--sn-tx-lh, 1));
+  margin-top: 3px;
+}
+
+/* --------------------------- mimari: akış ve sütun --------------------------- */
+
+.sn-flow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  justify-content: center;
+}
+
+.sn-flow-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 760px;
+  max-width: 100%;
+}
+
+.sn-flow-box {
+  overflow: hidden;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sn-a-nodeGap);
+  padding: var(--sn-a-padY) var(--sn-a-padX);
+  border-radius: 14px;
+  background: var(--sn-panel);
+  border: 1px solid var(--sn-line);
+  text-align: center;
+  align-items: center;
+}
+
+.sn-flow-box .sn-nodes {
+  justify-content: center;
+}
+
+/*
+ * Sıkı kademelerde kutu SATIRA döner: ad solda, düğümler sağda. 5 katmanlı bir
+ * akışta bu tek değişiklik ~100px kazandırıyor; oklu dikey akış korunduğu için
+ * yerleşim yine katman bloklarından (architecture-01) ayrı duruyor.
+ */
+.sn-flow.sn-compact-2 .sn-flow-box,
+.sn-flow.sn-compact-3 .sn-flow-box {
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  text-align: left;
+}
+
+.sn-flow.sn-compact-2 .sn-flow-box .sn-layer-name,
+.sn-flow.sn-compact-3 .sn-flow-box .sn-layer-name {
+  flex: 0 0 var(--sn-a-nameW);
+}
+
+.sn-flow.sn-compact-2 .sn-flow-box .sn-nodes,
+.sn-flow.sn-compact-3 .sn-flow-box .sn-nodes {
+  justify-content: flex-start;
+}
+
+/* Katmanlar arası bağlaç: ok ucu CSS üçgeniyle çizilir. */
+.sn-flow-link {
+  position: relative;
+  width: 2px;
+  height: max(12px, var(--sn-a-gap));
+  background: var(--sn-line);
+}
+
+.sn-flow-link::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -1px;
+  transform: translateX(-50%);
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 7px solid var(--sn-accent);
+}
+
+.sn-layer-cols {
+  display: grid;
+  gap: var(--sn-a-gap);
+  align-items: stretch;
+  align-content: center;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.sn-layer-col {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: var(--sn-a-padY) var(--sn-a-padX);
+  border-radius: 14px;
+  background: var(--sn-panel);
+  border: 1px solid var(--sn-line);
+  min-height: 0;
+}
+
+.sn-layer-col .sn-nodes {
+  flex-direction: column;
+  flex-wrap: nowrap;
+}
+
+.sn-layer-col .sn-node {
+  text-align: center;
+}
+
+/* ------------------------------ görsel: mozaik ------------------------------ */
+
+.sn-mosaic {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.sn-mosaic-strip {
+  flex: 0 0 auto;
+  display: flex;
+  min-height: 0;
+}
+
+/* Şerit tam genişlik kaplar: aksi hâlde çerçeve simgesi kadar daralıp
+   sol kenarda küçük bir kutu gibi duruyordu. */
+.sn-mosaic-strip > .sn-image-frame {
+  flex: 1 1 auto;
+  width: 100%;
+}
+
+.sn-mosaic-tiles {
+  --sn-m-padY: 16px;
+  --sn-m-padX: 18px;
+  --sn-m-size: 17px;
+  --sn-m-lh: 1.4;
+  --sn-m-grid: 14px;
+  display: grid;
+  gap: var(--sn-m-grid);
+  align-content: center;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.sn-mosaic-tiles.sn-compact {
+  --sn-m-padY: 12px;
+  --sn-m-padX: 14px;
+  --sn-m-size: 15px;
+  --sn-m-lh: 1.35;
+  --sn-m-grid: 11px;
+}
+.sn-mosaic-tiles.sn-compact-2,
+.sn-mosaic-tiles.sn-compact-3 {
+  --sn-m-padY: 9px;
+  --sn-m-padX: 11px;
+  --sn-m-size: 13px;
+  --sn-m-lh: 1.3;
+  --sn-m-grid: 8px;
+}
+
+.sn-mosaic-tiles p {
+  margin: 0;
+  padding: var(--sn-m-padY) var(--sn-m-padX);
+  font-size: calc((var(--sn-m-size)) * var(--sn-tx-scale, 1));
+  line-height: calc((var(--sn-m-lh)) * var(--sn-tx-lh, 1));
+  border-radius: 12px;
+  background: var(--sn-panel);
+  border: 1px solid var(--sn-line);
+  border-left: 3px solid var(--sn-accent);
+}
+
+/* ------------------------------ alıntı: portreli ------------------------------ */
+
+.sn-quote-split {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 48px;
+  align-items: center;
+}
+
+.sn-quote-wide {
+  max-width: none;
+}
+
+.sn-quote-card {
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 30px 24px;
+  border-radius: 20px;
+  text-align: center;
+  background: var(--sn-panel);
+  border: 1px solid var(--sn-line);
+}
+
+.sn-quote-portrait {
+  width: 96px;
+  height: 96px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  color: var(--sn-accent);
+  background: color-mix(in srgb, var(--sn-accent) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--sn-accent) 30%, transparent);
+  margin-bottom: 6px;
+}
+
+.sn-quote-portrait svg {
+  width: 44px;
+  height: 44px;
+}
+
+.sn-quote-author {
+  font-size: calc((19px) * var(--sn-tx-scale, 1));
+  font-weight: var(--sn-tx-weight, 700);
+}
+
+.sn-quote-role {
+  font-size: calc((15px) * var(--sn-tx-scale, 1));
+  color: var(--sn-tx-color, var(--sn-fg2));
+  line-height: calc((1.4) * var(--sn-tx-lh, 1));
+}
+
+/* ---------------------------- kapanış: onay listesi ---------------------------- */
+
+.sn-close-checks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 32px;
+  align-items: start;
+}
+
+/* Onay listesi madde işaretini kutu yerine tik ile çizer. */
+.sn-checks {
+  --sn-b-size: 22px;
+  --sn-b-lh: 1.45;
+  --sn-b-gap: 18px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sn-b-gap);
+}
+
+.sn-checks.sn-dense {
+  --sn-b-size: 19px;
+  --sn-b-lh: 1.42;
+  --sn-b-gap: 13px;
+}
+.sn-checks.sn-tight {
+  --sn-b-size: 17px;
+  --sn-b-lh: 1.38;
+  --sn-b-gap: 10px;
+}
+.sn-checks.sn-tighter {
+  --sn-b-size: 15px;
+  --sn-b-lh: 1.35;
+  --sn-b-gap: 8px;
+}
+.sn-checks.sn-micro {
+  --sn-b-size: 13px;
+  --sn-b-lh: 1.32;
+  --sn-b-gap: 6px;
+}
+
+.sn-checks li {
+  position: relative;
+  padding-left: 34px;
+  font-size: calc((var(--sn-b-size)) * var(--sn-tx-scale, 1));
+  line-height: calc((var(--sn-b-lh)) * var(--sn-tx-lh, 1));
+}
+
+.sn-checks li::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: calc(var(--sn-b-size) * var(--sn-tx-scale, 1) * var(--sn-b-lh) * var(--sn-tx-lh, 1) / 2 - 7px);
+  width: 14px;
+  height: 8px;
+  border-left: 2.5px solid currentColor;
+  border-bottom: 2.5px solid currentColor;
+  transform: rotate(-45deg);
+  opacity: 0.85;
+}
+
+/* ------------------------------- sahneleme ------------------------------- */
+
+/* Yeni kutular da destenin sahneleme ritmine katılır (bkz. .sn-animate). */
+.sn-animate .sn-card,
+.sn-animate .sn-check-row,
+.sn-animate .sn-tl-card,
+.sn-animate .sn-stat-side-row,
+.sn-animate .sn-flow-box,
+.sn-animate .sn-layer-col,
+.sn-animate .sn-quote-card,
+.sn-animate .sn-lead-main {
+  animation: sn-fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.14s both;
+}
+
+.sn-animate .sn-card:nth-child(2),
+.sn-animate .sn-check-row:nth-child(2),
+.sn-animate .sn-tl-card:nth-child(2),
+.sn-animate .sn-stat-side-row:nth-child(2),
+.sn-animate .sn-layer-col:nth-child(2) { animation-delay: 0.2s; }
+.sn-animate .sn-card:nth-child(3),
+.sn-animate .sn-check-row:nth-child(3),
+.sn-animate .sn-tl-card:nth-child(3),
+.sn-animate .sn-stat-side-row:nth-child(3),
+.sn-animate .sn-layer-col:nth-child(3) { animation-delay: 0.26s; }
+.sn-animate .sn-card:nth-child(n + 4),
+.sn-animate .sn-check-row:nth-child(n + 4),
+.sn-animate .sn-tl-card:nth-child(n + 4),
+.sn-animate .sn-stat-side-row:nth-child(n + 4),
+.sn-animate .sn-layer-col:nth-child(n + 4) { animation-delay: 0.32s; }
+
+.sn-animate .sn-cover-strip-band,
+.sn-animate .sn-cover-block {
+  animation: sn-fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
+}
+
+/*
+ * Döngü kartları konumunu `transform: translate(-50%, -50%)` ile alıyor;
+ * `sn-fade-up` transform'u ezdiği için (animation-fill-mode: both) kartlar
+ * halkadan kayıyordu. Bu yüzden yalnızca opaklık sahnelenir.
+ */
+@keyframes sn-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.sn-animate .sn-cycle-step {
+  animation: sn-fade-in 0.5s ease 0.14s both;
+}
+.sn-animate .sn-cycle-step:nth-of-type(3) { animation-delay: 0.2s; }
+.sn-animate .sn-cycle-step:nth-of-type(4) { animation-delay: 0.26s; }
+.sn-animate .sn-cycle-step:nth-of-type(n + 5) { animation-delay: 0.32s; }
+
+/* ================================ slayt görseli ================================ */
+
+/*
+ * Görsel her slaytta olabilir (bkz. SlideBase.media). Üç yerleşim de ölçü
+ * motoruyla uyumlu: zemin içeriğin arkasında durur, şerit ve köşe kutusu
+ * yalnızca dikey alan tüketir ve o alan `parts.tsx → mediaHeight` ile gövdeden
+ * düşülür — düşülmezse metin görselin üstüne biner.
+ */
+.sn-media {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--sn-fg) 6%, transparent);
+}
+
+.sn-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* object-fit / object-position / scale bileşenden satır içi gelir. */
+  transform-origin: center;
+}
+
+/* Şerit: gövdenin altında, tam genişlik. Yüksekliği MEDIA_BAND_H ile birebir. */
+.sn-media-band {
+  flex: 0 0 auto;
+  height: 212px;
+  margin-top: 24px;
+}
+
+/* Köşe kutusu: sağa yaslı, daha küçük çerçeve. Yüksekliği MEDIA_INSET_H ile birebir. */
+.sn-media-inset {
+  flex: 0 0 auto;
+  align-self: flex-end;
+  width: 46%;
+  height: 184px;
+  margin-top: 24px;
+}
+
+/*
+ * Zemin: slaydın tamamını kaplar ve içeriğin ALTINDA kalır. `.sn-slide > *`
+ * kuralı tüm çocuklara `position: relative` verdiği için z-index'i burada
+ * açıkça düşürmek gerekiyor; yoksa görsel metnin üstünü kapatıyor.
+ */
+.sn-media-background {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 0;
+  margin: 0;
+}
+
+.sn-media-background img {
+  position: absolute;
+  inset: 0;
+}
+
+/*
+ * Perde: zemin görselinin üstünde metnin okunmasını garanti eder.
+ * Renk temadan gelir — açık temada beyaza, koyu temada zemine doğru koyulaşır;
+ * böylece kontrast her temada korunur ve tema paleti tek doğruluk kaynağı kalır.
+ */
+.sn-media-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--sn-bg) 92%, transparent) 0%,
+    color-mix(in srgb, var(--sn-bg) 78%, transparent) 52%,
+    color-mix(in srgb, var(--sn-bg) 46%, transparent) 100%
+  );
+}
+
+.sn-media-hero.sn-media-background .sn-media-scrim {
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--sn-hero-from) 90%, transparent) 0%,
+    color-mix(in srgb, var(--sn-hero-to) 72%, transparent) 100%
+  );
+}
+
+/* Zemin görseli varken içerik perdenin üstünde kalmalı. */
+.sn-has-media > .sn-head,
+.sn-has-media > .sn-body,
+.sn-has-media > .sn-example,
+.sn-has-media > .sn-highlight {
+  position: relative;
+  z-index: 1;
+}
+
+/* Sahneleme: görsel içerikten hemen sonra, yumuşak bir yakınlaşmayla girer. */
+.sn-animate .sn-media-in.sn-media-band,
+.sn-animate .sn-media-in.sn-media-inset {
+  animation: sn-media-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
+}
+
+.sn-animate .sn-media-in.sn-media-background img {
+  animation: sn-media-zoom 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes sn-media-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes sn-media-zoom {
+  from {
+    opacity: 0;
+    transform: scale(1.06);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sn-animate .sn-media-in.sn-media-band,
+  .sn-animate .sn-media-in.sn-media-inset,
+  .sn-animate .sn-media-in.sn-media-background img {
+    animation: none !important;
+  }
+}
+
+/* ============================ slayt üzerinde düzenleme ============================ */
+
+/*
+ * Yalnızca editör tuvalinde etkin (bağlam orada veriliyor). Sunum modunda,
+ * yazdırmada ve küçük resimlerde bu düğümler hiç oluşmaz.
+ *
+ * Kural: düzenlenebilirlik SLAYDIN GÖRÜNÜMÜNÜ değiştirmemeli. Bu yüzden ne
+ * kenarlık ne dolgu eklenir — yalnızca üzerine gelince zeminde çok hafif bir
+ * iz, odaklanınca ince bir anahat çıkar. Aksi hâlde kullanıcı slaytın gerçek
+ * hâlini göremez ve tasarımı yanlış değerlendirir.
+ */
+.sn-editable {
+  display: inline;
+  outline: none;
+  border-radius: 4px;
+  /* `inherit` şart: aksi hâlde sarmalayıcının punto ve rengini kaybediyor. */
+  font: inherit;
+  color: inherit;
+  cursor: text;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sn-editable:hover {
+  background: color-mix(in srgb, var(--sn-accent) 10%, transparent);
+}
+
+.sn-editable:focus {
+  background: color-mix(in srgb, var(--sn-accent) 8%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--sn-accent) 45%, transparent);
+}
+
+/* Boş kalan alan tıklanabilir bir hedef bırakmalı; yoksa geri getirilemiyor. */
+.sn-editable:empty::before {
+  content: '…';
+  opacity: 0.35;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sn-editable {
+    transition: none;
+  }
+}

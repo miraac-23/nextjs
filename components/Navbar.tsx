@@ -22,6 +22,7 @@ export default function Navbar() {
     { href: '/code-review', label: t.nav.codeReview },
     { href: '/cv-olustur', label: t.nav.cvBuilder },
     { href: '/ats-analiz', label: t.nav.atsCheck, wide: true },
+    { href: '/sunum', label: t.nav.aiDeck, wide: true },
     { href: '/#iletisim', label: t.nav.contact },
   ]
 
