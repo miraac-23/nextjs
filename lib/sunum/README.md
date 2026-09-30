@@ -307,6 +307,29 @@ kalite kontrolü yerel motorla çalışmaya devam eder.
 | `TYPESAFE_API_KEY` | *(boş)* | Jev karar katmanı. Tanımsızsa `AI_GATEWAY_API_KEY`, o da yoksa yerel sezgi motoru kullanılır |
 | `TYPESAFE_MODEL` | `jev-latest` | Jev model kimliği |
 
+### Vercel'de fonksiyon süresi (`maxDuration`)
+
+Her `/api/ai/*` rotası `export const maxDuration = 60` bildirir. Bu değer
+**yalnızca Vercel dağıtımında** anlamlıdır; `next dev`, `next start` ve kendi
+kendine barındırmada yok sayılır — yani yerel modelle dakikalarca süren bir
+üretimi kısaltmaz.
+
+60, **Hobby planının üst sınırıdır**. Daha büyük bir değer derlemeyi durdurur:
+
+```
+Builder returned invalid maxDuration value for Serverless Function "api/ai/local".
+Serverless Functions must have a maxDuration between 1 and 60 for plan hobby.
+```
+
+Pro/Enterprise'da 300'e kadar çıkılabilir. Planı yükselttiysen ilgili rotalardaki
+sayıyı büyütmek yeterli; Next.js bu ayarı **sabit sayı** olarak ister, değişken
+ya da içe aktarılmış bir sabit kabul etmez, bu yüzden her dosyada ayrı yazılır.
+
+Hobby'de kalırken dikkat edilecek nokta: barındırılan sağlayıcıda tek bir slayt
+60 saniyeyi aşarsa Vercel isteği 504 ile keser. Bu durum `http` hatası olarak
+yeniden denenebilir sayılır, dolayısıyla üretim boş slayta düşmez — ama çok uzun
+desteler için yerel model ya da daha hızlı bir sağlayıcı tercih edilmelidir.
+
 ## Kullanıcı beklentileri ve sunum koçu
 
 ### Beklentiler (`requirements`)

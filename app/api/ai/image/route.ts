@@ -14,7 +14,17 @@ import { z } from 'zod'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
-export const maxDuration = 120
+/**
+ * Vercel sınırı. Bu değer YALNIZCA Vercel dağıtımında anlamlıdır; `next dev`,
+ * `next start` ve kendi kendine barındırmada yok sayılır, dolayısıyla yerel
+ * modelle uzun süren üretimi kısaltmaz.
+ *
+ * 60, Hobby planının üst sınırıdır — üstünde bir değer derlemeyi durdurur:
+ * "Serverless Functions must have a maxDuration between 1 and 60 for plan hobby".
+ * Pro/Enterprise'da 300'e kadar çıkılabilir; planı yükselttiysen bu sayıyı
+ * büyütmen yeterli (Next.js bunu sabit sayı olarak ister, değişken kabul etmez).
+ */
+export const maxDuration = 60
 
 const bodySchema = z.object({
   prompt: z.string().trim().min(3).max(600),
